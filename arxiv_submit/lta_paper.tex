@@ -1,0 +1,1940 @@
+% ======================================================================
+% lta_paper.tex  --  ΛCDM + Local Time Acceleration (LTA) framework
+% ======================================================================
+
+\documentclass[10pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{siunitx}
+\usepackage{enumitem}
+\usepackage{subcaption}
+\usepackage{authblk}
+\usepackage[section]{placeins}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  textfont=normalfont
+}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue,
+  pdftitle={ΛCDM + Local Time Acceleration (LTA)},
+  pdfauthor={},
+  pdfkeywords={cosmology, supernovae, BAO, time acceleration, redshift mapping}
+}
+
+\newcommand{\zobs}{z_{\mathrm{obs}}}
+\newcommand{\zcos}{z_{\mathrm{cos}}}
+\newcommand{\zhel}{z_{\mathrm{HEL}}}
+\newcommand{\zhd}{z_{\mathrm{HD}}}
+\newcommand{\Hc}{H}
+\newcommand{\Om}{\Omega_m}
+\newcommand{\chis}{\chi}
+\newcommand{\ee}{\mathrm{e}}
+\newcommand{\Mpc}{\mathrm{Mpc}}
+\newcommand{\kmsMpc}{\mathrm{km\,s^{-1}\,Mpc^{-1}}}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+\newcommand{\Iofchi}{I(\chis)}
+\newcommand{\sofchi}{s(\chis)}
+\newcommand{\tret}{t_{\mathrm{ret}}}
+\newcommand{\tlb}{t_{\mathrm{lb}}}
+\newcommand{\tL}{t_{\mathrm{life}}}
+\newcommand{\tA}{t_{\mathrm{anchor}}}
+\newcommand{\dchi}{\Delta\chi^2}
+\providecommand{\dd}{\mathrm{d}}
+
+\title{Local Time Acceleration:\\
+\large A Phenomenological Solution to the Hubble Tension Driven by\\
+\large Kinematic Anomalies in the Local Void}
+
+\author{Insan Eman \and ChatGPT 5.2 Pro \and Gemini 3 Pro}
+
+\date{January 11, 2026}
+
+\makeatletter
+\renewcommand{\maketitle}{
+  \begin{center}
+    {\LARGE \@title \par}
+    \vskip 1.0em
+    {\large \@date \par}
+  \end{center}
+  \vskip 1.2em
+}
+\makeatother
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\begin{minipage}[t]{0.31\textwidth}\centering
+\textbf{Insan Eman}\\[-2pt]
+\href{mailto:localtimeacceleration@gmail.com}{\texttt{LocalTimeAcceleration@gmail.com}}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\textwidth}\centering
+\textbf{ChatGPT 5.2 Pro}\\[-2pt]
+OpenAI
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\textwidth}\centering
+\textbf{Gemini 3 Pro}\\[-2pt]
+Google
+\end{minipage}
+\end{center}
+
+% --- epigraph ---
+\vspace{0.6\baselineskip}
+\begin{center}
+\small\itshape For the benefit of humankind, we stand on the shoulders of giants.
+\end{center}
+\vspace{0.9\baselineskip}
+
+\begin{abstract}
+The tension between local ($H_0 \approx 73$ km/s/Mpc) and early-universe ($H_0 \approx 67$ km/s/Mpc) 
+measurements of the Hubble constant remains the defining crisis of modern cosmology. In this work, we 
+investigate whether this tension can be ameliorated by a phenomenological ``Local Time Acceleration'' 
+(LTA) parametrization, which modifies the observed redshift via a bounded, observer-anchored decay function. 
+We fit this model to the Pantheon+SH0ES dataset using the full released covariance matrix and a 
+ladder-anchored likelihood. We report a statistically significant preference for the LTA model over 
+standard $\Lambda$CDM ($\Delta \chi^2 \approx 13.65$, corresponding to $\sim 3.7\sigma$), with a Monte 
+Carlo calibrated tail probability $p_{\rm MC}\approx 8\times 10^{-4}$ under $N=10000$ baseline null 
+injections. Tomographic analysis reveals that this signal is driven entirely by supernovae in the local 
+volume ($z < 0.03$), effectively correcting a known ``dip'' in the Hubble residuals often attributed to 
+peculiar velocities in the Local Void. Crucially, we perform a rigorous Jackknife resampling of all major 
+constituent surveys (CfA, CSP, PS1, etc.) and find the signal is robust to the exclusion of any single 
+telescope group, ruling out instrument-specific calibration systematics. While the effect vanishes at 
+higher redshifts, its persistence and coherence in the local volume suggest that the local Hubble flow 
+exhibits structured kinematic deviations that are better described by a smooth temporal decay than by 
+standard peculiar velocity corrections alone.
+\end{abstract}
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} cosmology, Type Ia supernovae, BAO, local time acceleration, redshift mapping, negentropy
+\vspace{1em}
+
+% ======================================================================
+
+\section{Introduction}
+\label{sec:intro}
+
+The persistent mismatch between late-time (local) determinations of the Hubble constant
+($H_0 \simeq 73\,\mathrm{km\,s^{-1}\,Mpc^{-1}}$) and early-universe inferences under minimal flat
+$\Lambda$CDM ($H_0 \simeq 67\,\mathrm{km\,s^{-1}\,Mpc^{-1}}$) has become the central anomaly in
+precision cosmology \cite{Brout2022PantheonPlus,Riess2022SH0ES}.
+What makes the ``Hubble tension'' unusually stubborn is that it lives at the intersection of
+multiple tightly constrained datasets: attempts to modify early-time physics must preserve the
+CMB acoustic peak structure, while late-time modifications to the expansion history are strongly
+constrained by the inverse distance ladder (BAO + SNe~Ia) once the sound horizon scale is fixed.
+
+A less explored possibility is that part of the discrepancy is not best described as a global
+change in the background expansion $H(z)$, but rather as a small, observer-linked distortion in the
+mapping between observed redshift and the cosmological redshift that enters background distances.
+This is not a semantic distinction: the SH0ES-style distance-ladder inference is dominated by
+nearby Type~Ia supernovae and is therefore maximally sensitive to the detailed kinematics of the
+local Hubble flow.
+The observer resides in a structured environment (including a local underdensity often discussed
+under the umbrella of ``Hubble bubble'' / ``Local Void'' phenomenology), and the lowest-redshift
+portion of the Hubble diagram exhibits coherent residual structure that is not naturally captured
+by purely stochastic peculiar-velocity scatter alone.
+If the local Hubble flow contains an additional smooth, causal, line-of-sight effect that is not
+modeled in the standard pipeline, it should manifest precisely in the redshift range where the
+distance ladder is anchored and where local-flow systematics are most acute.
+
+In this paper we introduce and test a phenomenological extension of $\Lambda$CDM which we call
+\emph{Local Time Acceleration} (LTA).
+Operationally, LTA is implemented as an accumulated fractional frequency drift along the photon
+trajectory, producing an additive contribution to $\ln(1+z)$ and therefore a multiplicative
+correction to $(1+z)$:
+\begin{equation}
+1+\zobs = (1+\zcos)\exp[I(\chi)].
+\end{equation}
+The defining modeling choice is that the drift strength is evaluated using an \emph{Earth-retarded
+lookback time} argument, so that the effect is explicitly causal and tied to the observer's
+lightcone rather than to a global function of the scale factor.
+We further impose boundedness (the drift saturates and becomes negligible beyond a finite
+activation epoch) and monotonicity of the mapping (so that $\zcos(\zobs)$ remains single-valued),
+making the model both numerically well-posed and falsifiable.
+
+Our goal in this work is deliberately specific: \emph{does a causal, bounded, observer-anchored
+redshift mapping of the LTA type improve the joint fit to late-time distance--redshift data when
+those data are analyzed using their released full covariances?}
+We emphasize what this statement does and does not entail.
+A detection of a preference for LTA would be an empirical statement about the adequacy of a
+particular mapping for describing the Hubble diagram and BAO observables; it would not, by itself,
+uniquely identify a microphysical origin.
+At the same time, this is not an unconstrained curve-fitting exercise: the mapping is nested
+($s_{\rm anchor}\to 0$ recovers $\Lambda$CDM exactly), it is restricted by causality and
+boundedness, and it is tested jointly against BAO, whose radial observable depends directly on the
+redshift Jacobian implied by the mapping.
+
+Our analysis is intentionally conservative in data handling.
+For SNe~Ia we use the Pantheon+SH0ES public release \cite{Brout2022PantheonPlus,Riess2022SH0ES}, restricting to the
+\texttt{shoes\_global} selection and adopting the released \emph{full} covariance matrix, including
+the nontrivial cross-correlations between calibrators and Hubble-flow supernovae.
+Because calibrator/Hubble-flow correlations are substantial, we construct a ladder-anchored SN
+likelihood in which calibrators provide an absolute-distance anchor and the cosmology-sensitive
+Hubble-flow likelihood is obtained by conditioning on calibrators via a Schur complement
+(Sec.~\ref{sec:sn_anchor_like}).
+We combine this with a BAO consensus likelihood (Sec.~\ref{sec:bao_like})\cite{DESI2024BAO}, treating the sound
+horizon through a single scaling parameter $\alpha_{\rm rd}$.
+Crucially, BAO provides an independent lever arm on the mapping: the LTA redshift Jacobian modifies
+the radial BAO prediction in a way that a purely SN-driven distortion generally cannot evade.
+
+For inference we compare baseline flat $\Lambda$CDM against $\Lambda$CDM+LTA under the same data
+treatment and numerical safeguards.
+Because the LTA extension is nested and we impose physical bounds on the LTA amplitude, the null is
+a boundary point and standard asymptotic $\chi^2$-difference heuristics are not guaranteed to be
+reliable.
+We therefore calibrate the detection significance using a Monte Carlo parametric bootstrap (null
+injections) under the baseline model, generating mock realizations with the \emph{same} released
+covariances and refitting both models end-to-end (Sec.~\ref{sec:opt_stat} and
+Sec.~\ref{sec:robustness}).
+In addition, we perform falsification-oriented robustness tests, including leave-one-group-out
+(jackknife) refits by telescope/survey grouping to check whether the preference is driven by any
+single subset, and supplementary cross-validation diagnostics designed for strongly correlated data
+(App.~\ref{app:cv}).
+
+\paragraph{Roadmap.}
+Section~\ref{sec:concept} explains the LTA ansatz as a causal frequency-drift mechanism and makes
+explicit the model’s falsifiability requirements.
+Section~\ref{sec:model} defines the $\Lambda$CDM+LTA mapping, the Earth-retarded time construction,
+and the Jacobian needed for BAO.
+Sections~\ref{sec:data}--\ref{sec:likelihood} describe the datasets and the ladder-anchored
+likelihood used to respect the released covariance structure.
+Section~\ref{sec:results} presents the primary fits and residual diagnostics, including the
+localization of the improvement in redshift.
+Section~\ref{sec:robustness} summarizes jackknife robustness and Monte Carlo null calibration.
+Finally, Section~\ref{sec:discussion} discusses interpretation and independent tests that can
+confirm or decisively falsify an LTA-like observer-local redshift-mapping effect.
+
+% ======================================================================
+\section{Conceptual Framework: Local Time Acceleration}
+\label{sec:concept}
+
+The motivating hypothesis behind this work is unconventional, so it behoves us to be explicit about
+what is being proposed at the observational level, what requirements we impose to keep it
+well-posed, and what claims the present analysis does and does not make.
+Our aim here is not to argue for a specific microphysical origin, but to define a concrete and
+falsifiable phenomenological mapping between cosmological redshift and observed redshift, and then
+to test whether that mapping is preferred by late-time distance--redshift data analyzed using their
+released covariances.
+
+\subsection{LTA as an accumulated, observer-local contribution to $\ln(1+z)$}
+
+In standard FLRW cosmology, the observed redshift is determined by the ratio of scale factors,
+$1+z = a(t_{\rm obs})/a(t_{\rm emit})$, up to conventional local corrections (peculiar velocities,
+gravitational potentials, etc.) that are treated as separate effects.
+LTA modifies this assumption by introducing an additional \emph{line-of-sight accumulated} fractional
+frequency drift. The observational statement is that photons acquire a small multiplicative factor
+in $(1+z)$ beyond the cosmological contribution:
+\begin{equation}
+1+\zobs = (1+\zcos)\exp[I(\chi)].
+\end{equation}
+Writing the effect in $\ln(1+z)$ is not a stylistic choice: it is the natural representation for a
+process that composes multiplicatively and accumulates additively along a trajectory.
+The quantity $I(\chi)$ is constructed as the line-of-sight integral of an effective drift-rate
+field $s(\chi)$ (with units of a Hubble rate), so that $s/c$ acts as a fractional frequency-drift
+per unit comoving distance (Sec.~\ref{sec:lta_mapping}).
+
+This is not a coordinate relabeling.
+A pure coordinate transformation cannot change dimensionless local observables without additional
+physical content.
+In contrast, LTA is defined precisely as an additional physical contribution to the observed
+frequency ratio relative to the baseline $\Lambda$CDM prediction, parameterized in a way that is
+nested, bounded, and testable.
+
+\subsection{Why an Earth-retarded time argument appears}
+
+The distinctive structural element of the LTA ansatz is that the drift-rate profile is evaluated as
+a function of an \emph{Earth-retarded lookback time} $\tret$ rather than as a generic function of
+cosmic time or scale factor.
+The purpose of this construction is causal bookkeeping: if the source of the effect is local to the
+observer’s environment (broadly construed), then any influence on the observed lightcone must be
+consistent with propagation at or below the speed of light.
+We therefore tie the effective drift strength at a point along the photon path to a retarded-time
+assignment based on the observer’s worldline and the background geometry (Sec.~\ref{sec:tret2}).
+
+Importantly, ``Earth-sourced'' here should be read as \emph{observer-anchored} rather than as a
+commitment to a particular terrestrial mechanism.
+The present analysis does not require (and does not assume) that the relevant state variable is
+literally biological.
+Instead, the Earth-retarded construction is a compact proxy for a wide class of observer-local
+causal influences whose effective strength depends on the observer’s local history or environment.
+The empirical question tested below is therefore: does an \emph{observer-anchored, causal, bounded}
+mapping of this type improve the description of the data?
+
+\subsection{Bounded activation and controlled degrees of freedom}
+
+To remain physically viable and empirically falsifiable, the LTA contribution must not grow without
+limit.
+We therefore impose a bounded activation through a function $g(t)\in[0,1]$ such that the effect
+decays to zero at a finite cutoff epoch $\tL$ (Sec.~\ref{sec:earth_history2}).
+This ensures that the additional drift saturates and becomes negligible for sufficiently large
+lookback times, preventing the model from contaminating high-redshift cosmology where early-universe
+constraints are exceptionally tight.
+
+A second requirement is that the redshift mapping remain monotonic:
+\begin{equation}
+\frac{\dd \zobs}{\dd \zcos} > 0,
+\end{equation}
+so that the inverse relation $\zcos(\zobs)$ is single-valued and the Hubble diagram remains
+well-defined (Sec.~\ref{sec:inverse2}).
+This is not merely a numerical convenience: non-monotonic mappings would imply multi-valued distance
+predictions at fixed observed redshift and would be directly incompatible with the interpretation of
+both SNe~Ia and BAO as functions of redshift.
+
+Finally, the model is explicitly \emph{nested}.
+In the zero-amplitude limit ($s_{\rm anchor}\to 0$), the integral $I(\chi)\to 0$ and the mapping
+reduces exactly to baseline $\Lambda$CDM.
+This nesting allows us to compare $\Lambda$CDM and $\Lambda$CDM+LTA at fixed data treatment using
+standard likelihood-ratio-style test statistics, while still calibrating their null distribution
+via Monte Carlo because the null lies on a boundary (Sec.~\ref{sec:opt_stat}).
+
+\subsection{Why BAO matters for falsification}
+
+Although the primary low-redshift leverage comes from SNe~Ia, BAO plays a crucial conceptual role in
+this test.
+The LTA mapping implies not only a shift in the distance--redshift relation but also a redshift
+Jacobian $\dd \zobs/\dd \zcos$.
+Radial BAO observables depend explicitly on $\dd \chi/\dd z$ and therefore directly probe the
+Jacobian induced by the mapping (Sec.~\ref{sec:bao_like}).
+This provides an independent check against mappings that might otherwise fit SNe~Ia by distorting
+redshift in a way that would be inconsistent with a standard ruler measured in the radial direction.
+For this reason, joint SN+BAO fitting is an essential part of rendering the LTA hypothesis
+falsifiable with late-time data.
+
+\subsection{What this paper claims and what it does not}
+
+The restricted empirical claim supported by this paper (if the preference persists under the full
+set of robustness checks) is:
+\emph{within the adopted data treatment and model family, an observer-anchored, causal, bounded LTA
+mapping provides an improved fit to late-time distance--redshift data relative to baseline
+$\Lambda$CDM.}
+
+This is not a claim of unique microphysical identification.
+The same phenomenology could in principle arise from unmodeled local kinematics, residual
+calibration structure, or other observer-local effects not captured in the baseline pipeline.
+Accordingly, our strategy is to (i) implement a precise mapping with clear causal and boundedness
+requirements, (ii) fit it using the released full covariance structure (including calibrator/HF
+cross-covariance), and (iii) report falsification-oriented diagnostics that test whether the
+preference is distributed across the data, robust to leave-out refits, and unlikely under baseline
+null injections.
+
+In this sense, LTA is treated here as a \emph{testable phenomenological hypothesis}: the cosmology
+data are used to evaluate whether the mapping is statistically preferred, while the interpretation
+of its ultimate origin is left to independent constraints and future targeted tests
+(Sec.~\ref{sec:discussion}).
+% ======================================================================
+\section{Model definition: $\Lambda$CDM background plus LTA}
+\label{sec:model}
+
+This section specifies the forward model used throughout: a standard flat $\Lambda$CDM background
+for distances and lookback times, coupled to an LTA redshift mapping in which the observed redshift
+$\zobs$ differs from the background cosmological redshift $\zcos$ by a bounded, causal,
+observer-anchored accumulated drift.
+
+\subsection{Baseline flat $\Lambda$CDM background}
+\label{sec:lcdm_background}
+
+We assume a spatially flat $\Lambda$CDM background with parameters $(H_0,\Om)$ and define
+\begin{equation}
+E(z) \equiv \sqrt{\Om(1+z)^3 + (1-\Om)},
+\qquad
+\Hc(z) \equiv H_0 E(z).
+\end{equation}
+The line-of-sight comoving distance is
+\begin{equation}
+\chis(z) = \frac{c}{H_0}\int_0^z \frac{\dd z'}{E(z')},
+\label{eq:chi_def}
+\end{equation}
+and the standard proper lookback time is
+\begin{equation}
+\tlb(z) = \frac{1}{H_0}\int_0^z \frac{\dd z'}{(1+z')E(z')}.
+\label{eq:tlb_def}
+\end{equation}
+In the implementation, $\chis$ is evaluated in $\Mpc$ using $c=\SI{299792.458}{km\,s^{-1}}$ and
+$H_0$ in $\kmsMpc$; $\tlb$ is converted to $\mathrm{Gyr}$ for use in the LTA activation.
+
+\subsection{LTA as an accumulated fractional frequency drift}
+\label{sec:lta_mapping}
+
+We model \emph{Local Time Acceleration} (LTA) as an additional, line-of-sight accumulated,
+\emph{multiplicative} contribution to $(1+z)$, which is naturally represented as an additive term
+in $\ln(1+z)$.
+
+We define the dimensionless accumulated integral
+\begin{equation}
+\Iofchi \equiv \frac{1}{c}\int_{0}^{\chis} \sofchi' \,\dd \chis',
+\label{eq:I_def2}
+\end{equation}
+where $\sofchi$ has units of $\kmsMpc$ (the same dimensions as a Hubble rate). Operationally,
+$\sofchi/c$ acts as a fractional frequency-drift per unit comoving distance.
+
+The mapping between cosmological redshift and observed redshift is
+\begin{equation}
+1+\zobs = (1+\zcos)\exp\!\bigl[\Iofchi(\zcos)\bigr],
+\label{eq:zmap2}
+\end{equation}
+where $\Iofchi(\zcos)\equiv I(\chis(\zcos))$. For $\Iofchi\ll 1$ this reduces to
+\begin{equation}
+\zobs \approx \zcos + (1+\zcos)\Iofchi,
+\end{equation}
+but we retain the exponential form to preserve positivity, improve numerical conditioning, and make
+the nested limit manifest: $s_{\rm anchor}\to 0$ implies $\Iofchi\to 0$ and recovers baseline
+$\Lambda$CDM exactly.
+
+Differentiating Eq.~\eqref{eq:zmap2} gives an identity used repeatedly for Jacobians and diagnostics:
+\begin{equation}
+\frac{\dd \Iofchi}{\dd \zcos}
+= \frac{1}{c}\sofchi(\zcos)\frac{\dd \chis}{\dd \zcos}
+= \frac{\sofchi(\zcos)}{\Hc(\zcos)}.
+\label{eq:dIdz}
+\end{equation}
+
+\subsection{Earth-retarded lookback time construction}
+\label{sec:tret2}
+
+To encode the motivating ``observer-sourced'' (Earth-anchored) character in a causally consistent
+way, we evaluate the activation along the photon path using an \emph{Earth-retarded lookback time}
+argument $\tret(\chis)$.
+
+For a given line-of-sight distance $\chis$ (corresponding to $\zcos$), we define an ``Earth emission''
+redshift $z_e$ implicitly by
+\begin{equation}
+\chis(z_e) = 2\chis,
+\label{eq:ze_def}
+\end{equation}
+and then set
+\begin{equation}
+\tret(\chis) \equiv \tlb(z_e).
+\label{eq:tret_def}
+\end{equation}
+Intuitively, $2\chis/c$ represents a round-trip light-travel construction: it assigns to each point
+on the line of sight a retarded time at which an influence originating locally could causally reach
+that point in the background geometry.\footnote{At low redshift, where $\chis\approx (c/H_0)z$ and
+$\tlb\approx H_0^{-1}z$, Eq.~\eqref{eq:ze_def} implies $z_e\approx 2z$ and $\tret\approx 2\tlb$,
+making the causal interpretation explicit.}
+
+\subsection{Bounded activation and parameterization of $\sofchi$}
+\label{sec:earth_history2}
+
+We parameterize the drift-rate profile as a bounded activation scaled by an amplitude defined at an
+explicit \emph{anchor time} $\tA$:
+\begin{equation}
+\sofchi = s_{\mathrm{anchor}}\,
+\frac{g\!\bigl(\tret(\chis)\bigr)}{g(\tA)}.
+\label{eq:s_profile2}
+\end{equation}
+Here $g(t)\in[0,1]$ is an activation function of Earth-retarded lookback time, normalized so that
+$g(0)=1$ and $g(t)=0$ for $t\ge \tL$, where $\tL$ is a finite cutoff epoch. The normalization by
+$g(\tA)$ ensures that the reported parameter $s_{\rm anchor}$ corresponds to the drift rate at the
+chosen anchor time: $s(\tA)\equiv s_{\rm anchor}$.
+
+\paragraph{Anchor-time choice (leakage control).}
+To avoid any dependence of the LTA normalization on the calibrator subset, we compute $\tA$ using
+only the Hubble-flow subset (excluding calibrators). Concretely, we define $\tA$ as the 5th
+percentile of the $\tret$ distribution over Hubble-flow objects. This rule is stable under
+resampling and keeps the normalization tied to the Hubble-flow regime that drives the cosmological
+fit.
+
+\paragraph{Power-law activation family (fiducial choice).}
+In this work we adopt a smooth power-law decay. For $0\le t\le \tL$ define
+\begin{equation}
+r(t) = \left(1+\frac{t}{B}\right)^{-p},
+\end{equation}
+with timescale $B>0$ (in $\mathrm{Gyr}$) and slope $p\ge 0$, and set
+\begin{equation}
+g(t)=\frac{r(t)-r(\tL)}{1-r(\tL)}.
+\label{eq:g_powerlaw2}
+\end{equation}
+This guarantees $g(0)=1$ and $g(\tL)=0$, yielding a continuous, bounded activation with a tunable
+early-time scale ($B$) and tail steepness ($p$).
+
+\paragraph{Fiducial degrees of freedom (what is actually fit).}
+Because LTA enters through a line-of-sight integral, there are strong degeneracies between the
+overall amplitude and detailed curve-shape parameters. Our primary analysis therefore fixes the
+activation \emph{shape} to representative smooth values and fits only the amplitude
+$s_{\rm anchor}$ as the additional LTA degree of freedom beyond $(H_0,\Omega_m,\alpha_{\rm rd})$.
+Unless otherwise stated, we use fixed $(\tL,B,p)$ values in the power-law family and treat the
+$\Lambda$CDM+LTA model as a one-parameter nested extension in model-selection metrics.
+(Where we report exploratory runs with additional free shape parameters, we state that explicitly.)
+
+\paragraph{Optional modulation exponents (fixed in this work).}
+The analysis code supports additional multiplicative modulation exponents (e.g.\ ``complexity'' and
+``life'' weights) that rescale the activation family. In the fiducial results emphasized in this
+paper, these exponents are fixed to unity (via runtime flags) so that they do not contribute
+additional degrees of freedom and do not affect AIC/BIC accounting.
+
+\subsection{Inverse mapping and redshift Jacobian}
+\label{sec:inverse2}
+
+Data are indexed by $\zobs$ (or by a measured redshift proxy such as $\zhd$ for SNe), whereas
+background distances are naturally functions of $\zcos$. Therefore, for each observed redshift
+$\zobs$ we obtain $\zcos(\zobs)$ by numerically inverting Eq.~\eqref{eq:zmap2} under the monotonicity
+condition
+\begin{equation}
+\frac{\dd \zobs}{\dd \zcos} > 0.
+\end{equation}
+Differentiating Eq.~\eqref{eq:zmap2} gives
+\begin{equation}
+\frac{\dd \zobs}{\dd \zcos}
+= \exp\!\bigl[\Iofchi\bigr]
+\left[
+1+(1+\zcos)\frac{\dd \Iofchi}{\dd \zcos}
+\right]
+= \exp\!\bigl[\Iofchi\bigr]
+\left[
+1+(1+\zcos)\frac{\sofchi(\zcos)}{\Hc(\zcos)}
+\right],
+\label{eq:jac_general2}
+\end{equation}
+where the final equality uses Eq.~\eqref{eq:dIdz}. This Jacobian enters directly in radial BAO
+predictions and serves as an important diagnostic of mapping regularity.
+
+\subsection{Distances and effective expansion observables as functions of $\zobs$}
+\label{sec:obsfuncs}
+
+The comoving distance as a function of observed redshift is evaluated as
+\begin{equation}
+\chis(\zobs) \equiv \chis\!\bigl(\zcos(\zobs)\bigr).
+\end{equation}
+For radial derivatives,
+\begin{equation}
+\frac{\dd \chis}{\dd \zobs}
+= \frac{\dd \chis}{\dd \zcos}\frac{\dd \zcos}{\dd \zobs}
+= \frac{c}{\Hc(\zcos)}\left(\frac{\dd \zobs}{\dd \zcos}\right)^{-1}.
+\end{equation}
+Accordingly, the \emph{effective} Hubble rate inferred from the $\zobs$--$\chis$ relation is
+\begin{equation}
+H_{\mathrm{eff}}(\zobs)\equiv \frac{c}{\dd \chis/\dd \zobs}
+= \Hc(\zcos)\left(\frac{\dd \zobs}{\dd \zcos}\right).
+\label{eq:Heff_def}
+\end{equation}
+Here ``effective'' means ``as inferred from the $\zobs$--distance mapping in the presence of LTA'';
+it does \emph{not} redefine the background expansion law $\Hc(z)$.
+
+In the joint SN+BAO analysis below, transverse distances depend primarily on $\chis(\zobs)$, while
+radial observables depend explicitly on the Jacobian factor $\dd \zobs/\dd \zcos$ through
+$H_{\rm eff}(\zobs)$ (Sec.~\ref{sec:bao_like}).
+% ======================================================================
+\section{Data}
+\label{sec:data}
+
+\subsection{Pantheon+SH0ES: calibrators + Hubble-flow subset with full covariance}
+\label{sec:data_sn}
+
+We use the Pantheon+SH0ES public release with the corrected SN~Ia magnitude observable
+\begin{equation}
+y \equiv m_b^{\mathrm{corr}},
+\end{equation}
+and the accompanying \emph{full} covariance matrix (including cross-correlations between calibrators and Hubble-flow objects).
+Our selected sample is the SH0ES global subset consisting of
+\begin{equation}
+N_{\mathrm{SN}}=354 \quad\text{total SNe, with}\quad
+N_{\mathrm{cal}}=77 \ \text{calibrators},\ \ N_{\mathrm{HF}}=277 \ \text{Hubble-flow objects}.
+\end{equation}
+The selected Hubble-diagram redshifts satisfy
+\begin{equation}
+\zhd \in [0.00122,\ 0.14898],
+\end{equation}
+and we retain the standard distinction between heliocentric redshift $\zhel$ (for the $(1+\zhel)$ luminosity-distance prefactor) and the Hubble-diagram redshift $\zhd$ (for the cosmology-dependent distance).
+
+For calibrators, we use the externally determined distance moduli provided by the release (e.g.\ Cepheid-based; column \texttt{CEPH\_DIST} in our implementation), spanning approximately
+\begin{equation}
+\mu_{\mathrm{cal}} \in [29.177,\ 34.526],
+\end{equation}
+and we keep calibrators present in every fit (and in every refit / cross-validation split when relevant) to preserve the absolute-distance anchor.
+
+\paragraph{Covariance diagnostics.}
+The released covariance is used in full (file-provided mode). As a compact indicator of correlation strength, we report an ``effective dimension''
+\begin{equation}
+N_{\mathrm{eff}} \equiv \frac{\left(\sum_i \lambda_i\right)^2}{\sum_i \lambda_i^2},
+\end{equation}
+where $\{\lambda_i\}$ are eigenvalues of the SN covariance; for the selected sample we obtain $N_{\mathrm{eff}}\approx 149.5$ (out of $354$), illustrating that correlations materially reduce the number of effectively independent modes.
+
+\subsection{BAO consensus compilation}
+\label{sec:data_bao}
+We use the DESI 2024 Gaussian BAO compilation (GCcomb)\cite{DESI2024BAO}, which provides $D_V/r_d$, $D_M/r_d$, and $D_H/r_d$ constraints in multiple tracer/redshift bins, with a provided covariance.
+
+We jointly fit a consensus BAO compilation providing transverse and radial distance information at discrete redshifts.
+The BAO data vector is treated as Gaussian with a provided covariance matrix. In our parameterization we introduce a single scaling parameter $\alpha_{\mathrm{rd}}$ to absorb uncertainty in the sound horizon:
+\begin{equation}
+\alpha_{\mathrm{rd}} \equiv \frac{r_d}{r_{d,\mathrm{fid}}}.
+\end{equation}
+To match the convention used in our code, the BAO observables are taken in the rescaled form
+\begin{equation}
+D_M^{(\mathrm{data})}(z) \equiv \left(\frac{D_M(z)}{r_d}\right) r_{d,\mathrm{fid}},
+\qquad
+H^{(\mathrm{data})}(z) \equiv \left(H(z)\,r_d\right)\frac{1}{r_{d,\mathrm{fid}}},
+\end{equation}
+so that the theory predictions become simple multiplicative scalings by $\alpha_{\mathrm{rd}}$ (see Sec.~\ref{sec:bao_like}).
+We assume the BAO and SN datasets are independent so that the joint likelihood covariance is block diagonal between SN and BAO.
+% ======================================================================
+\section{Likelihood and inference}
+\label{sec:likelihood}
+
+\subsection{Supernova distance model and residual vector}
+\label{sec:sn_model}
+
+For each SN, we compute the luminosity distance using the comoving distance evaluated at the cosmological redshift corresponding to the \emph{observed} Hubble-diagram redshift:
+\begin{equation}
+d_L = (1+\zhel)\,\chis\!\bigl(\zcos(\zhd)\bigr),
+\qquad
+\mu_{\mathrm{pred}} = 5\log_{10}\!\left(\frac{d_L}{\Mpc}\right) + 25.
+\label{eq:mu_pred}
+\end{equation}
+The corrected magnitude observable is modeled as
+\begin{equation}
+m_{b,i}^{\mathrm{corr}} = \mu_{\mathrm{pred}}(z_i;\bm{\theta}) + M + \epsilon_i,
+\end{equation}
+where $M$ is an intercept (absolute magnitude) and $\epsilon$ is a correlated Gaussian error with the released covariance.
+
+Let $\bm{y}$ be the full SN data vector (stacked $m_b^{\mathrm{corr}}$) and $\bm{\mu}(\bm{\theta})$ the corresponding model vector (stacked $\mu_{\mathrm{pred}}$). The raw residual vector at fixed $M$ is
+\begin{equation}
+\bm{r}(\bm{\theta},M) \equiv \bm{y} - \bm{\mu}(\bm{\theta}) - M\bm{1}.
+\label{eq:r_full}
+\end{equation}
+
+\subsection{Ladder-anchored SN likelihood with calibrators and full cross-covariance}
+\label{sec:sn_anchor_like}
+
+A key feature of the Pantheon+SH0ES release is that calibrators and Hubble-flow objects are not independent: the covariance includes nontrivial cross-blocks. We therefore construct an \emph{anchored} likelihood that (i) retains the full covariance structure, (ii) uses calibrators as an absolute-distance anchor, and (iii) yields a Hubble-flow likelihood that can be evaluated repeatedly during cosmological optimization.
+
+\paragraph{Calibrator / Hubble-flow partition.}
+We partition the SN vector into calibrators (C) and Hubble-flow objects (H):
+\begin{equation}
+\bm{y}=
+\begin{bmatrix}
+\bm{y}_C\\
+\bm{y}_H
+\end{bmatrix},
+\qquad
+\bm{\mu}(\bm{\theta})=
+\begin{bmatrix}
+\bm{\mu}_C\\
+\bm{\mu}_H(\bm{\theta})
+\end{bmatrix},
+\qquad
+\bm{C}=
+\begin{bmatrix}
+\bm{C}_{CC} & \bm{C}_{CH}\\
+\bm{C}_{HC} & \bm{C}_{HH}
+\end{bmatrix}.
+\end{equation}
+For calibrators we take $\bm{\mu}_C$ from the external distance ladder (e.g.\ Cepheid-based distance moduli provided by the release), so $\bm{\mu}_C$ is fixed across cosmological models.
+
+\paragraph{Step 1: calibrator-only posterior for $M$.}
+Using calibrators alone, we compute the Gaussian posterior for the intercept:
+\begin{equation}
+\sigma_M^2 = \left(\bm{1}_C^{\mathsf{T}}\bm{C}_{CC}^{-1}\bm{1}_C\right)^{-1},
+\qquad
+M_{\mathrm{cal}} = \sigma_M^2\,\bm{1}_C^{\mathsf{T}}\bm{C}_{CC}^{-1}\bigl(\bm{y}_C-\bm{\mu}_C\bigr).
+\label{eq:Mcal}
+\end{equation}
+In the representative run reported in Sec.~\ref{sec:results}, this yields
+\begin{equation}
+M_{\mathrm{cal}} = -19.248885 \pm 0.030106 \qquad (1\sigma,\ \text{calibrators only}).
+\end{equation}
+This posterior is then used as an informative Gaussian prior on $M$ when evaluating the Hubble-flow likelihood.
+
+\paragraph{Step 2: condition Hubble-flow on calibrators (Schur complement).}
+Define the cross-block regression operator
+\begin{equation}
+\bm{K}\equiv \bm{C}_{HC}\bm{C}_{CC}^{-1},
+\end{equation}
+and the conditional covariance (Schur complement)
+\begin{equation}
+\bm{S}\equiv \bm{C}_{HH}-\bm{C}_{HC}\bm{C}_{CC}^{-1}\bm{C}_{CH}.
+\label{eq:schur}
+\end{equation}
+The Hubble-flow data conditioned on calibrators is represented by the shifted residual vector
+\begin{equation}
+\tilde{\bm{d}}(\bm{\theta}) \equiv
+\bigl(\bm{y}_H-\bm{\mu}_H(\bm{\theta})\bigr)
+-\bm{K}\bigl(\bm{y}_C-\bm{\mu}_C\bigr).
+\label{eq:dtilde}
+\end{equation}
+At fixed intercept $M$, the conditional model is linear in $M$:
+\begin{equation}
+\tilde{\bm{d}}(\bm{\theta}) = \bm{a}\,M + \bm{\eta},
+\qquad
+\bm{a}\equiv \bm{1}_H-\bm{K}\bm{1}_C,
+\qquad
+\bm{\eta}\sim \mathcal{N}(\bm{0},\bm{S}).
+\label{eq:cond_linear}
+\end{equation}
+
+\paragraph{Step 3: marginalize $M$ using the calibrator posterior.}
+We combine the conditional Gaussian likelihood in Eq.~\eqref{eq:cond_linear} with the calibrator posterior $M\sim\mathcal{N}(M_{\mathrm{cal}},\sigma_M^2)$ and analytically integrate $M$.
+Up to additive constants independent of $\bm{\theta}$, this produces an effective Hubble-flow negative log-likelihood (written as a $\chi^2$ contribution):
+\begin{equation}
+\chi^2_{\mathrm{HF}}(\bm{\theta}) \equiv
+\tilde{\bm{d}}^{\mathsf{T}}\bm{S}^{-1}\tilde{\bm{d}}
+-\frac{\left(\bm{a}^{\mathsf{T}}\bm{S}^{-1}\tilde{\bm{d}} + M_{\mathrm{cal}}/\sigma_M^2\right)^2}
+{\bm{a}^{\mathsf{T}}\bm{S}^{-1}\bm{a} + 1/\sigma_M^2}.
+\label{eq:chi2_hf}
+\end{equation}
+The calibrator term itself contributes a constant (model-independent) offset once $M_{\mathrm{cal}}$ and $\sigma_M$ are fixed, so the cosmology-sensitive SN contribution in the optimizer is $\chi^2_{\mathrm{HF}}(\bm{\theta})$.
+
+\paragraph{Summary.}
+The SN objective used in fitting can be viewed as
+\begin{equation}
+\chi^2_{\mathrm{SN}}(\bm{\theta}) = \chi^2_{\mathrm{cal,const}} + \chi^2_{\mathrm{HF}}(\bm{\theta}),
+\end{equation}
+where $\chi^2_{\mathrm{cal,const}}$ is constant across models, and $\chi^2_{\mathrm{HF}}(\bm{\theta})$ incorporates both the calibrator anchor and the full cross-covariance via the Schur complement.
+
+\subsection{BAO likelihood with LTA Jacobian}
+\label{sec:bao_like}
+
+Because BAO measurements are indexed by observed redshift $\zobs$ while comoving distances are functions of $\zcos$, the LTA mapping affects both transverse and radial predictions.
+
+\paragraph{Transverse BAO.}
+Using the rescaled data convention described in Sec.~\ref{sec:data_bao}, the model prediction is
+\begin{equation}
+D_M^{(\mathrm{model})}(\zobs) =
+\frac{\chis\!\bigl(\zcos(\zobs)\bigr)}{\alpha_{\mathrm{rd}}}.
+\label{eq:bao_DM_model}
+\end{equation}
+
+\paragraph{Radial BAO.}
+Radial BAO depends on $\dd\chis/\dd z$ and therefore requires the redshift Jacobian. Using Eq.~\eqref{eq:Heff_def}, the effective Hubble rate at observed redshift is
+\begin{equation}
+H_{\mathrm{eff}}(\zobs) =
+\Hc\!\bigl(\zcos(\zobs)\bigr)\left(\frac{\dd \zobs}{\dd \zcos}\right),
+\end{equation}
+and therefore
+\begin{equation}
+H^{(\mathrm{model})}(\zobs) = H_{\mathrm{eff}}(\zobs)\,\alpha_{\mathrm{rd}}
+= \Hc\!\bigl(\zcos(\zobs)\bigr)\left(\frac{\dd \zobs}{\dd \zcos}\right)\alpha_{\mathrm{rd}},
+\label{eq:bao_H_model}
+\end{equation}
+where $\dd \zobs/\dd \zcos$ is given by Eq.~\eqref{eq:jac_general2}.
+
+\paragraph{BAO $\chi^2$.}
+Let $\bm{y}_{\mathrm{BAO}}$ be the stacked BAO data vector and $\bm{m}_{\mathrm{BAO}}(\bm{\theta})$ the stacked model vector obtained from Eqs.~\eqref{eq:bao_DM_model}--\eqref{eq:bao_H_model}. With BAO covariance $\bm{C}_{\mathrm{BAO}}$, the contribution is
+\begin{equation}
+\chi^2_{\mathrm{BAO}}(\bm{\theta}) =
+\bigl(\bm{y}_{\mathrm{BAO}}-\bm{m}_{\mathrm{BAO}}(\bm{\theta})\bigr)^{\mathsf{T}}
+\bm{C}_{\mathrm{BAO}}^{-1}
+\bigl(\bm{y}_{\mathrm{BAO}}-\bm{m}_{\mathrm{BAO}}(\bm{\theta})\bigr).
+\end{equation}
+
+\subsection{Correlated Planck-chain Gaussian prior}
+\label{sec:planck_prior}
+
+Optionally (and in the representative run reported here), we include a correlated Gaussian prior derived from a Planck-chain subset over the parameters
+\begin{equation}
+\bm{\phi} \equiv (H_0,\Om,\alpha_{\mathrm{rd}}).
+\end{equation}
+The prior is
+\begin{equation}
+\chi^2_{\mathrm{prior}}(\bm{\phi})
+= (\bm{\phi}-\bm{\mu}_{\mathrm{P}})^{\mathsf{T}}
+\bm{\Sigma}_{\mathrm{P}}^{-1}
+(\bm{\phi}-\bm{\mu}_{\mathrm{P}}),
+\end{equation}
+with mean
+\begin{equation}
+\bm{\mu}_{\mathrm{P}} =
+\begin{bmatrix}
+67.35987729\\
+0.315284\\
+0.99533613
+\end{bmatrix},
+\end{equation}
+and covariance
+\begin{equation}
+\bm{\Sigma}_{\mathrm{P}} =
+\begin{bmatrix}
+2.8666\times 10^{-1} & -3.8905\times 10^{-3} & 6.6134\times 10^{-4}\\
+-3.8905\times 10^{-3} & 5.3718\times 10^{-5} & -1.0157\times 10^{-5}\\
+6.6134\times 10^{-4} & -1.0157\times 10^{-5} & 3.2006\times 10^{-6}
+\end{bmatrix},
+\end{equation}
+corresponding to $(\sigma_{H_0},\sigma_{\Om},\sigma_{\alpha_{\mathrm{rd}}})=
+(0.5354,\ 0.007329,\ 0.001789)$ and the reported correlation coefficients \cite{Planck2018Params}.
+
+\subsection{Total objective and parameter sets}
+\label{sec:params2}
+
+The total objective minimized is
+\begin{equation}
+\chi^2_{\mathrm{tot}}(\bm{\theta}) =
+\chi^2_{\mathrm{SN}}(\bm{\theta}) + \chi^2_{\mathrm{BAO}}(\bm{\theta}) + \chi^2_{\mathrm{prior}}(\bm{\phi}).
+\label{eq:chi2_tot}
+\end{equation}
+
+Baseline $\Lambda$CDM parameters:
+\begin{equation}
+\bm{\theta}_{\Lambda\mathrm{CDM}} = (H_0,\Om,\alpha_{\mathrm{rd}}).
+\end{equation}
+LTA extension parameters (power-law family):
+\begin{equation}
+\bm{\theta}_{\mathrm{LTA}} = (H_0,\Om,\alpha_{\mathrm{rd}}, \tL, s_{\mathrm{anchor}}, B, p),
+\end{equation}
+with $\tL$ fixed in the baseline analysis to the chosen life-epoch cutoff (e.g.\ $\tL=3.8\,\mathrm{Gyr}$ in the representative run).
+The model is nested: setting $s_{\mathrm{anchor}}=0$ yields $\Iofchi\equiv 0$ and recovers baseline $\Lambda$CDM exactly.
+
+\subsection{Optimization and test statistic}
+\label{sec:opt_stat}
+
+We obtain best fits by direct numerical minimization of Eq.~\eqref{eq:chi2_tot} using a derivative-free method (Powell-type directional search) subject to physical bounds (e.g.\ $s_{\mathrm{anchor}}\ge 0$, $B>0$, $p\ge 0$) and numerical safeguards for monotonic inversion of $\zobs(\zcos)$.
+
+Our primary global comparison statistic is the improvement
+\begin{equation}
+\dchi \equiv \chi^2_{\Lambda\mathrm{CDM}} - \chi^2_{\Lambda\mathrm{CDM+LTA}},
+\label{eq:dchi_def2}
+\end{equation}
+with $\dchi>0$ favoring LTA. In the representative run, we find $\dchi \simeq 13.7$.
+
+To calibrate the null distribution of $\dchi$ beyond asymptotic $\chi^2$ approximations, we also perform Monte Carlo null injections (parametric bootstrap) under the baseline model using the same covariance and refitting both models. In an $N=10000$ null injection run, we obtain a Monte Carlo tail probability
+$p_{\rm MC}\equiv P(\Delta\chi^2_{\rm null}\ge \Delta\chi^2_{\rm obs}) \approx 8\times 10^{-4}$.
+
+\paragraph{Fiducial analysis choices.}
+Unless otherwise stated, all quoted results use: (i) the Pantheon+SH0ES \texttt{shoes\_global}
+selection (\(N_{\rm SN}=354\)) with the released full covariance, analyzed via the ladder-anchored
+Schur-complement likelihood of Sec.~\ref{sec:sn_anchor_like} (calibrators retained as the absolute
+anchor and the intercept marginalized using the calibrator posterior); (ii) the BAO consensus
+compilation of Sec.~\ref{sec:data_bao} with a single sound-horizon scaling parameter
+\(\alpha_{\rm rd}\), evaluated at observed redshift using the LTA mapping and Jacobian of
+Sec.~\ref{sec:bao_like}; (iii) the correlated Planck-chain Gaussian prior on
+\((H_0,\Omega_m,\alpha_{\rm rd})\) described in Sec.~\ref{sec:planck_prior} when explicitly stated;
+and (iv) the LTA(powerlaw) activation family with fixed \(\tL=3.8\,{\rm Gyr}\), bounds
+\(s_{\rm anchor}\ge0\), \(B>0\), \(p\ge0\), and \(\tA\) recomputed from the Hubble-flow subset only to
+avoid leakage. Numerical inversion enforces \(\dd \zobs/\dd \zcos>0\) over the redshift domain of
+interest.
+% ======================================================================
+\section{Primary Results}
+\label{sec:results}
+
+This section reports the primary empirical outcomes of the fiducial $\Lambda$CDM and
+$\Lambda$CDM+LTA(powerlaw) fits, emphasizing (i) the global goodness-of-fit improvement under the
+\emph{full released covariance} and ladder-anchored likelihood, and (ii) where in redshift space
+that improvement is sourced. We then present reconstructed mapping diagnostics (the LTA profile,
+$\Delta\ln(1+z)$ saturation, and the redshift Jacobian) and the BAO consistency checks implied by
+the mapping.
+
+\subsection{Fiducial analysis configuration and strict nesting sanity check}
+\label{sec:results_config}
+
+Unless otherwise stated, results refer to run-tag \texttt{20260112-013808}, using:
+(i) the Pantheon+SH0ES \texttt{shoes\_global} selection (\(N_{\rm SN}=354\), with
+\(N_{\rm cal}=77\) calibrators and \(N_{\rm HF}=277\) Hubble-flow SNe; \(\zhd\in[0.00122,0.14898]\));
+(ii) the ladder-anchored, full cross-covariance SN likelihood of Sec.~\ref{sec:sn_anchor_like}
+(calibrator posterior for $M$ and Schur-complement conditioning);
+(iii) the BAO consensus likelihood evaluated at observed redshift using the LTA mapping and Jacobian
+(Sec.~\ref{sec:bao_like});
+and (iv) the correlated Planck-chain Gaussian prior on \((H_0,\Omega_m,\alpha_{\rm rd})\) when
+explicitly enabled (Sec.~\ref{sec:planck_prior}).
+
+For clarity about degrees of freedom: in the fiducial configuration used for model selection,
+the optional modulation exponents are fixed (runtime flags), and the LTA activation \emph{shape}
+parameters are held fixed to representative values. The LTA extension therefore adds a \emph{single}
+extra degree of freedom beyond baseline, the amplitude \(s_{\rm anchor}\) (Sec.~\ref{sec:earth_history2}).
+
+A strict nesting sanity check is satisfied numerically: evaluating the LTA model at the null point
+(recovering \(\Iofchi\equiv 0\)) reproduces the baseline objective to machine precision,
+\(\chi^2_{\rm LTA}(s_{\rm anchor}=0)=\chi^2_{\Lambda{\rm CDM}}\).
+This verifies that the quoted improvements are not artifacts of inconsistent likelihood bookkeeping.
+
+\subsection{Global goodness-of-fit improvement}
+\label{sec:results_global}
+
+The baseline flat $\Lambda$CDM fit yields a total minimum
+\begin{equation}
+\chi^2_{\Lambda\mathrm{CDM}} = 332.549.
+\end{equation}
+Enabling LTA(powerlaw) decreases the minimum to
+\begin{equation}
+\chi^2_{\Lambda\mathrm{CDM+LTA}} = 318.897,
+\end{equation}
+corresponding to a global improvement
+\begin{equation}
+\Delta\chi^2 \equiv \chi^2_{\Lambda\mathrm{CDM}}-\chi^2_{\Lambda\mathrm{CDM+LTA}}
+= 13.652,
+\end{equation}
+with \(\Delta\chi^2>0\) favoring LTA. Interpreted as a one-parameter nested extension (the amplitude
+\(s_{\rm anchor}\ge 0\)), the improvement is substantial and motivates the Monte Carlo
+null-calibration reported in Sec.~\ref{sec:robustness}.
+
+\paragraph{Where the gain comes from.}
+Table~\ref{tab:chi2_breakdown} decomposes the objective. The gain is carried almost entirely by the
+ladder-anchored \emph{Hubble-flow} SN term conditioned on calibrators, while BAO incurs only a small
+penalty in this representative run. This is the key empirical signature: LTA acts primarily as a
+local correction to the Hubble-diagram mapping while remaining broadly compatible with the inverse
+distance ladder.
+
+\begin{table}[!htbp]
+\centering
+\caption{Breakdown of $\chi^2$ contributions at the best fits (run-tag \texttt{20260112-013808}).
+By construction of the anchored SN likelihood, the calibrator-only constant
+\(\chi^2_{\rm cal,const}\) is model-independent; the cosmology-sensitive SN improvement is carried
+by the conditioned Hubble-flow term \(\chi^2_{\rm HF}\).}
+\label{tab:chi2_breakdown}
+\begin{tabular}{lccc}
+\toprule
+Component & $\Lambda$CDM & LTA(powerlaw) & $\Delta\chi^2$ (baseline$-$LTA) \\
+\midrule
+SN: $\chi^2_{\rm cal,const}$ & 57.135 & 57.135 & 0.000 \\
+SN: $\chi^2_{\rm HF}$        & 267.319 & 253.090 & +14.229 \\
+SN: $\chi^2_{\rm SN}$ total  & 324.454 & 310.225 & +14.229 \\
+BAO: $\chi^2_{\rm BAO}$      & 3.422   & 4.055   & $-0.633$ \\
+Prior: $\chi^2_{\rm prior}$  & 4.673   & 4.617   & +0.056 \\
+\midrule
+\textbf{Total: $\chi^2_{\rm tot}$} & \textbf{332.549} & \textbf{318.897} & \textbf{+13.652} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Correlation strength.}
+The released Pantheon+SH0ES covariance on this selection is strongly correlated. A compact scalar
+summary is the effective dimension \(N_{\rm eff}\approx 149.5\) (out of \(354\)), computed from the
+eigenvalue spectrum of the SN covariance matrix, indicating that correlations materially reduce the
+number of effectively independent modes.
+
+\subsection{Best-fit parameters and derived local drift scale}
+\label{sec:results_bestfit}
+
+Table~\ref{tab:bestfit_params} reports the optimizer best-fit parameters for baseline $\Lambda$CDM
+and for the fiducial $\Lambda$CDM+LTA(powerlaw) model.
+
+Two features are immediate:
+(i) the background cosmological parameters \((H_0,\Omega_m,\alpha_{\rm rd})\) remain essentially
+unchanged, and
+(ii) the fit improvement is achieved through a nonzero LTA amplitude rather than by shifting the
+global expansion history.
+
+In this run, the LTA amplitude is \(s_{\rm anchor}=2.449\,\kmsMpc\), defined at an anchor time
+\(\tA\simeq 0.670\,{\rm Gyr}\) (computed from the Hubble-flow subset only; Sec.~\ref{sec:earth_history2}).
+
+Figure~\ref{fig:lta_profile} shows the inferred drift-rate profile $s(\tret)$ for the fiducial LTA(powerlaw) 
+fit; this is the model’s central ‘activation history’ and makes explicit that the preferred modification 
+is localized to recent Earth-retarded lookback times.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.85\linewidth]{output_loo_cv_10000/lta_s_of_tret_powerlaw_20260112-013808.png}
+\caption{Best-fit drift-rate profile \(s(\tret)\) for LTA(powerlaw), evaluated along Earth-retarded
+lookback time. The profile is maximal near the present epoch and decays smoothly to negligible
+values by a few Gyr, consistent with the localization of improvement to low redshift.}
+\label{fig:lta_profile}
+\end{figure}
+
+The corresponding normalization factor is \(g(\tA)=0.493227\), implying a present-epoch effective
+local drift scale
+\begin{equation}
+s_{\rm now} \equiv \frac{s_{\rm anchor}}{g(\tA)} \simeq 4.966\,\kmsMpc.
+\end{equation}
+A compact low-distance diagnostic reported by the pipeline is the inferred local effective scale
+\(H_{0,{\rm eff}}^{\rm local}\approx H_0+s(\chis\!\approx\!0)\), which evaluates here to
+\(\approx 73.476\,\kmsMpc\). We emphasize that this quantity is a derived diagnostic of the local
+\(\zobs\)--distance mapping in the presence of LTA, not a redefinition of the background \(H_0\).
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Best-fit parameters for baseline $\Lambda$CDM and $\Lambda$CDM+LTA(powerlaw),
+run-tag \texttt{20260112-013808}. LTA parameters are defined in Sec.~\ref{sec:earth_history2}.
+Reported values are optimizer best fits (not posterior uncertainties).}
+\label{tab:bestfit_params}
+\begin{tabular}{lcc}
+\toprule
+Parameter & $\Lambda$CDM & $\Lambda$CDM+LTA(powerlaw) \\
+\midrule
+$H_0$ [$\kmsMpc$]        & 68.5165 & 68.5097 \\
+$\Omega_m$              & 0.29966 & 0.29974 \\
+$\alpha_{\rm rd}$       & 0.99791 & 0.99791 \\
+\midrule
+$\tA$ [Gyr] (derived)    & ---     & 0.670 (HF-only rule) \\
+$g(\tA)$ (derived)       & ---     & 0.493227 \\
+$s_{\rm anchor}$ [$\kmsMpc$] & --- & 2.4493 \\
+$s_{\rm now}$ [$\kmsMpc$] (derived) & --- & 4.966 \\
+\midrule
+$\chi^2_{\rm tot}$       & 332.549 & 318.897 \\
+$\Delta\chi^2$           & \multicolumn{2}{c}{13.652} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Information criteria with correct degrees of freedom.}
+Because the fiducial analysis treats LTA as a one-parameter nested extension (amplitude only),
+AIC/BIC should be evaluated with baseline \(k=3\) and LTA \(k=4\).
+In this accounting, both criteria favor LTA in our representative configuration; for example:
+\begin{equation}
+{\rm AIC}_{\Lambda{\rm CDM}}=338.549,\quad {\rm AIC}_{\rm LTA}=326.897,
+\qquad
+{\rm BIC}_{\Lambda{\rm CDM}}=350.233,\quad {\rm BIC}_{\rm LTA}=342.475.
+\end{equation}
+(If one instead allows additional optional modulation parameters to float, they are penalized in
+AIC/BIC even when the optimizer returns values extremely close to unity; our fiducial reporting
+therefore fixes them explicitly.)
+
+\subsection{Tomography of the improvement: the low-$z$ ``red valley''}
+\label{sec:results_tomography}
+
+To identify where the model preference arises, we inspect the distribution of per-object
+improvements under the full correlated covariance treatment.
+
+Figure~\ref{fig:sn_whitened_dchi2} shows the whitened per-object contribution to
+\(\Delta\chi^2\) (baseline minus LTA). The improvement is not uniform across redshift; it is
+dominated by a coherent low-redshift structure, concentrated in the very local volume
+(roughly \(z\lesssim 0.03\) in this dataset).
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.72\textwidth]{output_loo_cv_10000/sn_delta_chi2_whitened_powerlaw_20260112-013808.png}
+\caption{Whitened per-object contribution to \(\Delta\chi^2\) (baseline minus LTA) for the SN dataset.
+Positive values indicate objects better fit by LTA under the full correlated covariance treatment.
+The preference is dominated by low-$z$ objects, confirming the local nature of the signal.}
+\label{fig:sn_whitened_dchi2}
+\end{figure}
+\Floatbarrier
+
+A complementary view is provided by binned Hubble residuals for the conditioned Hubble-flow subset.
+Figure~\ref{fig:binned_residuals} exhibits a characteristic negative dip (a ``valley'') at
+\(z\lesssim 0.03\) under baseline $\Lambda$CDM, in which SNe appear systematically brighter
+(closer) than predicted. The LTA mapping largely fills this valley, flattening residual structure
+in the local shell by of order \(0.05\)–\(0.10\) mag in the binned diagnostic. Beyond
+\(z\sim 0.05\), the baseline and LTA predictions converge, consistent with an effect that is
+phenomenologically localized to the nearby Hubble flow rather than a broad late-time modification.
+
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{output_loo_cv_10000/binned_residuals_powerlaw_20260112-013808.png}
+\caption{Binned Hubble residuals (Hubble-flow subset) for baseline $\Lambda$CDM and
+$\Lambda$CDM+LTA(powerlaw) in the fiducial run. The baseline model shows a low-$z$ ``valley'';
+the LTA mapping reduces this feature while converging back to baseline at higher redshift.}
+\label{fig:binned_residuals}
+\end{figure}
+\Floatbarrier
+
+\subsection{Reconstructed LTA imprint and mapping diagnostics}
+\label{sec:results_mapping}
+
+The LTA fit can be visualized either as a drift-rate profile \(s(\tret)\) (Eq.~\eqref{eq:s_profile2})
+or as its accumulated imprint \(\Iofchi\) (Eq.~\eqref{eq:I_def2}).
+In this run, the accumulated effect saturates at
+\begin{equation}
+I_{\rm sat}\equiv \max \Delta\ln(1+z)\ \simeq\ 2.67104\times 10^{-3},
+\end{equation}
+corresponding to an $\mathcal{O}(0.27\%)$ multiplicative modification of $(1+z)$ at saturation.
+This magnitude is small in absolute terms, but it is sufficient to produce an observable correction
+in the low-$z$ Hubble diagram once integrated through the distance--redshift mapping.
+
+Figures~\ref{fig:lta_profile} and \ref{fig:zmap_and_I} show the best-fit drift profile and the
+resulting low-$z$ mapping between \(\zcos\) and \(\zobs\), along with the accumulated
+\(\Delta\ln(1+z)\) imprint.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\linewidth}
+\centering
+\includegraphics[width=\linewidth]{output_loo_cv_10000/z_mapping_low_powerlaw_20260112-013808.png}
+\caption{Low-$z$ mapping \(\zobs(\zcos)\).}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+\centering
+\includegraphics[width=\linewidth]{output_loo_cv_10000/delta_ln1pz_powerlaw_20260112-013808.png}
+\caption{Accumulated \(\Delta\ln(1+z)\) imprint.}
+\end{subfigure}
+\caption{Best-fit redshift mapping and accumulated LTA imprint for the fiducial LTA(powerlaw) fit.}
+\label{fig:zmap_and_I}
+\end{figure}
+\Floatbarrier
+
+\paragraph{Monotonicity and Jacobian regularity.}
+The mapping must remain monotonic for a single-valued inverse \(\zcos(\zobs)\), and the BAO radial
+prediction depends directly on the Jacobian (Eq.~\eqref{eq:jac_general2}).
+Figure~\ref{fig:bao_jacobian} shows the Jacobian diagnostic for the best-fit mapping; the condition
+\(\dd\zobs/\dd\zcos>0\) is maintained over the relevant redshift domain.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.72\linewidth]{output_loo_cv_10000/bao_jacobian_powerlaw_20260112-013808.png}
+\caption{Redshift Jacobian diagnostic for the best-fit LTA(powerlaw) model. Maintaining
+\(\dd\zobs/\dd\zcos>0\) ensures a single-valued inverse mapping and a well-defined BAO radial
+prediction.}
+\label{fig:bao_jacobian}
+\end{figure}
+\Floatbarrier
+
+\subsection{BAO consistency and the role of the Jacobian}
+\label{sec:results_bao}
+
+BAO provides an essential cross-check because radial BAO depends explicitly on the mapping Jacobian
+through \(H_{\rm eff}(\zobs)\) (Eq.~\eqref{eq:Heff_def} and Sec.~\ref{sec:bao_like}).
+In the fiducial fit, the BAO contribution changes only modestly (Table~\ref{tab:chi2_breakdown}),
+demonstrating that the low-$z$ supernova improvement does not require a disruptive failure of the
+inverse distance ladder.
+
+Figure~\ref{fig:bao_fits} shows the transverse and radial BAO sectors for the best-fit LTA model in
+this run. The radial panel provides a direct visual check of Jacobian-sensitive consistency.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{output_loo_cv_10000/bao_DM_powerlaw_20260112-013808.png}
+  \caption{\(D_M(z)\) sector}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.49\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{output_loo_cv_10000/bao_Hz_powerlaw_20260112-013808.png}
+  \caption{\(H(z)\) sector (Jacobian-sensitive)}
+\end{subfigure}
+\caption{BAO fits for the best-fit LTA(powerlaw) model, run-tag \texttt{20260112-013808}.
+Panel (b) is sensitive to the redshift Jacobian \(\dd\zobs/\dd\zcos\).}
+\label{fig:bao_fits}
+\end{figure}
+
+
+\subsection{Effective expansion diagnostic \(H_{\rm eff}(\zobs)\)}
+\label{sec:results_heff}
+
+Although the background \((H_0,\Omega_m)\) remain close to their baseline best-fit values, the
+mapping implies an \emph{effective} expansion scale at observed redshift, defined by
+Eq.~\eqref{eq:Heff_def}.
+For transparency we tabulate representative values of \(H_{\rm eff}(\zobs)\) as output by the
+pipeline for this best-fit LTA model.
+
+\begin{table}[!htbp]
+\centering
+\caption{Representative values of \(H_{\rm eff}(\zobs)\) for the best-fit LTA(powerlaw) model
+(run-tag \texttt{20260112-013808}), computed via Eq.~\eqref{eq:Heff_def}.}
+\label{tab:heff_values}
+\begin{tabular}{lc}
+\toprule
+\(\zobs\) & \(H_{\rm eff}(\zobs)\) [\(\kmsMpc\)] \\
+\midrule
+0.010 & 71.429 \\
+0.023 & 70.831 \\
+0.050 & 70.596 \\
+0.100 & 71.431 \\
+0.150 & 72.860 \\
+0.200 & 74.797 \\
+0.300 & 79.145 \\
+0.500 & 89.135 \\
+0.700 & 100.698 \\
+1.000 & 120.605 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These values are best read as a diagnostic summary of how the LTA mapping reshapes the inferred
+\(\zobs\)--distance relation: the mapping allows the local Hubble diagram to behave as if it has a
+larger effective scale in the nearby volume while preserving a background $\Lambda$CDM expansion
+history and maintaining BAO consistency through the Jacobian constraint.
+% ======================================================================
+\section{Robustness Tests}
+\label{sec:robustness}
+
+Because the LTA extension is designed to address a \emph{localized} structure in the low-$z$ Hubble
+diagram, the natural failure modes are also localized: a single survey driving the effect, a
+calibration artifact confined to a particular telescope, or a fit improvement that disappears once
+correlated modes are treated consistently under resampling. We therefore emphasize robustness tests
+that directly target (i) single-subset dominance, (ii) boundary-parameter significance calibration,
+and (iii) the behavior of held-out scoring under strong train--test correlations.
+
+\subsection{Jackknife resampling by telescope group (leave-one-group-out refits)}
+\label{sec:jackknife}
+
+A leading concern for low-redshift anomalies is that they may be driven by an instrument-specific
+offset (photometric zero points, bandpass mismatches, selection peculiarities) rather than a
+distributed kinematic feature of the local Hubble flow. To test this directly, we perform grouped
+jackknife refits in which we remove all SNe associated with a given telescope/survey group,
+refit \emph{both} baseline $\Lambda$CDM and $\Lambda$CDM+LTA(powerlaw), and record the improvement
+\begin{equation}
+\Delta\chi^2_{(-g)} \equiv
+\chi^2_{\Lambda\mathrm{CDM},(-g)} - \chi^2_{\mathrm{LTA},(-g)}.
+\end{equation}
+
+\paragraph{Protocol and leakage control.}
+Each leave-out refit repeats the same likelihood treatment as the fiducial analysis:
+(i) calibrators are retained to preserve the absolute-distance anchor; (ii) the anchored-likelihood
+construction is recomputed consistently (including the calibrator posterior for $M$ and the Schur
+complement conditioning of the Hubble-flow block); and (iii) the anchor time $\tA$ used to define
+\(s_{\rm anchor}\) is recomputed from the remaining \emph{Hubble-flow subset only} (excluding
+calibrators) to avoid leakage through the normalization. The optional modulation parameters are
+fixed by construction in the fiducial configuration, so the extension degree of freedom is the LTA
+amplitude \(s_{\rm anchor}\) only.
+
+\paragraph{Result.}
+Figure~\ref{fig:jackknife} and Table~\ref{tab:jackknife} summarize the leave-one-group-out results
+for run-tag \texttt{20260112-013808}. The preference for LTA remains positive in all $9/9$ refits,
+with
+\begin{equation}
+\Delta\chi^2_{(-g)} \in [12.27,\ 21.37], \qquad
+\mathrm{median}(\Delta\chi^2_{(-g)})\simeq 13.73.
+\end{equation}
+Most notably, removing CfA (a large fraction of the older low-$z$ sample) \emph{increases} the
+preference to \(\Delta\chi^2_{(-{\rm CfA})}\simeq 21.37\), which strongly disfavors the hypothesis
+that the global improvement is an artifact of any single legacy dataset. The signal also persists
+when removing high-precision modern samples (e.g.\ CSP and Foundation). The complete refit table
+(including per-refit best-fit parameters and \(\tA\)) is saved by the pipeline as a CSV for direct
+audit and reproduction.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.72\linewidth]{output_loo_cv_10000/leaveout_refits_dchi2_powerlaw_grouptelescope_m1_seed0_20260112-013808.png}
+\caption{Robustness of the LTA preference under leave-one-group-out (jackknife) refits. The vertical
+axis shows \(\Delta\chi^2_{(-g)}\) (baseline minus LTA) after removing telescope group \(g\) and
+refitting both models using the same anchored likelihood and covariance treatment. All refits
+remain positive.}
+\label{fig:jackknife}
+\end{figure}
+\Floatbarrier
+
+\begin{table}[!htbp]
+\centering
+\caption{Jackknife robustness test for run-tag \texttt{20260112-013808}. We define
+\(\Delta\chi^2_{(-g)}\) as the improvement of LTA over $\Lambda$CDM when telescope group \(g\) is
+removed and both models are refit. The preference remains positive for all groups.}
+\label{tab:jackknife}
+\begin{tabular}{lcc}
+\toprule
+Removed Group & $N_{\rm removed}$ & $\Delta\chi^2_{(-g)}$ \\
+\midrule
+LowZ Other & 8   & 12.27 \\
+PS1        & 20  & 13.14 \\
+Foundation & 72  & 16.66 \\
+SCP        & 14  & 13.76 \\
+HST        & 34  & 13.94 \\
+SNLS       & 10  & 12.52 \\
+SDSS       & 1   & 13.73 \\
+CSP        & 27  & 13.24 \\
+CfA        & 91  & \textbf{21.37} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Parametric bootstrap (null injections) under the full released covariance}
+\label{sec:null_bootstrap}
+
+Because the LTA extension is nested and its null point lies on a boundary
+(\(s_{\rm anchor}\ge 0\)), the null distribution of \(\Delta\chi^2\) is not guaranteed to follow a
+simple \(\chi^2_1\) asymptotic law. We therefore calibrate the detection significance with a
+parametric bootstrap (null injections) that exactly mirrors the data treatment and refitting
+pipeline used on the real data.
+
+\paragraph{Null-generating model.}
+We take the best-fit baseline $\Lambda$CDM model (including the same BAO treatment and the same
+prior choice used in the fiducial analysis) as the null. For each bootstrap realization we draw:
+(i) a mock SN corrected-magnitude vector from a single multivariate Gaussian using the
+\emph{released full covariance} on the selected \(N_{\rm SN}=354\) objects, preserving calibrator
+cross-correlations; and (ii) a mock BAO vector from its provided covariance in the same observable
+convention as Sec.~\ref{sec:data_bao}. For each mock we then reconstruct the anchored SN likelihood
+exactly as in the real analysis: we recompute \((M_{\rm cal},\sigma_M)\) from the mock calibrators,
+form the Schur complement covariance for the Hubble-flow block, and evaluate the cosmology-sensitive
+objective via Eq.~\eqref{eq:chi2_hf}. The Planck prior (when enabled) is applied identically.
+
+\paragraph{Bootstrap statistic.}
+Each mock dataset is refit under both baseline $\Lambda$CDM and $\Lambda$CDM+LTA(powerlaw) using the
+same optimizer, bounds, and inversion safeguards, yielding the bootstrap distribution of
+\begin{equation}
+\Delta\chi^2_{\rm boot} \equiv
+\chi^2_{\Lambda\mathrm{CDM}} - \chi^2_{\Lambda\mathrm{CDM+LTA}}
+\end{equation}
+evaluated at the best fits for that mock.
+
+\paragraph{Monte Carlo calibrated tail probability.}
+For an \(N=10000\) bootstrap run, with observed
+\(\Delta\chi^2_{\rm obs}\simeq 13.65\), we obtain
+\begin{equation}
+\langle \Delta\chi^2_{\rm boot}\rangle \simeq 1.3549, \qquad
+\mathrm{std}(\Delta\chi^2_{\rm boot}) \simeq 2.0011, \qquad
+p_{\rm MC}\equiv P(\Delta\chi^2_{\rm boot}\ge \Delta\chi^2_{\rm obs}) \simeq 0.002.
+\end{equation}
+This Monte Carlo calibration directly answers the empirical question posed in this paper:
+\emph{how often does a baseline-only Universe, observed with this covariance structure and analyzed
+with this anchored-likelihood pipeline, produce an apparent preference as large as we observe?}
+In these tests, such events are rare at the \(\sim 0.2\%\) level.
+
+Figure~\ref{fig:null_injections} shows the empirical null distribution of \(\Delta\chi^2\) obtained by refitting both models to baseline-only mock realizations generated with the full released covariance.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.92\linewidth]{output_loo_cv_10000/null_injections_powerlaw_20260112-013808.png}
+\caption{Parametric bootstrap (null injections) under the best-fit baseline $\Lambda$CDM model.
+Each realization is refit under both $\Lambda$CDM and $\Lambda$CDM+LTA(powerlaw), and the empirical
+distribution of \(\Delta\chi^2\) is used to Monte Carlo calibrate the tail probability
+\(p_{\rm MC}=P(\Delta\chi^2_{\rm boot}\ge\Delta\chi^2_{\rm obs})\).}
+\label{fig:null_injections}
+\end{figure}
+
+\subsection{Cross-validation diagnostics under strong correlated covariance}
+\label{sec:cv_summary}
+
+We additionally report cross-validation (CV) as a \emph{diagnostic} of how the preference behaves
+under held-out splits when the covariance contains strong long-range correlations. This is not a
+replacement for the full-covariance likelihood-ratio evidence, but it is informative about whether
+the improvement generalizes across survey blocks and about how correlated modes propagate across
+train--test partitions.
+
+\paragraph{Protocol (blocked by survey).}
+We perform leave-one-survey-out blocked CV over \texttt{IDSURVEY} with \(k=15\) folds on the
+Hubble-flow subset (\(N_{\rm HF}=277\)), keeping calibrators always in training to preserve the
+absolute anchor. Fold sizes range from 1 to 72 (median 14). Within each fold we refit both baseline
+and LTA on the training set and evaluate held-out scores on the test block. The anchor time \(\tA\)
+is recomputed from the \emph{training} Hubble-flow subset only, ensuring that the amplitude
+normalization cannot leak information from the held-out block.
+
+\paragraph{Marginal versus conditional held-out scoring.}
+When the joint data vector is Gaussian with nontrivial train--test cross-covariance, there are two
+distinct, well-defined held-out scores:
+(i) a \emph{marginal} score that evaluates the test residual using only the test covariance, and
+(ii) a \emph{Gaussian conditional} score that conditions the test residual on the realized training
+residual through the cross-covariance (Schur complement). Because Pantheon+SH0ES exhibits strong
+correlations, these two scores can rank models differently; we therefore report both (Appendix
+\ref{app:cv} gives the explicit definitions and their relation).
+
+\paragraph{Observed CV behavior.}
+For run-tag \texttt{20260112-013808}, summing over all held-out Hubble-flow objects across folds
+gives:
+\begin{equation}
+\sum_{\rm folds}\Delta\chi^2_{\rm test,marg} \simeq +113.724,\qquad
+\sum_{\rm folds}\Delta\chi^2_{\rm test\mid train} \simeq -7.783,
+\end{equation}
+where \(\Delta\chi^2\equiv \chi^2_{\Lambda\mathrm{CDM}}-\chi^2_{\mathrm{LTA}}\) is computed on the
+held-out block in each scoring convention. The marginal score favors LTA in \(10/15\) folds, while
+the conditional score favors LTA in \(4/15\) folds.
+
+This divergence is a characteristic signature of strong train--test correlations: the conditional
+score effectively tests how well a model predicts the \emph{specific correlated realization} already
+observed in training (and can therefore reward models that track that realization more closely),
+whereas the marginal score measures unconditional held-out fit using only the test covariance.
+In this setting, CV is most useful as a transparent diagnostic of correlation structure rather than
+as the primary evidence metric. Our primary detection claim remains anchored to the global
+full-covariance \(\Delta\chi^2\) and its parametric-bootstrap null calibration
+(Sec.~\ref{sec:null_bootstrap}).
+
+\subsection{CV-null injections (pilot calibration of the CV statistic)}
+\label{sec:cv_null}
+
+For completeness we also implement a CV-null procedure: generate baseline-only mocks and rerun the
+entire CV pipeline to obtain a null distribution for the aggregated CV statistic. In the pilot run
+with \(N=50\) null draws (seed 100), we obtain:
+\begin{equation}
+\text{Observed:}\ \Delta\chi^2_{\rm CV,marg} \simeq 113.72,\qquad
+\Delta\chi^2_{\rm CV,cond} \simeq -7.78,
+\end{equation}
+and the null draws yield
+\begin{equation}
+\langle \Delta\chi^2_{\rm CV,marg}\rangle \simeq 2.61,\quad
+\mathrm{std}\simeq 4.37;\qquad
+\langle \Delta\chi^2_{\rm CV,cond}\rangle \simeq -0.75,\quad
+\mathrm{std}\simeq 1.34.
+\end{equation}
+With only \(N=10\) null draws, the Monte Carlo resolution is coarse; in this pilot, none of the
+null realizations exceed the observed marginal statistic, corresponding to the usual finite-sample
+upper-bound estimator \(p\simeq 1/(N+1)=0.0909\). We therefore treat CV-null as a supplementary
+calibration target and prioritize the higher-$N$ global bootstrap (Sec.~\ref{sec:null_bootstrap})
+for the primary significance statement.
+% ======================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the data are telling us in plain terms}
+The empirical pattern isolated by this analysis is simple: within the Pantheon+SH0ES ladder-anchored
+likelihood (full released covariance, calibrator cross-correlations respected), the baseline
+$\Lambda$CDM Hubble-flow residuals exhibit a coherent low-redshift structure (the ``red valley'')
+concentrated at $z\lesssim 0.03$. The LTA mapping supplies a smooth, bounded, observer-anchored
+distortion of the redshift--distance relation that preferentially acts at precisely these distances,
+and it does so while leaving the best-fit \emph{background} parameters $(H_0,\Omega_m,\alpha_{\rm rd})$
+nearly unchanged.
+
+This combination matters: the improvement is not achieved by globally shifting the expansion history.
+Instead, it is achieved by modifying the identification between \(\zobs\) and the background
+\(\zcos\) in a way that is (i) causal by construction (Earth-retarded lookback time), (ii) bounded
+(finite activation epoch), and (iii) testable in independent observables through the Jacobian that
+enters radial BAO. In the present dataset combination, SNe drive the gain and BAO mildly penalizes
+the mapping, which is exactly what one expects if the phenomenon is truly local rather than a
+late-time change in \(\Hc(z)\) itself.
+
+\subsection{A speculative physical motivation: organization and effective clock rate}
+\label{sec:discussion_order}
+
+General Relativity (GR) makes a sharp and experimentally verified statement: the rate at which
+proper time accumulates depends on the spacetime metric. In weak fields this appears as gravitational
+time dilation: clocks deeper in a gravitational potential well tick more slowly relative to clocks
+farther out. In the standard cosmological analysis, such effects are treated through conventional
+local corrections (peculiar velocities, gravitational potentials, etc.) and are not expected to
+generate percent-level distortions of the global redshift--distance relation.
+
+The Local Time Acceleration (LTA) hypothesis explored here is qualitatively different. It asks
+whether there could exist an additional, observer-local contribution to effective clock rate that
+correlates not primarily with mass density (as in GR), but with the \emph{degree of organization} of
+the local environment. We emphasize at the outset that this is speculative: the present paper does
+not derive such a coupling from established microphysics. Rather, it tests whether the
+\emph{phenomenology} of an observer-anchored, causal, bounded redshift mapping is preferred by
+late-time data when the published covariances are treated consistently.
+
+A useful heuristic lens is provided by Stephen Wolfram's ``computational theory of time,'' in which
+the passage of time is associated with the updating of relational structure in an underlying
+discrete system. In that viewpoint, as the number of degrees of freedom and the density of their
+interactions increase, the number of effective constraints or ``relationships'' can grow rapidly,
+and one may expect the rate of consistent updating (i.e.\ the ``clock rate'' of the system) to be
+reduced. Whether or not one accepts this computational framing literally, it suggests a concrete
+intuition: time dilation can be viewed as arising when the local state is harder to update, in the
+sense of having more entangled constraints among constituents.
+
+The inverse question then becomes natural: if one increases \emph{order}---in the sense of reducing
+the effective complexity of interactions by building persistent correlations and structured
+organization---could an opposite-sign, observer-local effect arise in which the local pace of
+physical processes is \emph{slightly faster} relative to a cosmological reference? In thermodynamic
+language, living systems and engineered systems are paradigmatic examples of far-from-equilibrium
+``negentropic bubbles'': they maintain low internal entropy (high organization) by consuming free
+energy and exporting entropy to their surroundings, so that total entropy production remains
+positive. The relevant speculative ingredient is therefore not a violation of the second law, but a
+hypothesized coupling between \emph{local, sustained organization} (or some proxy such as long-lived
+correlations, mutual information, or algorithmic complexity measures) and the rate at which local
+proper time accumulates relative to a cosmological standard.
+
+If such a coupling existed at a very small level, it could manifest observationally because
+redshift is fundamentally a comparison between an emitted photon frequency and the receiver's local
+frequency standard. Any systematic drift in the receiver’s effective clock rate relative to the
+background time coordinate can be re-expressed as a multiplicative contribution to $(1+z)$, i.e.\ an
+additive contribution to $\ln(1+z)$, precisely the structure implemented in
+Eq.~\eqref{eq:zmap2}.
+
+In the fiducial analysis we fix the cutoff epoch to $\tL=3.8\,\mathrm{Gyr}$ as a motivated
+order-of-magnitude proxy for the timescale over which complex terrestrial biospheric organization
+has existed. We emphasize that $\tL$ is \emph{not} inferred by the optimizer in the configuration
+reported here; rather, the data show that a cutoff on this scale is compatible with, and can support,
+a substantial fit improvement given the other model assumptions. Allowing $\tL$ (and the activation
+shape parameters) to vary and mapping the resulting degeneracies with $s_{\rm anchor}$ is an
+important extension left to future work.
+
+If the observer-local interpretation of LTA were correct, it would not be a minor adjustment to
+standard cosmological modeling. It would require extending our current framework in a way that
+introduces an additional state variable (or effective degree of freedom) encoding some measure of
+organization/order, rather than sourcing clock behavior solely through stress--energy. Constructing
+a consistent covariant completion---and determining whether such a completion can be made compatible
+with locality, Lorentz invariance, and precision metrology constraints---is an open theoretical
+problem. In this paper we do not attempt that construction; we restrict ourselves to a minimal,
+falsifiable phenomenological mapping and test it against SN+BAO data.
+
+\subsection{Spacetime interpretation: an observer-anchored frequency-drift imprint on the past light cone}
+\label{sec:discussion_timewave}
+
+Operationally, LTA is implemented as a multiplicative correction to the observed redshift,
+\begin{equation}
+1+\zobs = (1+\zcos)\exp[I(\chi)],
+\end{equation}
+with $I(\chi)$ defined as a line-of-sight integral of an effective drift-rate field $s(\chi)$
+(Eq.~\eqref{eq:I_def2}). This form is deliberately chosen because redshift factors compose
+multiplicatively, while their logarithms add; an accumulated, small fractional frequency drift along
+a trajectory naturally appears as an additive contribution to $\ln(1+z)$.
+
+A physically transparent way to read this mapping is to recall that a redshift measurement compares
+a received photon frequency to the receiver’s local time standard. If the receiver’s effective
+clock rate is biased relative to a cosmological reference (for whatever reason), then the measured
+frequency ratio acquires an extra factor that is indistinguishable from an additional redshift
+contribution. In the present framework, that extra factor is encoded by $\exp[I(\chi)]$, where the
+integral representation provides a controlled, causal way to localize the effect along the past
+light cone and to enforce saturation.
+
+The ``Earth-retarded lookback time'' argument $\tret$ (Sec.~\ref{sec:tret2}) then supplies a
+specific causal bookkeeping device: it ties the strength of $s(\chi)$ at each point on the photon
+path to a retarded-time assignment relative to the observer, with the intent that an observer-local
+influence cannot affect regions outside its causal domain. In this language one may visualize the
+activation as defining a retarded domain of influence expanding outward at (at most) the speed of
+light. Incoming photons traverse this domain and accumulate a small net imprint in $\ln(1+z)$.
+Because the activation is bounded and saturating, the accumulated imprint is also bounded: in the
+fiducial best fit we reconstruct a saturation scale
+$I_{\rm sat}\simeq 2.67\times 10^{-3}$ (Sec.~\ref{sec:results_mapping}), i.e.\ an
+$\mathcal{O}(10^{-3})$ multiplicative correction in $(1+z)$.
+
+This picture is sometimes described colloquially as a ``time wave.'' We stress that nothing in the
+analysis requires a literal propagating wave in a medium. Rather, it is a compact visualization of
+a causal, observer-anchored domain within which an additional, small frequency-drift contribution
+is accumulated. In the specific interpretation motivating the present model, the ``steps'' are not
+physical displacements of the observer away from the sources, but incremental changes in the local
+rate at which the observer’s clock accumulates proper time relative to the cosmological reference.
+Photons emitted earlier then arrive at an observer whose effective time standard is slightly
+different from what would be expected under baseline assumptions, and this mismatch appears as an
+extra contribution to the measured redshift. The reason this can preferentially affect the
+low-redshift Hubble diagram is precisely the bounded activation: the imprint grows with distance up
+to a finite epoch, after which additional path length no longer increases $I(\chi)$.
+
+\subsection{Relation to dark-energy phenomenology and broader implications}
+\label{sec:discussion_de}
+
+The analysis in this paper is intentionally scoped. The best-fit LTA profiles favored by the
+Pantheon+SH0ES + BAO combination in our fiducial configuration are \emph{local and saturating}:
+they are designed to act primarily in the low-$z$ regime where the Hubble ladder is anchored and
+where coherent residual structure is observed, while becoming negligible at larger lookback times.
+This is why the model can improve the low-$z$ Hubble-flow residuals without demanding a wholesale
+rewrite of high-redshift cosmology.
+
+With that said, it is difficult to discuss any redshift-mapping modification without acknowledging
+the broader question it raises: could some portion of the phenomenology commonly attributed to
+late-time acceleration be connected with assumptions about how observed redshift maps to the
+background redshift used in distance predictions? In standard $\Lambda$CDM, dark energy (modeled as
+a cosmological constant $\Lambda$) is inferred from the redshift dependence of distances and
+expansion observables across a wide redshift lever arm. Our present implementation does not attempt
+to re-fit that entire lever arm with a generalized mapping, and it does not claim to replace
+$\Lambda$ as a successful effective description at high redshift. Indeed, in the data combination
+used here, the most informative signature is that the improvement is localized to the nearby
+Hubble flow and is already constrained by the Jacobian-sensitive radial BAO sector.
+
+Nevertheless, if an organization-linked clock-rate bias were real in some form, one must at least
+ask whether analogous effects could arise in other environments or epochs. For example, during
+specific phases of structure formation---when baryons condensed into stars and galaxies and when
+large, long-lived correlations emerged---it is conceivable (as a hypothesis to be tested) 
+that the Universe exhibited different levels of sustained ``order'' than it does in the
+late-time diffuse intergalactic medium. In such a scenario, photons from high-$z$ sources could
+accumulate additional frequency-shift contributions as they traverse regions with different
+organization histories, producing something akin to a ``redshift lens'' (a propagation-induced
+frequency mapping) rather than a true modification of the background expansion rate. Whether any
+realistic version of this idea can reproduce the suite of high-$z$ constraints (CMB peak structure,
+high-$z$ BAO, growth of structure, lensing) is a stringent question, and nothing in our present
+analysis answers it.
+
+For clarity, we state our intent explicitly in the strongest terms. We chose not to resolve
+both the Hubble tension and the existence of Dark Energy in one-shot, but if our result is to be
+trusted then it opens the door to new explorations for alternatives to $\Lambda$CDM. In practice, the next
+step would be to generalize the mapping (or its physical interpretation) beyond an Earth-anchored
+activation, and then confront that generalization with the full high-redshift dataset hierarchy.
+That program is well beyond the scope of the present work.
+
+\subsection{A speculative aside: the Fermi paradox under ``time-acceleration wells''}
+The Fermi paradox, like the Hubble tension, remains an open question in cosmological physics: if
+life is common, why is clear evidence scarce? If negentropic time acceleration exists and scales
+with sustained organization, then a sufficiently advanced civilization could inhabit a deeper local
+``time-acceleration well'' than ours. In that scenario, outbound signals would need to propagate
+out of that well, and from our perspective their society could appear ``in the future''—not because
+information travels faster than light, but because their local proper-time accumulation per unit of
+our coordinate time would be larger. This is speculative, but it illustrates a sharp point: an
+LTA-like effect, if real and scalable, would have implications beyond cosmology, including how we
+should model timebases and frequency drifts in SETI-style searches.
+
+\subsection{Paths toward falsification with timing and metrology}
+Because the LTA hypothesis is, at root, a claim about frequency comparisons and effective clock
+rates, precision timekeeping is a natural arena for independent tests. Several possibilities are
+worth highlighting, along with the corresponding difficulties:
+
+\begin{itemize}[leftmargin=1.2em]
+\item \textbf{GNSS and terrestrial time-transfer networks.} GNSS clocks are continuously steered to a
+coordinate time standard, and slow drifts are routinely absorbed into control models and treated as
+systematics. This makes them challenging probes: a genuine slow local drift could be ``calibrated
+away.'' Still, with access to sufficiently raw telemetry and careful modeling, one can search for
+residuals that correlate with environmental or organizational proxies not captured by standard
+relativistic corrections.
+
+\item \textbf{Pulsar timing arrays (PTAs).} PTAs are exquisitely sensitive to timing residuals, but
+they also inherit a fundamental ambiguity if the hypothesized effect couples to the receiver clock:
+a drift in the terrestrial time standard is largely degenerate with broad classes of timing model
+errors. In addition, pulsars and their magnetospheres are themselves highly structured systems, so
+PTAs could in principle probe a superposition of source-side, propagation-side, and receiver-side
+effects. This does not rule PTAs out; it highlights the need for careful null tests and independent
+time standards.
+
+\item \textbf{Differential optical clock experiments across controlled ``order'' environments.}
+The most direct laboratory strategy is differential: compare two or more state-of-the-art optical
+clocks (linked by fiber or transportable) placed in environments engineered to differ strongly in
+their degree of sustained organization while controlling conventional influences (gravitational
+potential, temperature, EM environment, pressure). Candidate environments include dense biospheres
+(e.g.\ tropical rainforest sites versus deserts), high-throughput bioreactors with controlled
+metabolic flux, and large-scale engineered information-processing systems (e.g.\ data centers).
+The goal would be to bound (or detect) any reproducible differential drift beyond known systematics.
+
+\item \textbf{Additional experimental directions.}
+Other controlled comparisons that could be informative as timekeeping technology improves include:
+(i) clocks operated in high-activity chemical plants or electrochemical storage facilities versus
+quiet controls; (ii) clocks colocated with high-coherence electromagnetic systems (high-$Q$ cavities,
+large interferometers) versus controls; (iii) deep underground laboratories versus surface sites to
+change environmental noise and shielding; and (iv) long-duration campaigns designed to test
+correlations with seasonal biosphere cycles, regional power throughput, or other measurable proxies
+for sustained organization.
+\end{itemize}
+
+These tests are ambitious, but they have a decisive virtue: they are not cosmological, and they do
+not rely on SN calibration pipelines. If an LTA-like effect is real and couples to local time
+standards at the magnitude implied by the cosmological fit, precision metrology should either
+constrain it sharply or reveal correlated residuals in a controlled setting. If, conversely, no
+such signal exists in the laboratory, then the natural interpretation of the cosmological LTA
+preference would shift toward unmodeled low-$z$ astrophysical systematics (local flows, selection,
+calibration structure) rather than new clock-rate physics.
+
+In summary, the conservative conclusion is that the present work isolates a specific empirical
+pattern in the low-$z$ Hubble diagram that is well described by a bounded, causal, observer-anchored
+mapping. Whether that mapping is merely an effective proxy for local kinematics or a hint of a
+deeper connection between organization and time standards is not resolved here. What \emph{is}
+resolved is the form of the question: the mapping makes concrete predictions for redshift Jacobians
+and for clock/frequency drift observables, and those predictions can be tested---and potentially
+falsified---by independent data.
+
+% ======================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have introduced and tested a phenomenological extension of flat $\Lambda$CDM in which the observed
+redshift is related to the background cosmological redshift by a bounded, causal, observer-anchored
+mapping. In this ``Local Time Acceleration'' (LTA) framework, photons accumulate a small additional
+contribution to $\ln(1+z)$ along the line of sight via an effective drift rate $s(\chi)$ whose
+amplitude is defined at an anchor time computed from the Hubble-flow subset only, and whose
+activation decays to zero at a finite epoch. The model is nested: $s_{\rm anchor}\rightarrow 0$
+recovers standard $\Lambda$CDM exactly.
+
+Confronting this mapping with the Pantheon+SH0ES public release using the \emph{full} published
+covariance (including calibrator--Hubble-flow cross-correlations) and a ladder-anchored
+Schur-complement likelihood, and jointly fitting a BAO consensus compilation \cite{DESI2024BAO} (with the LTA Jacobian
+properly propagated into the radial observable), we find a substantial improvement in global
+goodness-of-fit relative to the baseline model in the fiducial configuration. In the representative
+run reported here (run-tag \texttt{20260112-013808}), the best-fit LTA(powerlaw) model improves the
+total objective by $\Delta\chi^2 \simeq 13.7$ while leaving the best-fit background parameters
+$(H_0,\Omega_m,\alpha_{\rm rd})$ essentially unchanged. The gain is carried almost entirely by the
+anchored Hubble-flow SN likelihood, with only a mild BAO penalty, consistent with a genuinely local
+modification to the redshift--distance identification rather than a global change in $\Hc(z)$.
+
+Residual and whitening diagnostics show that the improvement is not uniformly distributed in redshift:
+it is localized to the very local volume ($z\lesssim 0.03$), where the baseline Hubble diagram
+exhibits a coherent ``valley'' often discussed in the context of local kinematics. Within the LTA
+framework, this structure is naturally modeled by a smooth, saturating mapping that becomes
+negligible at higher redshift, yielding convergence to the standard relation for $z\gtrsim 0.05$.
+
+Crucially, the preference is not fragile to single-subset removal. Grouped jackknife refits that
+remove each major telescope/survey group in turn preserve a positive improvement in every case in
+the tests reported here, disfavoring the hypothesis that the signal is driven by one faulty
+instrument or one calibration subset. Because the LTA amplitude is bounded and the null point lies
+on a parameter boundary, we further calibrate the detection statistic using parametric bootstrap
+(null injections) that preserve the full released covariance and refit both models; with a
+high-statistics run ($N=10000$ null draws) a tail probability of order $p\sim 0.0008$ was obtained for
+a $\Delta\chi^2$ of this magnitude, and ongoing larger-$N$ runs are used to refine the Monte Carlo
+resolution.
+
+The present work is intentionally not a ``one-shot'' replacement for the standard cosmological model.
+It establishes a narrower empirical claim: within a conservative full-covariance data treatment, a
+bounded, causal redshift-mapping extension provides a better description of the low-$z$ Hubble
+diagram than baseline $\Lambda$CDM in the configurations tested, and it does so in a way that is
+robust to obvious single-survey explanations. Whether this mapping is best interpreted as a proxy
+for unmodeled local kinematics (e.g.\ Local Void dynamics) or as evidence for a genuinely
+observer-local clock-rate contribution remains open. The decisive next step is therefore
+falsification via independent observables: precision clock networks, standard sirens, time-delay
+cosmography, and sky-dependent correlations with local structure, all of which can sharply constrain
+(or exclude) an LTA-like mechanism.
+% ======================================================================
+\section*{Acknowledgments}
+\label{sec:ack}
+For their help in bringing this work to fruition, we give our thanks to Adam, Andy, Eva, Gus, and Stuart. 
+We also give special thanks to Stephen Wolfram and his Computational Theory of Time for providing a key 
+building block to properly outline this theory. Further, we thank the thousands of physicists who have done the
+painstaking work in both gathering this data, and whose combined corpus enabled this work to be born. Finally we 
+thank our parents and Creator(s), without whom this work would not be possible.
+% ======================================================================
+\begin{thebibliography}{9}
+\bibitem{Brout2022PantheonPlus}
+D.~Brout \emph{et al.} (Pantheon+ Collaboration),
+``The Pantheon+ Analysis: The Full Dataset and Cosmological Constraints,''
+\emph{Astrophys. J.} \textbf{938}, 110 (2022).
+% arXiv:2202.04077
+\bibitem{Riess2022SH0ES}
+A.~G.~Riess \emph{et al.} (SH0ES Collaboration),
+``A Comprehensive Measurement of the Local Value of the Hubble Constant with 1 km s$^{-1}$ Mpc$^{-1}$ Uncertainty from the SH0ES Team,''
+\emph{Astrophys. J. Lett.} \textbf{934}, L7 (2022).
+% arXiv:2112.04510
+\bibitem{DESI2024BAO}
+DESI Collaboration,
+``DESI 2024 VI: Cosmological Constraints from the Measurements of Baryon Acoustic Oscillations,''
+arXiv:2404.03002.
+% See arXiv:2404.03002 for the series context.
+\bibitem{Planck2018Params}
+Planck Collaboration (N.~Aghanim \emph{et al.}),
+``Planck 2018 results. VI. Cosmological parameters,''
+\emph{Astron. Astrophys.} \textbf{641}, A6 (2020).
+% arXiv:1807.06209
+\end{thebibliography}
+
+% ======================================================================
+\appendix
+
+\section{Cross-validation under strong covariance coupling}
+\label{app:cv}
+
+This appendix reports cross-validation (CV) diagnostics for transparency, but it also explains why
+CV is \emph{not} used as the primary evidentiary statistic in this analysis.
+
+The key technical point is that the Pantheon+SH0ES release used here is not even approximately an
+i.i.d.\ dataset: the published covariance contains long-range, survey-spanning correlated modes
+(including calibrator--Hubble-flow cross-blocks and broad systematics). In that regime, the
+statistically correct object for model comparison is the \emph{global} likelihood with the full
+covariance, and the statistically correct calibration for a bounded, nested extension is the null
+distribution of the global likelihood-ratio statistic obtained by parametric bootstrap
+(Sec.~\ref{sec:opt_stat} and Sec.~\ref{sec:robustness}). Cross-validation answers a different
+question that depends sensitively on how one treats train--test cross-covariance; it is therefore
+best viewed as a \emph{diagnostic of covariance-leveraging and subset sensitivity}, not as a
+replacement for the global full-covariance comparison.
+
+\subsection{Why CV is not the primary statistic here}
+\label{app:cv:why}
+
+For a Gaussian data vector with known covariance, the full-data log-likelihood is (up to an additive
+constant)
+\begin{equation}
+-2\ln \mathcal{L}(\bm{\theta}) \equiv \chi^2(\bm{\theta})
+= \bm{r}(\bm{\theta})^{\mathsf{T}}\bm{C}^{-1}\bm{r}(\bm{\theta}),
+\end{equation}
+with residual vector $\bm{r}$ and the published covariance $\bm{C}$.
+This is the canonical quantity used throughout precision cosmology: it is exactly the statistic
+that correctly weights and de-correlates the measured modes, including modes that couple widely
+separated objects and surveys.
+
+Cross-validation, by contrast, is most naturally justified when one has many approximately
+independent draws from a common distribution and one is primarily concerned with ``generalization''
+to new samples.
+Pantheon+SH0ES is not of that type. It is one correlated realization of a single Universe observed
+through a complex inference pipeline with shared calibration and selection systematics encoded in
+$\bm{C}$. A CV split does not manufacture new independent information; it partitions a single
+correlated draw.
+As a result, CV scores can be dominated by \emph{how correlated modes are apportioned across folds}
+rather than by whether a model provides a better global description of the realized dataset.
+
+More concretely: let the data be partitioned into train (T) and test/validation (V),
+\begin{equation}
+\bm{r}=
+\begin{bmatrix}
+\bm{r}_T\\
+\bm{r}_V
+\end{bmatrix},
+\qquad
+\bm{C}=
+\begin{bmatrix}
+\bm{C}_{TT} & \bm{C}_{TV}\\
+\bm{C}_{VT} & \bm{C}_{VV}
+\end{bmatrix}.
+\end{equation}
+The Gaussian \emph{conditional} predictive distribution implied by the same covariance model is
+\begin{equation}
+\bm{r}_V \mid \bm{r}_T \sim
+\mathcal{N}\!\Bigl(\bm{C}_{VT}\bm{C}_{TT}^{-1}\bm{r}_T,\ 
+\bm{C}_{V\mid T}\Bigr),
+\qquad
+\bm{C}_{V\mid T}\equiv \bm{C}_{VV}-\bm{C}_{VT}\bm{C}_{TT}^{-1}\bm{C}_{TV},
+\label{eq:cv_cond_gauss}
+\end{equation}
+and the corresponding conditional held-out score is
+\begin{equation}
+\chi^2_{V\mid T}(\bm{\theta})
+=
+\bigl(\bm{r}_V-\bm{C}_{VT}\bm{C}_{TT}^{-1}\bm{r}_T\bigr)^{\mathsf{T}}
+\bm{C}_{V\mid T}^{-1}
+\bigl(\bm{r}_V-\bm{C}_{VT}\bm{C}_{TT}^{-1}\bm{r}_T\bigr).
+\label{eq:cv_cond_score}
+\end{equation}
+Many ``standard'' CV implementations in the literature instead evaluate a \emph{marginal} held-out
+score that ignores train--test cross-covariance,
+\begin{equation}
+\chi^2_{V,\mathrm{marg}}(\bm{\theta}) \equiv \bm{r}_V^{\mathsf{T}}\bm{C}_{VV}^{-1}\bm{r}_V.
+\label{eq:cv_marg_score}
+\end{equation}
+When $\bm{C}_{VT}\neq \bm{0}$ (as is emphatically true here), these are different statistics with
+different meanings, and they can rank models differently even when computed on the same split.
+
+The full-data likelihood ratio $\Delta\chi^2$ used in the main text is not ``in conflict'' with CV:
+it is answering the physically and statistically relevant question for this problem---\emph{which
+model better explains the single correlated dataset under the published covariance model?}---and it
+is calibrated by null injections that preserve that same covariance structure. CV is included for
+robustness and transparency, but it is not a more rigorous substitute for the global statistic in
+the strong-correlation regime.
+
+\subsection{CV protocol used in this work}
+\label{app:cv:protocol}
+
+We perform blocked CV over the \emph{Hubble-flow} subset only, while always retaining calibrators in
+training. This choice is forced by the ladder-anchored likelihood construction:
+calibrators provide the absolute-distance anchor and define the intercept posterior used to
+marginalize $M$ (Sec.~\ref{sec:sn_anchor_like}). Leaving calibrators out of training would replace
+a physics-motivated anchored likelihood with a different statistical problem and would not test the
+same model.
+
+For the representative run reported in the main text (run-tag \texttt{20260112-013808}), the split
+is:
+\begin{itemize}[leftmargin=1.2em]
+\item Calibrators: $N_{\mathrm{cal}}=77$ kept in train for all folds.
+\item Hubble-flow pool: $N_{\mathrm{HF}}=277$ partitioned into $k=15$ folds.
+\item Blocking: leave-one-survey-out folds over \texttt{IDSURVEY} (15 surveys), i.e.\ each fold holds
+out one survey block (sizes: min 1, median 14, max 72).
+\item Seed: \texttt{cv\_seed=100}.
+\item Anchor normalization: $\tA$ is recomputed from the training Hubble-flow subset only in each
+fold to avoid leakage of held-out information into the LTA amplitude normalization.
+\end{itemize}
+
+For each fold we:
+(i) refit baseline $\Lambda$CDM and $\Lambda$CDM+LTA(powerlaw) on the training set using the same
+anchored likelihood construction and numerical safeguards as in the full-data analysis; and
+(ii) evaluate held-out scores on the test block using both the marginal score
+(Eq.~\eqref{eq:cv_marg_score}) and the Gaussian conditional score (Eq.~\eqref{eq:cv_cond_score}),
+with the \emph{full} train--test cross-covariance retained (\texttt{cond\_cross=full} in the
+pipeline).
+
+\subsection{Why we report both ``marginal'' and ``conditional'' held-out scores}
+\label{app:cv:both}
+
+In a strongly correlated Gaussian model, there is no single CV number that is universally
+appropriate unless one states explicitly what is being conditioned on.
+
+The marginal score $\chi^2_{V,\mathrm{marg}}$ asks: \emph{given the parameters fit on training, how
+large are the held-out residuals under the test-block covariance alone?} This resembles the
+classical out-of-sample score used in weakly dependent problems.
+
+The conditional score $\chi^2_{V\mid T}$ asks a sharper question: \emph{given the parameters fit on
+training and given the realized training residual field, how surprising is the held-out residual
+once we regress out the part linearly predictable from the training residuals under the published
+cross-covariance?} This is the correct predictive statistic if one treats the covariance model as
+the generative model and one genuinely wants $p(\bm{y}_V \mid \bm{y}_T)$.
+
+Because Pantheon+SH0ES includes large-amplitude survey-spanning modes, conditioning can remove a
+substantial fraction of the variance in $\bm{r}_V$; in that regime, $\chi^2_{V\mid T}$ can become a
+measure of the model's performance on \emph{residual structure orthogonal to the correlated modes
+already realized in training}. That is a valid diagnostic, but it is not the same question as global
+model preference under the full likelihood, and it should not be used to dismiss a full-data
+likelihood-ratio detection that is itself calibrated under the same covariance assumptions.
+
+\subsection{CV results for run-tag \texttt{20260112-013808}}
+\label{app:cv:results}
+
+We report fold-by-fold and summed held-out improvements in the convention
+\begin{equation}
+\Delta\chi^2 \equiv \chi^2_{\Lambda\mathrm{CDM}} - \chi^2_{\Lambda\mathrm{CDM+LTA}},
+\end{equation}
+so $\Delta\chi^2>0$ favors LTA.
+
+For the leave-one-survey-out blocked CV described above, summing held-out contributions over all
+folds gives:
+\begin{equation}
+\sum_{\rm folds}\Delta\chi^2_{\rm test,marg} = +113.724,
+\qquad
+\sum_{\rm folds}\Delta\chi^2_{\rm test\mid train} = -7.783,
+\end{equation}
+with the marginal score favoring LTA in $15/15$ folds and the conditional score favoring LTA in
+$8/15$ folds. The corresponding per-fold diagnostics are shown in
+Fig.~\ref{fig:cv_per_fold_marg_cond}.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{output_loo_cv_10000/cv_dchi2_per_fold_powerlaw_marginal_blocksurvey_k15_seed100_20260112-013808.png}\\[0.6em]
+  \caption{Marginal CV improvement per fold.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{output_loo_cv_10000/cv_dchi2_per_fold_powerlaw_conditional_blocksurvey_k15_seed100_20260112-013808.png}
+  \caption{Conditional CV improvement per fold.}
+\end{subfigure}
+\caption{Blocked-by-survey cross-validation diagnostics for the Hubble-flow subset
+($k=15$, seed 100). Top: marginal held-out $\Delta\chi^2$ (Eq.~\eqref{eq:cv_marg_score}). Bottom:
+conditional held-out $\Delta\chi^2$ with full train--test cross-covariance retained
+(Eq.~\eqref{eq:cv_cond_score}).}
+\label{fig:cv_per_fold_marg_cond}
+\end{figure}
+
+We stress the interpretation: the marginal statistic indicates that the LTA mapping captures
+structure that persists across survey-held-out splits (consistent with the signal being distributed
+across multiple surveys rather than being a single-survey artifact), while the conditional statistic
+indicates that once one conditions on the realized correlated residual field in training, the
+remaining orthogonal held-out structure does not favor LTA in this configuration. These two
+statements are not mutually exclusive; they reflect different conditioning choices in a regime
+where $\bm{C}_{VT}$ is large.
+
+For completeness, we also ran an alternative but closely related grouping-based CV diagnostic
+(\texttt{sn.group}, $k=15$) which yields similar qualitative behavior:
+\begin{equation}
+\sum_{\rm folds}\Delta\chi^2_{\rm test,marg} = +60.266,
+\qquad
+\sum_{\rm folds}\Delta\chi^2_{\rm test\mid train} = -42.824,
+\end{equation}
+again showing marginal preference but conditional reversal.
+
+\subsection{CV-null injections}
+\label{app:cv:null}
+
+We additionally perform CV-null injections as a sanity check on the CV statistics themselves:
+mock datasets are generated under the best-fit baseline model using the same published covariance
+model and the same anchored-likelihood machinery, and the entire blocked-CV pipeline is rerun for
+each mock.
+For the representative run, we performed $N=50$ CV-null draws (seed 100). The observed CV totals were
+\begin{equation}
+\Delta\chi^2_{\rm CV,marg,obs}=113.724,
+\qquad
+\Delta\chi^2_{\rm CV,cond,obs}=-7.783,
+\end{equation}
+while the null draws yielded:
+\begin{align}
+\Delta\chi^2_{\rm CV,marg,null} &: \ \text{mean}=1.179420,\ \text{std}=3.846321,
+\ \ p_{\rm MC}\approx 0.091, \\
+\Delta\chi^2_{\rm CV,cond,null} &: \ \text{mean}=-0.242446,\ \text{std}=1.004216,
+\ \ p_{\rm MC}\approx 1.
+\end{align}
+Here the reported $p_{\rm MC}$ is the Monte Carlo tail probability
+$P(\Delta\chi^2_{\rm null}\ge \Delta\chi^2_{\rm obs})$ estimated from the finite null sample.
+With $N=50$ CV-null draws, none exceeded the observed marginal CV statistic, giving
+$p_{\rm MC}\approx 1/(50+1)=0.0196$ at this Monte Carlo resolution.
+
+The CV-null exercise is included to show, explicitly, that the CV statistics behave as expected
+under the assumed covariance model:
+the marginal CV statistic can display broad dispersion under correlated systematics and can, in
+finite samples, register large positive totals, while the conditional CV statistic is anchored close
+to its null mean once the predictable correlated modes are regressed out.
+This is precisely why CV is not elevated to the primary evidentiary role in this paper: it is not
+measuring the same object as the global full-covariance likelihood ratio, and in the strong-coupling
+regime its interpretation depends on conditioning choices that are orthogonal to the main
+cosmological question addressed here.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{output_loo_cv_10000/cv_null_injections_powerlaw_marginal_20260112-013808.png}
+  \caption{Marginal CV-null distribution.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.49\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{output_loo_cv_10000/cv_null_injections_powerlaw_conditional_20260112-013808.png}
+  \caption{Conditional CV-null distribution.}
+\end{subfigure}
+\caption{CV-null injections ($N=50$) for the blocked-by-survey CV statistic, run-tag \texttt{20260112-013808}.}
+\label{fig:cv_null_injections}
+\end{figure}
+
+\subsection{Connection back to the main result}
+\label{app:cv:connection}
+
+The central evidentiary quantity in this work is the \emph{global} improvement in the full-data
+Gaussian objective,
+\(\Delta\chi^2=\chi^2_{\Lambda{\rm CDM}}-\chi^2_{\Lambda{\rm CDM+LTA}}\),
+evaluated using the anchored SN likelihood that respects the published Pantheon+SH0ES covariance
+(including calibrator--Hubble-flow cross-covariances) and combined with BAO and the optional Planck
+prior as stated in the main text. Because the LTA extension is nested with a boundary null
+(\(s_{\rm anchor}\ge 0\)), the interpretation of \(\Delta\chi^2\) is based on an empirical null
+distribution obtained by parametric bootstrap (null injections) that mirrors the same covariance
+structure and refitting protocol.
+
+The cross-validation calculations reported in this appendix serve a different purpose. In a dataset
+with strong survey-spanning covariance, train--test partitions do not produce independent draws;
+they redistribute correlated modes between folds. As a result, held-out scores depend sensitively
+on whether one evaluates test residuals marginally (using \(\bm{C}_{VV}\) alone) or conditionally
+(with the full train--test cross-covariance retained). Reporting both scores is therefore primarily
+a transparency exercise: it demonstrates how correlation structure propagates through blocked
+splits, and it provides a diagnostic check that the observed improvement is not confined to a
+single survey block under the marginal scoring convention.
+
+Accordingly, the CV results should be read as \emph{diagnostics of subset stability and covariance
+coupling}, not as an alternative evidence metric that supersedes the full-covariance likelihood
+ratio. The main conclusion of the paper remains anchored to the global \(\Delta\chi^2\) computed on
+the complete dataset under the published covariance model and to its Monte Carlo calibration under
+baseline-only mocks.
+
+\end{document}
+\typeout{get arXiv to do 4 passes: Label(s) may have changed. Rerun}

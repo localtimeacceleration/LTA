@@ -1,0 +1,455 @@
+[prior] Planck CHAIN correlated prior enabled (subset):
+  labels = ('H0', 'Omega_m', 'alpha_rd')
+  mean   = [67.35987729  0.315284    0.99533613]
+  sig    = [0.53540688 0.00732926 0.00178903]
+  corr   =
+ [[ 1.         -0.99141681  0.69044075]
+ [-0.99141681  1.         -0.77463179]
+ [ 0.69044075 -0.77463179  1.        ]]
+Will run LTA forms: ['powerlaw']
+[run-tag] 20260112-013808
+[SN] HF anchored by calibrators enabled (HF|calibrators, full-cov, M-marg via calibrator posterior).
+[SN]   M_cal = -19.248885  ± 0.030106  (1σ from calibrators only)
+[SN]   N_cal=77   N_HF=277
+[SN] ycol=m_b_corr  cov_mode=file  sample=shoes_global  N=354
+
+--------------------------------------------------------------------------------
+[sanity] Redshift-gap / selection sanity checks
+[sanity] selected N=354  zHD∈[0.00122,0.14898]
+[sanity] args: sn_sample='shoes_global'  sn_filter=None  sn_zmin=0.0  sn_zmax=None
+[sanity] largest gaps in SELECTED zHD:
+  gap: 0.09293 -> 0.10165   Δz=0.00872
+  gap: 0.01682 -> 0.02343   Δz=0.00661
+  gap: 0.12732 -> 0.13372   Δz=0.0064
+  gap: 0.10246 -> 0.10661   Δz=0.00415
+  gap: 0.01312 -> 0.01682   Δz=0.0037
+  gap: 0.1176 -> 0.12086   Δz=0.00326
+  gap: 0.14423 -> 0.14747   Δz=0.00324
+  gap: 0.06711 -> 0.07023   Δz=0.00312
+[sanity] SELECTED counts by z bins:
+  [0,0.005): 24
+  [0.005,0.01): 43
+  [0.01,0.015): 8
+  [0.015,0.02): 2
+  [0.02,0.023): 0
+  [0.023,0.03): 80
+  [0.03,0.05): 107
+  [0.05,0.1): 47
+  [0.1,0.15): 43
+  [0.15,0.25): 0
+  [0.25,0.5): 0
+  [0.5,1): 0
+  [1,2.5): 0
+  [2.5,10): 0
+[sanity] RAW file counts by z bins (no selection):
+  [0,0.005): 29
+  [0.005,0.01): 82
+  [0.01,0.015): 70
+  [0.015,0.02): 84
+  [0.02,0.023): 65
+  [0.023,0.03): 138
+  [0.03,0.05): 177
+  [0.05,0.1): 96
+  [0.1,0.15): 85
+  [0.15,0.25): 261
+  [0.25,0.5): 404
+  [0.5,1): 185
+  [1,2.5): 25
+  [2.5,10): 0
+[sanity][warn] bins that exist in RAW but are EMPTY in SELECTED (gap likely selection-induced):
+  [0.02,0.023) RAW=65  SELECTED=0
+  [0.15,0.25) RAW=261  SELECTED=0
+  [0.25,0.5) RAW=404  SELECTED=0
+  [0.5,1) RAW=185  SELECTED=0
+  [1,2.5) RAW=25  SELECTED=0
+Saved plot: sanity_zHD_histogram_20260112-013808 -> /data/newdata/output_loo_cv_10000
+[SN] calibrators in selection: N=77
+[SN] CEPH_DIST (calibrators) range: 29.177 .. 34.526
+[SN] cov diag median (calib)    : 0.0263897
+[SN] cov diag median (non-calib): 0.0184603
+
+Fitting baseline flat ΛCDM (no LTA)...
+Baseline best-fit: H0=68.5165, Om=0.29966, chi2=332.549, alpha_rd=0.99791
+Sanity check: chi2(LTA with s_anchor=0,g=0) = 332.549329  vs  chi2(baseline) = 332.549329
+[diag] SN zHD range: 0.00122 .. 0.14898
+[diag] SN t_ret range (baseline approx): 0.035 .. 3.589 Gyr
+[diag] t_anchor computed from non-calibrators only (N=277).
+[diag] Using LTA amplitude anchor: t_anchor=0.670 Gyr (Earth retarded lookback)
+
+================================================================================
+Fitting ΛCDM + LTA with form: powerlaw
+================================================================================
+LTA optimizer diagnostics:
+  success: True
+  message: Optimization terminated successfully.
+  nit: 2
+  x0_lta: [68.51651126  0.29966369  0.99790504  3.8         6.          1.
+  1.        ]
+  xbest : [68.50974972  0.29974312  0.99791267  3.8         2.44934989  1.
+  1.        ]
+  delta : [-6.76154004e-03  7.94275578e-05  7.63079738e-06  0.00000000e+00
+ -3.55065011e+00  0.00000000e+00  0.00000000e+00]
+LTA(powerlaw) best-fit: H0=68.5097, Om=0.29974, alpha_rd=0.99791, t_life=3.800 Gyr, s_anchor=2.4493 km/s/Mpc, gC=1.000, gL=1.000, chi2=318.897
+Δchi2 (baseline - LTA[powerlaw]) = 13.652  (positive favors LTA)
+[diag] g(t_anchor)=0.493227  =>  s_now=s_anchor/gA ≈ 4.965968  (direct s_now=4.965968)
+Chi2 breakdown:
+  baseline: chi2_SN=324.454, chi2_BAO=3.422, chi2_prior=4.673, chi2_tot=332.549
+  powerlaw: chi2_SN=310.225, chi2_BAO=4.055, chi2_prior=4.617, chi2_tot=318.897
+  chi2_data   ≈ 314.279620
+  chi2_prior  ≈ 4.617344
+  chi2_total  ≈ 318.896964  (what optimizer minimized)
+[SN] covariance effective dimension N_eff≈149.5 (out of N=354)
+Model selection (lower better):
+  AIC baseline=338.549, AIC powerlaw=326.897
+  BIC baseline=350.233, BIC powerlaw=342.475
+  H0_eff_local(powerlaw) ≈ H0 + s(chi≈0) = 73.476 km/s/Mpc
+  I_sat(t_ret=t_life) ≈ 0.00267104  (this is max Δln(1+z) in the model)
+[anchor] Anchored SN breakdown (this matches the likelihood used in the fit):
+[anchor]   chi2_cal_const = 57.135  (constant, same for all models)
+[anchor]   chi2_hf baseline = 267.319
+[anchor]   chi2_hf powerlaw   = 253.090
+[anchor]   Δchi2_hf (baseline − powerlaw) = +14.229
+Saved plot: delta_mu_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: delta_mu_PURE_fixedcosmo_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: delta_mu_FULL_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: sn_residuals_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: bao_DM_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: bao_Hz_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: z_mapping_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: delta_ln1pz_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: z_mapping_low_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_s_vs_zcos_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_s_vs_zobs_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_I_vs_zobs_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: delta_z_vs_zcos_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_I_vs_tret_LOS_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_s_of_chi_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_s_of_tret_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: lta_I_of_chi_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: bao_jacobian_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: z_inverse_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: bao_DM_A_vs_B_diagnostic_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: sn_delta_chi2_whitened_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved zoomed residuals to output_loo_cv_10000/binned_residuals_powerlaw_20260112-013808.png
+[CV] Keeping 77 calibrators always in TRAIN; folds built on 277 HF SNe.
+[CV] Using leave-one-survey-out blocked CV over IDSURVEY: n_surveys=15 => k=15 folds.
+[CV] survey fold sizes: min=1  median=14.0  max=72
+[CV] cv_seed=100 fold_sigs=['22d38c3fca', 'd554a24aaa', '747cc6713a', '47cc120a25', '453ad004d8', '5995c2b7ee', '97bee3e804', '6991603629', '0f0030e216', '936aa1edd8', '922006e6f2', 'ae74d88079', 'ae88c8b906', '8fc77c1df3', '1cf2ea4804']
+[CV] unique test indices across folds: 277 (expected 277)
+
+================================================================================
+CROSS-VALIDATION: form=powerlaw  k=15  seed=100  score=both  block=survey  cond_cross=full
+================================================================================
+[CV] Fold 1/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=18  N_test=1  zHD∈[0.0298,0.0298]
+[CV]   train baseline: H0=68.517 Om=0.2997 alpha=0.99791
+[CV]   train LTA     : H0=68.510 Om=0.2997 alpha=0.99791 sA=2.456
+[CV]   rhat_rms: baseline=0.1109  LTA=0.03426  (test mean-shift from train)
+[CV]   cond-gain: baseline=+0.676  LTA=-0.032  (gain_b - gain_l = +0.708)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +0.672 - +0.708 = -0.036
+[CV]   Q-align: cos(rV,rhat) baseline=+1.000  LTA=+1.000
+[CV]   cond-diag: var_shrink=+0.047  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.080  mean|corr_VT|=0.043  mean|corr_VV_off|=0.000  jitter=0.00e+00
+Fold 1/15:  χ²_test (marg)      baseline=0.677   powerlaw=0.004   Δ=+0.672
+            χ²_test|train (cond) baseline=0.000   powerlaw=0.036   Δ=-0.036
+[CV] Fold 2/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=51  N_test=14  zHD∈[0.0237,0.0706]
+[CV]   train baseline: H0=68.517 Om=0.2997 alpha=0.99793
+[CV]   train LTA     : H0=68.509 Om=0.2997 alpha=0.99793 sA=2.467
+[CV]   rhat_rms: baseline=0.1426  LTA=0.06574  (test mean-shift from train)
+[CV]   cond-gain: baseline=+10.636  LTA=+3.035  (gain_b - gain_l = +7.601)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +7.523 - +7.601 = -0.079
+[CV]   Q-align: cos(rV,rhat) baseline=+0.772  LTA=+0.564
+[CV]   cond-diag: var_shrink=+0.106  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.485  mean|corr_VT|=0.045  mean|corr_VV_off|=0.038  jitter=0.00e+00
+Fold 2/15:  χ²_test (marg)      baseline=22.702   powerlaw=15.180   Δ=+7.523
+            χ²_test|train (cond) baseline=12.066   powerlaw=12.145   Δ=-0.079
+[CV] Fold 3/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=66  N_test=2  zHD∈[0.0333,0.0532]
+[CV]   train baseline: H0=68.516 Om=0.2997 alpha=0.99794
+[CV]   train LTA     : H0=68.508 Om=0.2997 alpha=0.99794 sA=2.492
+[CV]   rhat_rms: baseline=0.1317  LTA=0.05939  (test mean-shift from train)
+[CV]   cond-gain: baseline=-0.216  LTA=-0.866  (gain_b - gain_l = +0.650)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +0.237 - +0.650 = -0.413
+[CV]   Q-align: cos(rV,rhat) baseline=+0.978  LTA=-0.746
+[CV]   cond-diag: var_shrink=+0.067  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.115  mean|corr_VT|=0.046  mean|corr_VV_off|=0.032  jitter=0.00e+00
+Fold 3/15:  χ²_test (marg)      baseline=0.413   powerlaw=0.176   Δ=+0.237
+            χ²_test|train (cond) baseline=0.629   powerlaw=1.042   Δ=-0.413
+[CV] Fold 4/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=56  N_test=8  zHD∈[0.0234,0.0295]
+[CV]   train baseline: H0=68.515 Om=0.2997 alpha=0.99796
+[CV]   train LTA     : H0=68.507 Om=0.2997 alpha=0.99796 sA=2.295
+Fold 4/15:  χ²_test (marg)      baseline=24.862   powerlaw=16.007   Δ=+8.855
+            χ²_test|train (cond) baseline=15.266   powerlaw=13.604   Δ=+1.661
+[CV] Fold 5/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=15  N_test=20  zHD∈[0.0324,0.1478]
+[CV]   train baseline: H0=68.514 Om=0.2997 alpha=0.99798
+[CV]   train LTA     : H0=68.507 Om=0.2997 alpha=0.99797 sA=2.462
+Fold 5/15:  χ²_test (marg)      baseline=12.444   powerlaw=6.682   Δ=+5.762
+            χ²_test|train (cond) baseline=4.743   powerlaw=4.201   Δ=+0.543
+[CV] Fold 6/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=62  N_test=4  zHD∈[0.0269,0.0371]
+[CV]   train baseline: H0=68.513 Om=0.2997 alpha=0.99799
+[CV]   train LTA     : H0=68.507 Om=0.2997 alpha=0.99798 sA=2.407
+Fold 6/15:  χ²_test (marg)      baseline=14.406   powerlaw=9.065   Δ=+5.342
+            χ²_test|train (cond) baseline=9.352   powerlaw=8.797   Δ=+0.555
+[CV] Fold 7/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=5  N_test=27  zHD∈[0.0234,0.0801]
+[CV]   train baseline: H0=68.513 Om=0.2996 alpha=0.99800
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99799 sA=2.453
+Fold 7/15:  χ²_test (marg)      baseline=39.646   powerlaw=28.579   Δ=+11.067
+            χ²_test|train (cond) baseline=22.975   powerlaw=22.539   Δ=+0.436
+[CV] Fold 8/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=150  N_test=72  zHD∈[0.0234,0.0929]
+[CV]   train baseline: H0=68.512 Om=0.2996 alpha=0.99801
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99800 sA=2.847
+[CV]   rhat_rms: baseline=0.1355  LTA=0.04808  (test mean-shift from train)
+[CV]   cond-gain: baseline=+12.290  LTA=-2.336  (gain_b - gain_l = +14.626)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +11.308 - +14.626 = -3.318
+[CV]   Q-align: cos(rV,rhat) baseline=+0.586  LTA=+0.173
+[CV]   cond-diag: var_shrink=+0.055  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.131  mean|corr_VT|=0.047  mean|corr_VV_off|=0.056  jitter=0.00e+00
+Fold 8/15:  χ²_test (marg)      baseline=96.665   powerlaw=85.357   Δ=+11.308
+            χ²_test|train (cond) baseline=84.375   powerlaw=87.693   Δ=-3.318
+[CV] Fold 9/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=63  N_test=10  zHD∈[0.0251,0.0589]
+[CV]   train baseline: H0=68.512 Om=0.2996 alpha=0.99802
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99801 sA=2.525
+[CV]   rhat_rms: baseline=0.1593  LTA=0.07879  (test mean-shift from train)
+[CV]   cond-gain: baseline=+3.378  LTA=-1.794  (gain_b - gain_l = +5.172)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +4.441 - +5.172 = -0.731
+[CV]   Q-align: cos(rV,rhat) baseline=+0.844  LTA=+0.337
+[CV]   cond-diag: var_shrink=+0.134  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.716  mean|corr_VT|=0.047  mean|corr_VV_off|=0.041  jitter=0.00e+00
+Fold 9/15:  χ²_test (marg)      baseline=7.712   powerlaw=3.271   Δ=+4.441
+            χ²_test|train (cond) baseline=4.334   powerlaw=5.065   Δ=-0.731
+[CV] Fold 10/15: t_anchor(train)=0.669 Gyr  test_IDSURVEY=1  N_test=37  zHD∈[0.0665,0.1490]
+[CV]   train baseline: H0=68.512 Om=0.2996 alpha=0.99803
+[CV]   train LTA     : H0=68.504 Om=0.2997 alpha=0.99802 sA=3.262
+[CV]   rhat_rms: baseline=0.1215  LTA=0.02765  (test mean-shift from train)
+[CV]   cond-gain: baseline=+15.223  LTA=-6.153  (gain_b - gain_l = +21.376)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +12.081 - +21.376 = -9.295
+[CV]   Q-align: cos(rV,rhat) baseline=+0.854  LTA=+0.315
+[CV]   cond-diag: var_shrink=+0.046  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.131  mean|corr_VT|=0.046  mean|corr_VV_off|=0.056  jitter=0.00e+00
+Fold 10/15:  χ²_test (marg)      baseline=35.697   powerlaw=23.616   Δ=+12.081
+            χ²_test|train (cond) baseline=20.474   powerlaw=29.769   Δ=-9.295
+[CV] Fold 11/15: t_anchor(train)=0.672 Gyr  test_IDSURVEY=57  N_test=26  zHD∈[0.0235,0.0406]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99804
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99802 sA=2.685
+[CV]   rhat_rms: baseline=0.1577  LTA=0.0754  (test mean-shift from train)
+[CV]   cond-gain: baseline=+13.095  LTA=+0.635  (gain_b - gain_l = +12.460)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +10.136 - +12.460 = -2.324
+[CV]   Q-align: cos(rV,rhat) baseline=+0.840  LTA=+0.490
+[CV]   cond-diag: var_shrink=+0.192  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.716  mean|corr_VT|=0.050  mean|corr_VV_off|=0.049  jitter=0.00e+00
+Fold 11/15:  χ²_test (marg)      baseline=28.092   powerlaw=17.956   Δ=+10.136
+            χ²_test|train (cond) baseline=14.998   powerlaw=17.322   Δ=-2.324
+[CV] Fold 12/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=65  N_test=17  zHD∈[0.0245,0.0706]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99805
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99803 sA=2.412
+Fold 12/15:  χ²_test (marg)      baseline=27.779   powerlaw=15.513   Δ=+12.266
+            χ²_test|train (cond) baseline=12.701   powerlaw=12.074   Δ=+0.627
+[CV] Fold 13/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=50  N_test=10  zHD∈[0.0239,0.0702]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99805
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99803 sA=2.364
+Fold 13/15:  χ²_test (marg)      baseline=14.129   powerlaw=6.957   Δ=+7.172
+            χ²_test|train (cond) baseline=7.212   powerlaw=6.059   Δ=+1.153
+[CV] Fold 14/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=64  N_test=25  zHD∈[0.0236,0.0653]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99806
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99804 sA=2.420
+Fold 14/15:  χ²_test (marg)      baseline=45.616   powerlaw=29.991   Δ=+15.625
+            χ²_test|train (cond) baseline=21.020   powerlaw=20.395   Δ=+0.625
+[CV] Fold 15/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=61  N_test=4  zHD∈[0.0291,0.0486]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99806
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99804 sA=2.377
+Fold 15/15:  χ²_test (marg)      baseline=19.354   powerlaw=11.106   Δ=+8.248
+            χ²_test|train (cond) baseline=8.428   powerlaw=7.586   Δ=+0.842
+--------------------------------------------------------------------------------
+Saved plot: cv_dchi2_per_fold_powerlaw_marginal_blocksurvey_k15_seed100_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: cv_dchi2_per_fold_powerlaw_conditional_blocksurvey_k15_seed100_20260112-013808 -> /data/newdata/output_loo_cv_10000
+[CV] Predictive ΔNLL (marg): sum=+113.724  mean=+7.582  pos=15/15
+[CV] Predictive ΔNLL (cond): sum=-7.783  mean=-0.519  pos=8/15
+[CV] Saved fold table CSV: output_loo_cv_10000/cv_fold_table_powerlaw_blocksurvey_k15_seed100_20260112-013808.csv
+
+================================================================================
+[CV][group] Running leave-one-GROUP-out held-out scoring over sn.group (n_groups=15)
+================================================================================
+[CV] Keeping 77 calibrators always in TRAIN; folds built on 277 HF SNe.
+[CV] Using leave-one-survey-out blocked CV over IDSURVEY: n_surveys=15 => k=15 folds.
+[CV] survey fold sizes: min=1  median=14.0  max=72
+[CV] cv_seed=100 fold_sigs=['22d38c3fca', 'ae88c8b906', 'ae74d88079', 'd554a24aaa', '6991603629', '1cf2ea4804', '453ad004d8', '747cc6713a', '5995c2b7ee', '936aa1edd8', '47cc120a25', '8fc77c1df3', '97bee3e804', '0f0030e216', '922006e6f2']
+[CV] unique test indices across folds: 277 (expected 277)
+
+================================================================================
+CROSS-VALIDATION: form=powerlaw  k=15  seed=100  score=both  block=survey  cond_cross=full
+================================================================================
+[CV] Fold 1/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=18  N_test=1  zHD∈[0.0298,0.0298]
+[CV]   train baseline: H0=68.517 Om=0.2997 alpha=0.99791
+[CV]   train LTA     : H0=68.510 Om=0.2997 alpha=0.99791 sA=2.456
+[CV]   rhat_rms: baseline=0.1109  LTA=0.03426  (test mean-shift from train)
+[CV]   cond-gain: baseline=+0.676  LTA=-0.032  (gain_b - gain_l = +0.708)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +0.672 - +0.708 = -0.036
+[CV]   Q-align: cos(rV,rhat) baseline=+1.000  LTA=+1.000
+[CV]   cond-diag: var_shrink=+0.047  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.080  mean|corr_VT|=0.043  mean|corr_VV_off|=0.000  jitter=0.00e+00
+Fold 1/15:  χ²_test (marg)      baseline=0.677   powerlaw=0.004   Δ=+0.672
+            χ²_test|train (cond) baseline=0.000   powerlaw=0.036   Δ=-0.036
+[CV] Fold 2/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=50  N_test=10  zHD∈[0.0239,0.0702]
+[CV]   train baseline: H0=68.517 Om=0.2997 alpha=0.99793
+[CV]   train LTA     : H0=68.509 Om=0.2997 alpha=0.99793 sA=2.362
+Fold 2/15:  χ²_test (marg)      baseline=14.113   powerlaw=6.956   Δ=+7.157
+            χ²_test|train (cond) baseline=7.211   powerlaw=6.060   Δ=+1.151
+[CV] Fold 3/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=65  N_test=17  zHD∈[0.0245,0.0706]
+[CV]   train baseline: H0=68.516 Om=0.2997 alpha=0.99794
+[CV]   train LTA     : H0=68.508 Om=0.2997 alpha=0.99794 sA=2.410
+Fold 3/15:  χ²_test (marg)      baseline=27.755   powerlaw=15.510   Δ=+12.245
+            χ²_test|train (cond) baseline=12.701   powerlaw=12.074   Δ=+0.627
+[CV] Fold 4/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=51  N_test=14  zHD∈[0.0237,0.0706]
+[CV]   train baseline: H0=68.515 Om=0.2997 alpha=0.99796
+[CV]   train LTA     : H0=68.507 Om=0.2997 alpha=0.99796 sA=2.468
+[CV]   rhat_rms: baseline=0.1426  LTA=0.06575  (test mean-shift from train)
+[CV]   cond-gain: baseline=+10.643  LTA=+3.035  (gain_b - gain_l = +7.608)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +7.529 - +7.608 = -0.079
+[CV]   Q-align: cos(rV,rhat) baseline=+0.772  LTA=+0.564
+[CV]   cond-diag: var_shrink=+0.106  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.485  mean|corr_VT|=0.045  mean|corr_VV_off|=0.038  jitter=0.00e+00
+Fold 4/15:  χ²_test (marg)      baseline=22.709   powerlaw=15.180   Δ=+7.529
+            χ²_test|train (cond) baseline=12.066   powerlaw=12.145   Δ=-0.079
+[CV] Fold 5/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=150  N_test=72  zHD∈[0.0234,0.0929]
+[CV]   train baseline: H0=68.514 Om=0.2997 alpha=0.99798
+[CV]   train LTA     : H0=68.507 Om=0.2997 alpha=0.99797 sA=2.846
+[CV]   rhat_rms: baseline=0.1354  LTA=0.04807  (test mean-shift from train)
+[CV]   cond-gain: baseline=+12.280  LTA=-2.336  (gain_b - gain_l = +14.616)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +11.299 - +14.616 = -3.317
+[CV]   Q-align: cos(rV,rhat) baseline=+0.586  LTA=+0.173
+[CV]   cond-diag: var_shrink=+0.055  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.131  mean|corr_VT|=0.047  mean|corr_VV_off|=0.056  jitter=0.00e+00
+Fold 5/15:  χ²_test (marg)      baseline=96.655   powerlaw=85.356   Δ=+11.299
+            χ²_test|train (cond) baseline=84.375   powerlaw=87.692   Δ=-3.317
+[CV] Fold 6/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=61  N_test=4  zHD∈[0.0291,0.0486]
+[CV]   train baseline: H0=68.513 Om=0.2997 alpha=0.99799
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99798 sA=2.377
+Fold 6/15:  χ²_test (marg)      baseline=19.346   powerlaw=11.104   Δ=+8.242
+            χ²_test|train (cond) baseline=8.428   powerlaw=7.586   Δ=+0.842
+[CV] Fold 7/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=15  N_test=20  zHD∈[0.0324,0.1478]
+[CV]   train baseline: H0=68.513 Om=0.2996 alpha=0.99800
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99799 sA=2.463
+Fold 7/15:  χ²_test (marg)      baseline=12.449   powerlaw=6.683   Δ=+5.766
+            χ²_test|train (cond) baseline=4.743   powerlaw=4.201   Δ=+0.543
+[CV] Fold 8/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=66  N_test=2  zHD∈[0.0333,0.0532]
+[CV]   train baseline: H0=68.512 Om=0.2996 alpha=0.99801
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99800 sA=2.493
+[CV]   rhat_rms: baseline=0.1318  LTA=0.05942  (test mean-shift from train)
+[CV]   cond-gain: baseline=-0.214  LTA=-0.866  (gain_b - gain_l = +0.652)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +0.239 - +0.652 = -0.413
+[CV]   Q-align: cos(rV,rhat) baseline=+0.978  LTA=-0.745
+[CV]   cond-diag: var_shrink=+0.067  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.115  mean|corr_VT|=0.046  mean|corr_VV_off|=0.032  jitter=0.00e+00
+Fold 8/15:  χ²_test (marg)      baseline=0.414   powerlaw=0.176   Δ=+0.239
+            χ²_test|train (cond) baseline=0.629   powerlaw=1.042   Δ=-0.413
+[CV] Fold 9/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=62  N_test=4  zHD∈[0.0269,0.0371]
+[CV]   train baseline: H0=68.512 Om=0.2996 alpha=0.99802
+[CV]   train LTA     : H0=68.506 Om=0.2997 alpha=0.99801 sA=2.407
+Fold 9/15:  χ²_test (marg)      baseline=14.409   powerlaw=9.065   Δ=+5.344
+            χ²_test|train (cond) baseline=9.352   powerlaw=8.797   Δ=+0.555
+[CV] Fold 10/15: t_anchor(train)=0.669 Gyr  test_IDSURVEY=1  N_test=37  zHD∈[0.0665,0.1490]
+[CV]   train baseline: H0=68.512 Om=0.2996 alpha=0.99803
+[CV]   train LTA     : H0=68.504 Om=0.2997 alpha=0.99802 sA=3.262
+[CV]   rhat_rms: baseline=0.1215  LTA=0.02765  (test mean-shift from train)
+[CV]   cond-gain: baseline=+15.224  LTA=-6.153  (gain_b - gain_l = +21.377)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +12.081 - +21.377 = -9.295
+[CV]   Q-align: cos(rV,rhat) baseline=+0.854  LTA=+0.315
+[CV]   cond-diag: var_shrink=+0.046  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.131  mean|corr_VT|=0.046  mean|corr_VV_off|=0.056  jitter=0.00e+00
+Fold 10/15:  χ²_test (marg)      baseline=35.697   powerlaw=23.616   Δ=+12.081
+            χ²_test|train (cond) baseline=20.474   powerlaw=29.769   Δ=-9.295
+[CV] Fold 11/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=56  N_test=8  zHD∈[0.0234,0.0295]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99804
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99802 sA=2.296
+Fold 11/15:  χ²_test (marg)      baseline=24.873   powerlaw=16.008   Δ=+8.865
+            χ²_test|train (cond) baseline=15.266   powerlaw=13.604   Δ=+1.662
+[CV] Fold 12/15: t_anchor(train)=0.674 Gyr  test_IDSURVEY=64  N_test=25  zHD∈[0.0236,0.0653]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99805
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99803 sA=2.421
+Fold 12/15:  χ²_test (marg)      baseline=45.616   powerlaw=29.991   Δ=+15.625
+            χ²_test|train (cond) baseline=21.020   powerlaw=20.395   Δ=+0.625
+[CV] Fold 13/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=5  N_test=27  zHD∈[0.0234,0.0801]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99805
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99803 sA=2.453
+Fold 13/15:  χ²_test (marg)      baseline=39.656   powerlaw=28.580   Δ=+11.076
+            χ²_test|train (cond) baseline=22.975   powerlaw=22.539   Δ=+0.436
+[CV] Fold 14/15: t_anchor(train)=0.670 Gyr  test_IDSURVEY=63  N_test=10  zHD∈[0.0251,0.0589]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99806
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99804 sA=2.525
+[CV]   rhat_rms: baseline=0.1593  LTA=0.0788  (test mean-shift from train)
+[CV]   cond-gain: baseline=+3.381  LTA=-1.793  (gain_b - gain_l = +5.175)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +4.444 - +5.175 = -0.731
+[CV]   Q-align: cos(rV,rhat) baseline=+0.844  LTA=+0.337
+[CV]   cond-diag: var_shrink=+0.134  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.716  mean|corr_VT|=0.047  mean|corr_VV_off|=0.041  jitter=0.00e+00
+Fold 14/15:  χ²_test (marg)      baseline=7.715   powerlaw=3.271   Δ=+4.444
+            χ²_test|train (cond) baseline=4.334   powerlaw=5.065   Δ=-0.731
+[CV] Fold 15/15: t_anchor(train)=0.672 Gyr  test_IDSURVEY=57  N_test=26  zHD∈[0.0235,0.0406]
+[CV]   train baseline: H0=68.511 Om=0.2996 alpha=0.99806
+[CV]   train LTA     : H0=68.505 Om=0.2997 alpha=0.99804 sA=2.685
+[CV]   rhat_rms: baseline=0.1578  LTA=0.0754  (test mean-shift from train)
+[CV]   cond-gain: baseline=+13.097  LTA=+0.635  (gain_b - gain_l = +12.462)
+[CV]   check: Δ_cond ≈ Δ_marg - (gain_b-gain_l)  =>  +10.138 - +12.462 = -2.324
+[CV]   Q-align: cos(rV,rhat) baseline=+0.840  LTA=+0.490
+[CV]   cond-diag: var_shrink=+0.192  q=1.000  med|corr|_TTcross=nan  med|corr|_VTcross=nan  max|corr_VT|=0.716  mean|corr_VT|=0.050  mean|corr_VV_off|=0.049  jitter=0.00e+00
+Fold 15/15:  χ²_test (marg)      baseline=28.095   powerlaw=17.957   Δ=+10.138
+            χ²_test|train (cond) baseline=14.998   powerlaw=17.322   Δ=-2.324
+--------------------------------------------------------------------------------
+Saved plot: group_cv_dchi2_per_fold_powerlaw_marginal_blocksurvey_k15_seed100_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: group_cv_dchi2_per_fold_powerlaw_conditional_blocksurvey_k15_seed100_20260112-013808 -> /data/newdata/output_loo_cv_10000
+[CV] Predictive ΔNLL (marg): sum=+113.712  mean=+7.581  pos=15/15
+[CV] Predictive ΔNLL (cond): sum=-7.784  mean=-0.519  pos=8/15
+[CV] Saved fold table CSV: output_loo_cv_10000/cv_fold_table_powerlaw_blocksurvey_k15_seed100_20260112-013808_group.csv
+
+================================================================================
+CV-NULL INJECTIONS: form=powerlaw  N=50  seed=100
+Observed CV Δχ²_marg (baseline − powerlaw) = 113.724045
+Observed CV Δχ²_cond (baseline − powerlaw) = -7.782787
+================================================================================
+[cv-null] Used 50/50 successful CV-null draws; failures=0
+[cv-null] Null mean Δχ²_marg = 1.179420   std = 3.846321
+[cv-null] Monte Carlo p-value P(CV Δχ²_marg_null >= observed) ≈ 0.0196078
+[cv-null] Null mean Δχ²_cond = -0.242446   std = 1.004216
+[cv-null] Monte Carlo p-value P(CV Δχ²_cond_null >= observed) ≈ 1
+Saved plot: cv_null_injections_powerlaw_marginal_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: cv_null_injections_powerlaw_conditional_20260112-013808 -> /data/newdata/output_loo_cv_10000
+[cv-null] Saved marginal CV-null Δχ² samples to output_loo_cv_10000/cv_null_dchi2_marg_powerlaw_20260112-013808.npy
+[cv-null] Saved conditional CV-null Δχ² samples to output_loo_cv_10000/cv_null_dchi2_cond_powerlaw_20260112-013808.npy
+
+================================================================================
+[cv-null][group] Running CV-null for GROUP-held-out statistic (n_groups=15)
+================================================================================
+
+================================================================================
+CV-NULL INJECTIONS: form=powerlaw  N=50  seed=100
+Observed CV Δχ²_marg (baseline − powerlaw) = 113.712504
+Observed CV Δχ²_cond (baseline − powerlaw) = -7.783581
+================================================================================
+[cv-null] Used 50/50 successful CV-null draws; failures=0
+[cv-null] Null mean Δχ²_marg = 1.189328   std = 3.888892
+[cv-null] Monte Carlo p-value P(CV Δχ²_marg_null >= observed) ≈ 0.0196078
+[cv-null] Null mean Δχ²_cond = -0.240809   std = 1.003360
+[cv-null] Monte Carlo p-value P(CV Δχ²_cond_null >= observed) ≈ 1
+Saved plot: group_cv_null_injections_powerlaw_marginal_20260112-013808 -> /data/newdata/output_loo_cv_10000
+Saved plot: group_cv_null_injections_powerlaw_conditional_20260112-013808 -> /data/newdata/output_loo_cv_10000
+[cv-null] Saved marginal CV-null Δχ² samples to output_loo_cv_10000/cv_null_dchi2_marg_powerlaw_20260112-013808_group.npy
+[cv-null] Saved conditional CV-null Δχ² samples to output_loo_cv_10000/cv_null_dchi2_cond_powerlaw_20260112-013808_group.npy
+
+================================================================================
+NULL INJECTIONS: form=powerlaw  N=10000  seed=0
+Observed Δχ² (baseline - powerlaw) = 13.652365
+================================================================================
+Null mean Δχ² = 1.354914   std = 2.001064
+Used 10000/10000 successful null draws; failures=0
+Monte Carlo p-value P(Δχ²_null >= Δχ²_obs) ≈ 0.00079992
+Saved plot: null_injections_powerlaw_20260112-013808 -> /data/newdata/output_loo_cv_10000
+[null] Saved Δχ² samples to output_loo_cv_10000/null_dchi2_powerlaw_20260112-013808.npy
+z_obs= 0.010  Heff≈  71.447 km/s/Mpc
+z_obs= 0.023  Heff≈  70.844 km/s/Mpc
+z_obs= 0.050  Heff≈  70.603 km/s/Mpc
+z_obs= 0.100  Heff≈  71.434 km/s/Mpc
+z_obs= 0.150  Heff≈  72.861 km/s/Mpc
+z_obs= 0.200  Heff≈  74.797 km/s/Mpc
+z_obs= 0.300  Heff≈  79.145 km/s/Mpc
+z_obs= 0.500  Heff≈  89.135 km/s/Mpc
+z_obs= 0.700  Heff≈ 100.698 km/s/Mpc
+z_obs= 1.000  Heff≈ 120.605 km/s/Mpc
+[diag] SN zHD range: 0.00122 .. 0.14898
+[diag] SN t_ret range (baseline approx): 0.035 .. 3.642 Gyr
+[LOO] Anchored SN likelihood active: keeping calibrators fixed in all refits (N_cal=77); removing only from HF pool (N_pool=277).
+
+================================================================================
+LEAVE-OUT REFITS: form=powerlaw  group=telescope  max_combo_size=1  max_combos=0  seed=0
+================================================================================
+[LOO] done 1  last_removed=LowZ_Other  Δχ²=+12.256  N_keep=346
+--------------------------------------------------------------------------------
+[LOO] Δχ² summary over 9 refits:
+[LOO]   min=+12.256  median=+13.715  max=+21.071
+[LOO]   positive=9/9
+[LOO] Saved leave-out refit table: output_loo_cv_10000/leaveout_refits_powerlaw_grouptelescope_m1_seed0_20260112-013808.csv
+[LOO] Saved plot: output_loo_cv_10000/leaveout_refits_dchi2_powerlaw_grouptelescope_m1_seed0_20260112-013808.png
