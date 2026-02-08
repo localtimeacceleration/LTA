@@ -90,29 +90,49 @@ class EarlyPriors:
 
     If mv is set, it overrides the diagonal priors below.
 
-    mv_idx specifies which components of (H0, Om, alpha_rd) the MV prior applies to:
-      0 -> H0
-      1 -> Om
-      2 -> alpha_rd
+    mv_space defines which derived vector the MV prior is defined on:
+
+      - "h0_om_alpha":      x = (H0, Omega_m, alpha_rd)
+      - "omega_m_alpha":    x = (omega_m, alpha_rd)
+                            where omega_m = Omega_m * h^2 and h = H0/100
+
+    mv_idx selects a subset of components from that space (by index).
     """
     mv: Optional[MVGaussianPrior] = None
+    mv_space: str = "h0_om_alpha"
     mv_idx: tuple[int, ...] = (0, 1, 2)
 
+    # Diagonal priors (legacy; only meaningful for mv_space="h0_om_alpha")
     h0: Optional[GaussianPrior] = None
     om: Optional[GaussianPrior] = None
     alpha_rd: Optional[GaussianPrior] = None
 
+    def _mv_base_vector(self, H0: float, Om: float, alpha_rd: float) -> np.ndarray:
+        space = str(self.mv_space).strip().lower()
+        if space == "h0_om_alpha":
+            return np.array([H0, Om, alpha_rd], dtype=float)
+        if space == "omega_m_alpha":
+            h = float(H0) / 100.0
+            omega_m = float(Om) * h * h
+            return np.array([omega_m, alpha_rd], dtype=float)
+        raise ValueError(
+            f"Unknown mv_space={self.mv_space!r} (expected 'h0_om_alpha' or 'omega_m_alpha')."
+        )
+
     def chi2(self, H0: float, Om: float, alpha_rd: float) -> float:
         if self.mv is not None:
-            vec3 = np.array([H0, Om, alpha_rd], dtype=float)
-            idx = tuple(int(i) for i in self.mv_idx)
+            base = self._mv_base_vector(H0, Om, alpha_rd)
+            idx = tuple(int(i) for i in self.mv_idx) if self.mv_idx is not None else tuple()
 
-            # Backward-safe fallback: if mv_idx length doesn't match, assume leading params.
-            if len(idx) != int(self.mv.mean.size):
-                idx = tuple(range(int(self.mv.mean.size)))
+            d = int(self.mv.mean.size)
+            # Backward-safe fallback: if mv_idx length doesn't match MV prior dim, assume leading params.
+            if len(idx) != d:
+                idx = tuple(range(d))
 
-            return self.mv.chi2(vec3[list(idx)])
+            x = base[list(idx)]
+            return self.mv.chi2(x)
 
+        # Legacy diagonal priors
         c = 0.0
         if self.h0 is not None:
             c += self.h0.chi2(H0)
@@ -129,6 +149,166 @@ class EarlyPriors:
 
 # Global priors object (set in main())
 EARLY_PRIORS: Optional[EarlyPriors] = None
+
+# ----------------------------
+# Diagnostics helpers (Planck prior + standard ΛCDM sanity)
+# ----------------------------
+def _mv_whiten(mv: MVGaussianPrior, x: np.ndarray) -> np.ndarray:
+    """
+    Return whitened residual y such that chi2 = ||y||^2 for MVGaussianPrior.
+    Uses the stored Cholesky from mv._cho.
+    """
+    x = np.asarray(x, dtype=float).ravel()
+    dx = x - np.asarray(mv.mean, dtype=float).ravel()
+    c, lower = mv._cho
+    if lower:
+        L = np.tril(c)
+        y = solve_triangular(L, dx, lower=True, check_finite=False)
+    else:
+        U = np.triu(c)
+        # If C = U^T U, then chi2 = ||U^{-T} dx||^2 => solve U^T y = dx
+        y = solve_triangular(U, dx, lower=False, trans="T", check_finite=False)
+    return np.asarray(y, dtype=float).ravel()
+
+
+def log_planck_prior_point(tag: str, H0: float, Om: float, alpha_rd: float, rd_fid: float) -> None:
+    """
+    Print how a point (H0, Om, alpha_rd) sits relative to the configured Planck prior.
+    Safe to call even if EARLY_PRIORS is None.
+    """
+    global EARLY_PRIORS
+    if EARLY_PRIORS is None:
+        print(f"[prior][eval] {tag}: EARLY_PRIORS=None (no early-universe prior applied).")
+        return
+
+    H0 = float(H0); Om = float(Om); alpha_rd = float(alpha_rd); rd_fid = float(rd_fid)
+
+    h = H0 / 100.0
+    omega_m = Om * h * h
+    r_drag = alpha_rd * rd_fid
+
+    ep = EARLY_PRIORS
+
+    print(f"[prior][eval] {tag}:")
+    print(f"  late params:   H0={H0:.6f}  Om={Om:.6f}  (flat: OL=1-Om={1.0-Om:.6f})")
+    print(f"  derived:       h={h:.6f}  omega_m=Om*h^2={omega_m:.8f}")
+    print(f"  ruler:         alpha_rd={alpha_rd:.8f}  =>  r_drag=alpha*rd_fid={r_drag:.6f}  (rd_fid={rd_fid:.6f})")
+
+    # MV (correlated) prior path
+    if ep.mv is not None:
+        mv = ep.mv
+
+        base = ep._mv_base_vector(H0, Om, alpha_rd)
+        idx = tuple(int(i) for i in (ep.mv_idx or ()))
+        d = int(np.asarray(mv.mean).size)
+        if len(idx) != d:
+            idx = tuple(range(d))
+        x = np.asarray(base[list(idx)], dtype=float).ravel()
+
+        mu = np.asarray(mv.mean, dtype=float).ravel()
+        C = np.asarray(mv.cov, dtype=float)
+        sig = np.sqrt(np.maximum(np.diag(C).astype(float), np.finfo(float).tiny))
+        pulls = (x - mu) / sig
+
+        chi2 = float(mv.chi2(x))
+        y = _mv_whiten(mv, x)  # uncorrelated coordinates; chi2 = sum y^2
+
+        labels = mv.labels if (mv.labels and len(mv.labels) == d) else tuple(f"x{i}" for i in range(d))
+
+        print(f"  prior:         {mv.label}")
+        print(f"  prior space:   mv_space={ep.mv_space}  mv_idx={idx}  dim={d}")
+        for j in range(d):
+            print(
+                f"    {str(labels[j]):>10s}: x={x[j]: .8g}  mu={mu[j]: .8g}  sig={sig[j]:.3g}  pull={pulls[j]:+.3f}σ"
+            )
+
+        print(f"  prior chi2:    {chi2:.6f}  (sqrt(chi2)={np.sqrt(chi2):.3f})")
+        print(f"  prior whitened y (chi2=sum y^2): {np.array2string(y, precision=3, floatmode='fixed')}")
+        return
+
+    # Diagonal prior path (legacy)
+    c = 0.0
+    print("  prior:         diagonal (legacy)")
+    if ep.h0 is not None:
+        z = (H0 - float(ep.h0.mean)) / float(ep.h0.sigma)
+        c += ep.h0.chi2(H0)
+        print(f"    {'H0':>10s}: x={H0:.6f}  mu={ep.h0.mean:.6f}  sig={ep.h0.sigma:.6f}  pull={z:+.3f}σ")
+    if ep.om is not None:
+        z = (Om - float(ep.om.mean)) / float(ep.om.sigma)
+        c += ep.om.chi2(Om)
+        print(f"    {'Omega_m':>10s}: x={Om:.6f}  mu={ep.om.mean:.6f}  sig={ep.om.sigma:.6f}  pull={z:+.3f}σ")
+    if ep.alpha_rd is not None:
+        z = (alpha_rd - float(ep.alpha_rd.mean)) / float(ep.alpha_rd.sigma)
+        c += ep.alpha_rd.chi2(alpha_rd)
+        print(f"    {'alpha_rd':>10s}: x={alpha_rd:.8f}  mu={ep.alpha_rd.mean:.8f}  sig={ep.alpha_rd.sigma:.8f}  pull={z:+.3f}σ")
+
+    print(f"  prior chi2:    {float(c):.6f}")
+
+
+def log_lcdm_table_sanity(tag: str, tables, H0: float, Om: float) -> None:
+    """
+    Numerical self-consistency checks tying back to standard flat ΛCDM:
+      dχ/dz = c / H(z)
+      dt_lb/dz = 1/((1+z)H(z)) (with unit conversions)
+      d(∫dz/E)/dz = 1/E
+    """
+    z = np.asarray(tables.zgrid, dtype=float)
+    chi = np.asarray(tables.chi_mpc, dtype=float)
+    tlb = np.asarray(tables.tlb_gyr, dtype=float)
+    H = np.asarray(tables.H_km_s_mpc, dtype=float)
+    L = np.asarray(tables.conf_int, dtype=float)
+
+    if z.size < 5:
+        print(f"[lcdm][sanity] {tag}: zgrid too small for checks (n={z.size}).")
+        return
+
+    H0 = float(H0); Om = float(Om)
+    tiny = np.finfo(float).tiny
+    E = np.sqrt(Om * (1.0 + z) ** 3 + (1.0 - Om))
+
+    # dχ/dz check
+    dchi_dz = np.gradient(chi, z)
+    rhs_chi = C_KM_S / np.maximum(H, tiny)
+    rel_chi = np.abs(dchi_dz - rhs_chi) / np.maximum(rhs_chi, tiny)
+
+    # dt_lb/dz check (convert 1/H0 to Gyr)
+    dtlb_dz = np.gradient(tlb, z)
+    rhs_t = (MPC_IN_KM / H0) / SEC_PER_GYR * (1.0 / np.maximum((1.0 + z) * E, tiny))
+    rel_t = np.abs(dtlb_dz - rhs_t) / np.maximum(rhs_t, tiny)
+
+    # dL/dz check (L(z)=∫dz/E)
+    dL_dz = np.gradient(L, z)
+    rhs_L = 1.0 / np.maximum(E, tiny)
+    rel_L = np.abs(dL_dz - rhs_L) / np.maximum(rhs_L, tiny)
+
+    # Monotonicity checks
+    n_bad_chi = int(np.sum(np.diff(chi) <= 0.0))
+    n_bad_tlb = int(np.sum(np.diff(tlb) <= 0.0))
+
+    print(f"[lcdm][sanity] {tag}: H0={H0:.6f}  Om={Om:.6f}  OL={1.0-Om:.6f}  zmax={float(z[-1]):.3f}")
+    print(f"[lcdm][sanity] chi(z) monotone violations={n_bad_chi}   tlb(z) monotone violations={n_bad_tlb}")
+    print(f"[lcdm][sanity] max rel err dchi/dz vs c/H(z):    {float(np.max(rel_chi)):.3e}   (median {float(np.median(rel_chi)):.3e})")
+    print(f"[lcdm][sanity] max rel err dtlb/dz vs 1/((1+z)H): {float(np.max(rel_t)):.3e}   (median {float(np.median(rel_t)):.3e})")
+    print(f"[lcdm][sanity] max rel err dL/dz vs 1/E(z):       {float(np.max(rel_L)):.3e}   (median {float(np.median(rel_L)):.3e})")
+
+
+def log_lta_zero_limit_sanity(tag: str, tables, epochs) -> None:
+    """
+    Quick check that LTA remapping reduces to identity when s_anchor=0:
+      z_obs(z_cos)=z_cos and dz_obs/dz_cos=1
+    """
+    zmax = float(np.max(np.asarray(tables.zgrid, float)))
+    ztest = np.array([0.0, 1e-4, 1e-3, 0.01, 0.05, 0.1, 0.3, 1.0, min(2.0, zmax)], dtype=float)
+
+    lta0 = LTAParams(s_anchor_km_s_per_mpc=0.0, g_complex=0.0, g_life=0.0)
+    zobs = zobs_from_zcos(ztest, tables, lta0, epochs)
+    jac = dzobs_dzcos(ztest, tables, lta0, epochs)
+
+    dz = float(np.max(np.abs(zobs - ztest)))
+    dj = float(np.max(np.abs(jac - 1.0)))
+
+    print(f"[lta][sanity] {tag}: max|zobs-zcos| at s=0 = {dz:.3e}   max|jac-1| = {dj:.3e}")
+
 
 
 # ----------------------------
@@ -775,13 +955,16 @@ def sn_mu_reference(sn: SNData, mu_pred: np.ndarray) -> np.ndarray:
 
 @dataclass
 class BAOData:
-    z: np.ndarray
-    DM: np.ndarray
-    Hz: np.ndarray
-    cov: np.ndarray
-    cho: tuple
-    data_vector: np.ndarray
+    # Per-row measurement description (ordering must match covariance)
+    z: np.ndarray            # (N,) observed redshift for each measurement row
+    y: np.ndarray            # (N,) measured value at that row
+    qty: np.ndarray          # (N,) string label (e.g. 'DM_over_rs', 'DH_over_rs', 'DV_over_rs')
 
+    cov: np.ndarray          # (N,N)
+    cho: tuple               # cho_factor(cov)
+    data_vector: np.ndarray  # (N,) == y (kept for minimal downstream changes)
+
+    rd_fid: float = 147.78   # Mpc; used only to interpret alpha_rd via r_d = alpha_rd * rd_fid
 
 def build_sn_data(
     path_dat: str,
@@ -867,18 +1050,6 @@ def build_sn_data(
     cov_mode = str(cov_mode).strip().lower()
     if cov_mode not in ("file", "diag"):
         raise ValueError(f"--sn-cov-mode must be 'file' or 'diag', got {cov_mode!r}")
-
-    # Infer errcol when diag
-    if cov_mode == "diag" and errcol is None:
-        if str(ycol).upper() == "MU_SH0ES":
-            errcol = "MU_SH0ES_ERR_DIAG"
-        elif str(ycol) == "m_b_corr":
-            errcol = "m_b_corr_err_DIAG"
-        else:
-            raise ValueError(
-                f"--sn-cov-mode diag requires --sn-errcol for ycol={ycol!r} "
-                f"(could not infer a default)."
-            )
 
     # Prevent the most common misuse: MU_SH0ES with the m_b_corr covariance file.
     if cov_mode == "file" and str(ycol).upper() == "MU_SH0ES":
@@ -1038,157 +1209,93 @@ def build_sn_data(
 
     return sn_out
 
-
-
-
-def load_bao_results(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def load_bao_measurements(path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Load BAO consensus results in either:
-      A) 3-column format: z  DM  H
-      B) stacked 2-column format (your file): z value with alternating DM and H rows.
+    Unified BAO loader.
 
-    Returns (z_unique, DM, H).
+    Supports:
+      (1) DESI-style: 3 cols  z  value  quantity(str)
+      (2) Old-style A: 3 cols z  DM_scaled  H_scaled   (all numeric)
+      (3) Old-style B: 2 cols stacked rows (DM_scaled then H_scaled) repeating
+
+    Returns (z_rows, y_rows, qty_rows) where len(y_rows)=N matches the covariance dimension.
     """
     df = pd.read_csv(path, sep=r"\s+", comment="#", header=None)
     if df.shape[1] < 2:
-        raise ValueError(f"BAO results file must have at least 2 columns. Got {df.shape[1]} columns.")
+        raise ValueError(f"BAO file must have >=2 columns: {path}")
 
+    # --- Case: 3+ columns ---
     if df.shape[1] >= 3:
-        # Format A: z DM H
+        # Try interpret column 3 as numeric (old-style A)
+        col2_num = pd.to_numeric(df.iloc[:, 2], errors="coerce")
+        if col2_num.notna().all():
+            # Old-style A: z, DM_scaled, H_scaled
+            z = df.iloc[:, 0].to_numpy(float)
+            dm = df.iloc[:, 1].to_numpy(float)
+            hs = col2_num.to_numpy(float)
+
+            # Expand into stacked measurement vector order: [DM1, H1, DM2, H2, ...]
+            z_rows = np.repeat(z, 2)
+            y_rows = np.column_stack([dm, hs]).reshape(-1)
+
+            qty_rows = np.empty_like(y_rows, dtype=object)
+            qty_rows[0::2] = "DM_scaled"
+            qty_rows[1::2] = "H_scaled"
+            return z_rows, y_rows, qty_rows
+
+        # Otherwise: DESI-style (z, value, quantity)
         z = df.iloc[:, 0].to_numpy(float)
-        DM = df.iloc[:, 1].to_numpy(float)
-        Hz = df.iloc[:, 2].to_numpy(float)
-        return z, DM, Hz
+        y = df.iloc[:, 1].to_numpy(float)
+        qty = df.iloc[:, 2].astype(str).to_numpy()
+        return z, y, qty
 
-    # Format B: stacked 2-column
-    z_all = df.iloc[:, 0].to_numpy(float)
-    val_all = df.iloc[:, 1].to_numpy(float)
+    # --- Case: 2 columns stacked (old-style B) ---
+    z_rows = df.iloc[:, 0].to_numpy(float)
+    y_rows = df.iloc[:, 1].to_numpy(float)
 
-    if len(z_all) % 2 != 0:
-        raise ValueError("Stacked BAO format must have even number of rows (DM/H pairs).")
+    if (z_rows.size % 2) != 0:
+        raise ValueError("2-col stacked BAO format must have an even number of rows (DM/H pairs).")
 
-    z_unique = []
-    DM = []
-    Hz = []
+    # (Optional) sanity: check pairs share z
+    for i in range(0, z_rows.size, 2):
+        if abs(z_rows[i] - z_rows[i + 1]) > 1e-12:
+            raise ValueError(f"Mismatched z in stacked pair at rows {i},{i+1}: {z_rows[i]} vs {z_rows[i+1]}")
 
-    for i in range(0, len(z_all), 2):
-        z1, v1 = z_all[i], val_all[i]
-        z2, v2 = z_all[i + 1], val_all[i + 1]
-        if abs(z1 - z2) > 1e-12:
-            raise ValueError(f"Mismatched z in stacked pair at rows {i},{i+1}: {z1} vs {z2}")
+    qty_rows = np.empty_like(y_rows, dtype=object)
+    qty_rows[0::2] = "DM_scaled"
+    qty_rows[1::2] = "H_scaled"
+    return z_rows, y_rows, qty_rows
 
-        z_unique.append(z1)
-        DM.append(v1)   # first in pair is D_M
-        Hz.append(v2)   # second in pair is H
+def build_bao_data(path_res: str, path_cov: str, rd_fid: float) -> BAOData:
+    z, y, qty = load_bao_measurements(path_res)
+    y = np.asarray(y, dtype=float).ravel()
+    z = np.asarray(z, dtype=float).ravel()
+    qty = np.asarray(qty, dtype=object).ravel()
 
-    return np.array(z_unique), np.array(DM), np.array(Hz)
+    if y.size != z.size or y.size != qty.size:
+        raise ValueError("BAO mean file parsed into inconsistent vector lengths.")
 
+    cov = load_covariance_matrix(path_cov, n_expected=int(y.size))
+    if cov.shape != (y.size, y.size):
+        raise ValueError(f"BAO cov shape {cov.shape} does not match N={y.size} from mean file.")
 
-def build_bao_data(path_res: str, path_cov: str) -> BAOData:
-    z, DM, Hz = load_bao_results(path_res)
-    cov = load_covariance_matrix(path_cov)
-
-    # Data vector must match covariance ordering: [DM1, H1, DM2, H2, ...]
-    data_vec = np.column_stack([DM, Hz]).reshape(-1)
-
-    if cov.shape != (data_vec.size, data_vec.size):
-        raise ValueError(
-            f"BAO cov shape {cov.shape} does not match data vector length {data_vec.size}.\n"
-            f"Expected {data_vec.size}x{data_vec.size}."
-        )
-
+    cov = 0.5 * (cov + cov.T)  # numerical safety
     cho = cho_factor(cov, lower=True, check_finite=False)
-    return BAOData(z=z, DM=DM, Hz=Hz, cov=cov, cho=cho, data_vector=data_vec)
 
-def load_getdist_margestats(path: str) -> tuple[list[str], np.ndarray, np.ndarray]:
-    """
-    Parse GetDist .margestats.
-    Expected data lines like:
-      paramName   mean    stdev   ...
-    """
-    names: list[str] = []
-    means: list[float] = []
-    sigmas: list[float] = []
+    # Optional quick sanity print
+    print(f"[BAO] Loaded {y.size} measurements from {path_res}")
+    uq = {str(s) for s in qty}
+    print(f"[BAO] qty types: {sorted(uq)}")
 
-    with open(path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if (not line) or line.startswith("#"):
-                continue
-            toks = line.split()
-            if len(toks) < 3:
-                continue
-            name = toks[0]
-            try:
-                mu = float(toks[1])
-                sd = float(toks[2])
-            except Exception:
-                continue
-            names.append(name)
-            means.append(mu)
-            sigmas.append(sd)
-
-    if not names:
-        raise ValueError(f"Failed to parse any parameters from margestats: {path}")
-
-    return names, np.array(means, dtype=float), np.array(sigmas, dtype=float)
-
-
-def load_getdist_covmat(path: str, n_expected: Optional[int] = None) -> np.ndarray:
-    """
-    Robust GetDist .covmat reader:
-    - ignores non-numeric tokens (safe if headers creep in)
-    - supports leading integer N, full NxN, or packed lower-triangular
-    """
-    toks: list[float] = []
-    with open(path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if (not line) or line.startswith("#"):
-                continue
-            for t in line.split():
-                try:
-                    toks.append(float(t))
-                except Exception:
-                    pass
-
-    arr = np.array(toks, dtype=float)
-    if arr.size == 0:
-        raise ValueError(f"Covmat file appears empty/unreadable: {path}")
-
-    # Reuse your logic by temporarily mimicking the interface
-    def looks_like_int(x: float) -> bool:
-        return np.isfinite(x) and abs(x - int(round(x))) < 1e-9
-
-    if looks_like_int(arr[0]):
-        N0 = int(round(arr[0]))
-        rest = arr[1:]
-        if rest.size == N0 * N0:
-            return rest.reshape((N0, N0))
-        if rest.size == N0 * (N0 + 1) // 2:
-            cov = np.zeros((N0, N0), dtype=float)
-            tri = np.tril_indices(N0)
-            cov[tri] = rest
-            cov[(tri[1], tri[0])] = rest
-            return cov
-
-    if n_expected is not None:
-        N = int(n_expected)
-        if arr.size == N * N:
-            return arr.reshape((N, N))
-        if arr.size == N * (N + 1) // 2:
-            cov = np.zeros((N, N), dtype=float)
-            tri = np.tril_indices(N)
-            cov[tri] = arr
-            cov[(tri[1], tri[0])] = arr
-            return cov
-
-    sq = int(round(np.sqrt(arr.size)))
-    if sq * sq == arr.size:
-        return arr.reshape((sq, sq))
-
-    raise ValueError(f"Unrecognized covmat format in {path} (n_expected={n_expected}, n_tokens={arr.size}).")
-
+    return BAOData(
+        z=z,
+        y=y,
+        qty=qty,
+        cov=cov,
+        cho=cho,
+        data_vector=y.copy(),
+        rd_fid=float(rd_fid),
+    )
 
 def _norm_name(s: str) -> str:
     s = str(s).strip()
@@ -1238,15 +1345,26 @@ def build_planck_prior_from_chain(
     chain_root: str,
     rd_fid: float,
     chunksize: int = 200_000,
+    space: str = "h0_om_alpha",
 ) -> MVGaussianPrior:
     """
-    Build correlated Gaussian prior on (H0, Omegam, alpha_rd) from Planck MCMC chains.
+    Build correlated Gaussian prior from Planck MCMC chains.
+
+    space:
+      - "h0_om_alpha":   prior on (H0, Omega_m, alpha_rd), alpha_rd = r_drag / rd_fid
+      - "omega_m_alpha": prior on (omega_m, alpha_rd), omega_m = Omega_m * h^2, h=H0/100
 
     Uses:
       chain_root.paramnames
       chain_root_1.txt, chain_root_2.txt, ...
     """
     chain_root = str(chain_root)
+    space = str(space).strip().lower()
+    if space not in ("h0_om_alpha", "omega_m_alpha"):
+        raise ValueError(f"Unknown space={space!r} (expected 'h0_om_alpha' or 'omega_m_alpha').")
+    if (not np.isfinite(rd_fid)) or (rd_fid <= 0.0):
+        raise ValueError(f"rd_fid must be positive, got {rd_fid}")
+
     pn = chain_root + ".paramnames"
     if not Path(pn).exists():
         raise FileNotFoundError(f"Missing paramnames file: {pn}")
@@ -1267,7 +1385,6 @@ def build_planck_prior_from_chain(
     idx_rdrag  = _find_idx(names, ["rdrag", "r_drag", "rdrag*", "r_drag*"])
     idx_rdragh = _find_idx(names, ["rdragh", "rdrag*h", "rdragh*"])
 
-    # Decide what raw columns we must read
     needed_param_indices = set()
 
     # H0
@@ -1278,7 +1395,7 @@ def build_planck_prior_from_chain(
         needed_param_indices.add(idx_h)
         use_H0_mode = "h"
     else:
-        raise ValueError("Chain does not contain H0 or h; cannot build Planck prior on H0.")
+        raise ValueError("Chain does not contain H0 or h; cannot build Planck prior.")
 
     # Omegam
     if idx_omegam is not None:
@@ -1286,14 +1403,13 @@ def build_planck_prior_from_chain(
         use_om_mode = "omegam"
     elif idx_om_h2 is not None:
         needed_param_indices.add(idx_om_h2)
-        # will also need h/H0
         if use_H0_mode == "H0" and idx_H0 is not None:
             needed_param_indices.add(idx_H0)
         elif use_H0_mode == "h" and idx_h is not None:
             needed_param_indices.add(idx_h)
         use_om_mode = "omegamh2_over_h2"
     else:
-        raise ValueError("Chain does not contain omegam or omegamh2; cannot build Planck prior on Omega_m.")
+        raise ValueError("Chain does not contain omegam or omegamh2; cannot build Planck prior.")
 
     # rdrag
     if idx_rdrag is not None:
@@ -1301,23 +1417,42 @@ def build_planck_prior_from_chain(
         use_rd_mode = "rdrag"
     elif idx_rdragh is not None:
         needed_param_indices.add(idx_rdragh)
-        # will also need h/H0
         if use_H0_mode == "H0" and idx_H0 is not None:
             needed_param_indices.add(idx_H0)
         elif use_H0_mode == "h" and idx_h is not None:
             needed_param_indices.add(idx_h)
         use_rd_mode = "rdragh_over_h"
     else:
-        raise ValueError("Chain does not contain rdrag or rdragh; cannot build Planck prior on r_drag.")
+        raise ValueError("Chain does not contain rdrag or rdragh; cannot build Planck prior.")
 
     needed_param_indices = sorted(needed_param_indices)
+
+    def _pname(i: Optional[int]) -> str:
+        if i is None:
+            return "None"
+        if i < 0 or i >= len(names):
+            return f"idx{int(i)}(OOB)"
+        return f"{names[int(i)]} (idx={int(i)})"
+
+    print("[prior][chain] Building Planck MVGaussian prior from chains:")
+    print(f"[prior][chain]   root   = {chain_root}")
+    print(f"[prior][chain]   space  = {space}")
+    print(f"[prior][chain]   rd_fid  = {float(rd_fid):.6f}")
+    print(f"[prior][chain]   H0_mode={use_H0_mode}  Om_mode={use_om_mode}  rdrag_mode={use_rd_mode}")
+    print(f"[prior][chain]   cols: H0={_pname(idx_H0)}  h={_pname(idx_h)}  omegam={_pname(idx_omegam)}  omegamh2={_pname(idx_om_h2)}")
+    print(f"[prior][chain]         rdrag={_pname(idx_rdrag)}  rdragh={_pname(idx_rdragh)}")
 
     # Chain format: col0 = weight, col1 = -lnlike, then params in paramnames order
     usecols = [0] + [2 + i for i in needed_param_indices]
 
+    d = 3 if space == "h0_om_alpha" else 2
     sum_w = 0.0
-    sum_wx = np.zeros(3, dtype=float)
-    sum_wxx = np.zeros((3, 3), dtype=float)
+    sum_w2 = 0.0
+    n_rows = 0
+
+    sum_wx = np.zeros(d, dtype=float)
+    sum_wxx = np.zeros((d, d), dtype=float)
+
 
     for cf in chain_files:
         for chunk in pd.read_csv(
@@ -1325,14 +1460,16 @@ def build_planck_prior_from_chain(
             usecols=usecols, chunksize=int(chunksize)
         ):
             w = chunk.iloc[:, 0].to_numpy(dtype=float)
-            if not np.all(np.isfinite(w)) or np.any(w < 0):
-                raise ValueError(f"Non-finite or negative weights encountered in {cf}")
 
-            # Helper to pull a param by its paramnames index
+            if (not np.all(np.isfinite(w))) or np.any(w < 0):
+                raise ValueError(f"Non-finite or negative weights encountered in {cf}")
+            n_rows += int(w.size)
+            sum_w2 += float(np.sum(w * w))
+
             def col(param_idx: int) -> np.ndarray:
                 return chunk[2 + param_idx].to_numpy(dtype=float)
 
-            # Build H0
+            # H0
             if use_H0_mode == "H0":
                 H0 = col(idx_H0)
             else:
@@ -1340,24 +1477,29 @@ def build_planck_prior_from_chain(
 
             h = H0 / 100.0
 
-            # Build Omegam
+            # Omega_m
             if use_om_mode == "omegam":
                 Om = col(idx_omegam)
             else:
                 Om = col(idx_om_h2) / (h * h)
 
-            # Build rdrag
+            # r_drag
             if use_rd_mode == "rdrag":
                 rdrag = col(idx_rdrag)
             else:
                 rdrag = col(idx_rdragh) / h
 
-            X = np.column_stack([H0, Om, rdrag]).astype(float)
+            alpha = rdrag / float(rd_fid)
+
+            if space == "h0_om_alpha":
+                X = np.column_stack([H0, Om, alpha]).astype(float)
+            else:
+                omega_m = Om * (h * h)
+                X = np.column_stack([omega_m, alpha]).astype(float)
 
             if not np.all(np.isfinite(X)):
                 raise ValueError(f"Non-finite derived values encountered while reading {cf}")
 
-            # Weighted accumulators
             sw = float(np.sum(w))
             sum_w += sw
             sum_wx += np.sum(w[:, None] * X, axis=0)
@@ -1368,21 +1510,27 @@ def build_planck_prior_from_chain(
 
     mean = sum_wx / sum_w
     cov = (sum_wxx / sum_w) - np.outer(mean, mean)
-    cov = 0.5 * (cov + cov.T)  # symmetrize
+    cov = 0.5 * (cov + cov.T)
 
-    # Convert rdrag -> alpha = rdrag / rd_fid
-    if (not np.isfinite(rd_fid)) or (rd_fid <= 0.0):
-        raise ValueError(f"rd_fid must be positive, got {rd_fid}")
+    if space == "h0_om_alpha":
+        labels = ("H0", "Omega_m", "alpha_rd")
+    else:
+        labels = ("omega_m", "alpha_rd")
+    
+    sig = np.sqrt(np.maximum(np.diag(cov).astype(float), np.finfo(float).tiny))
+    ess = (sum_w * sum_w / max(sum_w2, np.finfo(float).tiny)) if np.isfinite(sum_w2) else float("nan")
 
-    J = np.diag([1.0, 1.0, 1.0 / float(rd_fid)])
-    mean_a = J @ mean
-    cov_a = J @ cov @ J.T
+    print(f"[prior][chain] Done. rows={n_rows}  sum_w={sum_w:.6g}  ESS≈{ess:.3g}")
+    print(f"[prior][chain] mean={mean}")
+    print(f"[prior][chain] sig ={sig}")
+    w_eig = np.linalg.eigvalsh(cov)
+    print(f"[prior][chain] cov eigmin={float(np.min(w_eig)):.3e}  eigmax={float(np.max(w_eig)):.3e}")
 
     return MVGaussianPrior(
-        mean=mean_a,
-        cov=cov_a,
-        labels=("H0", "Omega_m", "alpha_rd"),
-        label=f"Planck chain prior (root={Path(chain_root).name})",
+        mean=mean,
+        cov=cov,
+        labels=labels,
+        label=f"Planck chain prior (root={Path(chain_root).name}, space={space})",
     )
 
 def chi2_sn(params: dict, sn: SNData, tables: CosmologyTables, epochs: LTAEpochs,
@@ -1469,55 +1617,116 @@ def chi2_sn(params: dict, sn: SNData, tables: CosmologyTables, epochs: LTAEpochs
     resid_info["M_best"] = M_best
     return chi2, resid_info
 
+def predict_bao_vector_from_tables(
+    bao: BAOData,
+    alpha_rd: float,
+    tables: CosmologyTables,
+    lta: LTAParams,
+    epochs: LTAEpochs,
+    invmap=None,
+) -> np.ndarray:
+    """
+    Predict BAO observable vector aligned with bao.data_vector / bao.cov.
+
+    Supported qty:
+      - DESI:  'DM_over_rs', 'DH_over_rs', 'DV_over_rs'   (dimensionless)
+      - Legacy:'DM_scaled',  'H_scaled'                  (units: Mpc and km/s/Mpc respectively)
+
+    Here r_s (≈ r_d) is modeled as:
+        r_d = alpha_rd * bao.rd_fid
+    """
+    zobs = np.asarray(bao.z, dtype=float)
+
+    # Map observed z -> cosmological z
+    if float(getattr(lta, "s_anchor_km_s_per_mpc", 0.0)) == 0.0:
+        zcos = zobs.copy()
+    else:
+        zcos = invmap(zobs) if invmap is not None else invert_zobs_to_zcos(zobs, tables, lta, epochs)
+
+    if not np.all(np.isfinite(zcos)):
+        return np.full_like(zobs, np.nan)
+
+    chi = tables.chi_of_z(zcos)  # Mpc (flat => D_M = chi)
+    Hcos = tables.H_of_z(zcos)   # km/s/Mpc
+    jac = dzobs_dzcos(zcos, tables, lta, epochs)  # dz_obs/dz_cos
+    Hobs = Hcos * jac
+
+    tiny = np.finfo(float).tiny
+    Hobs = np.maximum(Hobs, tiny)
+
+    DM_mpc = chi
+    DH_mpc = C_KM_S / Hobs
+    DV_mpc = np.cbrt(np.maximum(DM_mpc * DM_mpc * zobs * DH_mpc, tiny))
+
+    rd = float(alpha_rd) * float(bao.rd_fid)  # Mpc
+    rd = max(rd, tiny)
+
+    qty = np.asarray(bao.qty, dtype=str)
+    qn = np.char.lower(np.char.strip(qty))
+
+    pred = np.empty_like(zobs, dtype=float)
+
+    # DESI ratios
+    m = (qn == "dm_over_rs") | (qn == "dm_over_rd") | (qn == "dm_over_rsd")
+    pred[m] = DM_mpc[m] / rd
+
+    m = (qn == "dh_over_rs") | (qn == "dh_over_rd") | (qn == "dh_over_rsd")
+    pred[m] = DH_mpc[m] / rd
+
+    m = (qn == "dv_over_rs") | (qn == "dv_over_rd") | (qn == "dv_over_rsd")
+    pred[m] = DV_mpc[m] / rd
+
+    # Legacy “scaled” convention
+    m = (qn == "dm_scaled") | (qn == "dm")
+    pred[m] = DM_mpc[m] / float(alpha_rd)  # == DM*(rd_fid/rd)
+
+    m = (qn == "h_scaled") | (qn == "hz") | (qn == "h")
+    pred[m] = Hobs[m] * float(alpha_rd)    # == H*(rd/rd_fid)
+
+    # Guard: unknown labels
+    known = (
+        (qn == "dm_over_rs") | (qn == "dh_over_rs") | (qn == "dv_over_rs")
+        | (qn == "dm_over_rd") | (qn == "dh_over_rd") | (qn == "dv_over_rd")
+        | (qn == "dm_over_rsd") | (qn == "dh_over_rsd") | (qn == "dv_over_rsd")
+        | (qn == "dm_scaled") | (qn == "dm")
+        | (qn == "h_scaled") | (qn == "hz") | (qn == "h")
+    )
+    if not np.all(known):
+        bad = sorted(set(qty[~known].tolist()))
+        raise ValueError(f"Unknown BAO qty label(s) in mean file: {bad}")
+
+    return pred
 
 def chi2_bao(params: dict, bao: BAOData, tables: CosmologyTables, epochs: LTAEpochs,
              use_lta: bool, lta_override=None, invmap=None) -> float:
     # LTA config
     if use_lta:
-        if lta_override is not None:
-            lta = lta_override
-        else:
-            lta = LTAParams(
-                s_anchor_km_s_per_mpc=params["s_anchor"],
-                g_complex=params["g_complex"],
-                g_life=params["g_life"],
-            )
+        lta = lta_override if (lta_override is not None) else LTAParams(
+            s_anchor_km_s_per_mpc=params["s_anchor"],
+            g_complex=params["g_complex"],
+            g_life=params["g_life"],
+        )
     else:
         lta = LTAParams(s_anchor_km_s_per_mpc=0.0, g_complex=0.0, g_life=0.0)
 
-    if float(getattr(lta, "s_anchor_km_s_per_mpc", 0.0)) == 0.0:
-        zcos = bao.z.copy()    # in chi2_bao
-    else:
-        if invmap is None:
-            zcos = invert_zobs_to_zcos(bao.z, tables, lta, epochs)
-        else:
-            zcos = invmap(bao.z)
-
-    if not np.all(np.isfinite(zcos)):
+    alpha_rd = float(params["alpha_rd"])
+    if (not np.isfinite(alpha_rd)) or (alpha_rd <= 0.0):
         return 1e80
 
-    chi = tables.chi_of_z(zcos)
+    pred = predict_bao_vector_from_tables(
+        bao=bao,
+        alpha_rd=alpha_rd,
+        tables=tables,
+        lta=lta,
+        epochs=epochs,
+        invmap=invmap,
+    )
 
-    alpha_rd = params["alpha_rd"]
-
-    # Transverse BAO observable
-    I = lta_integral_I(chi, tables, lta, epochs)  # dimensionless
-
-    DM_pred = chi / alpha_rd
-
-    # Radial BAO observable ~ H_obs * (r_d / r_d,fid)
-    Hcos = tables.H_of_z(zcos)
-    jac = dzobs_dzcos(zcos, tables, lta, epochs)
-    Hz_pred = (Hcos * jac) * alpha_rd
-    
-    if (not np.all(np.isfinite(DM_pred))) or (not np.all(np.isfinite(Hz_pred))):
+    if not np.all(np.isfinite(pred)):
         return 1e80
 
-    pred_vec = np.column_stack([DM_pred, Hz_pred]).reshape(-1)
-
-    resid = bao.data_vector - pred_vec
+    resid = bao.data_vector - pred
     return float(resid @ cho_solve(bao.cho, resid, check_finite=False))
-
 
 def total_chi2(x: np.ndarray, sn: SNData, bao: BAOData, epochs: LTAEpochs,
                use_lta: bool, zmax_table: float) -> float:
@@ -1937,16 +2146,44 @@ def clone_sn_with_y(sn: SNData, y_new: np.ndarray) -> SNData:
     return sn_new
 
 def clone_bao_with_vec(bao: BAOData, vec_new: np.ndarray) -> BAOData:
-    vec_new = np.asarray(vec_new, dtype=float)
+    vec_new = np.asarray(vec_new, dtype=float).ravel()
+    if vec_new.size != bao.data_vector.size:
+        raise ValueError("clone_bao_with_vec: vec_new has wrong length.")
     return BAOData(
-        z=bao.z,
-        DM=vec_new[0::2].copy(),
-        Hz=vec_new[1::2].copy(),
+        z=bao.z.copy(),
+        y=vec_new.copy(),
+        qty=bao.qty.copy(),
         cov=bao.cov,
         cho=bao.cho,
         data_vector=vec_new.copy(),
+        rd_fid=float(bao.rd_fid),
     )
 
+def predict_bao_vector(
+    bao: BAOData,
+    H0: float,
+    Om: float,
+    alpha_rd: float,
+    epochs: LTAEpochs,
+    zmax_table: float,
+    lta_obj: object,
+    invmap_n: Optional[int] = 4000,
+) -> np.ndarray:
+    tables = build_cosmology_tables(H0=float(H0), Om=float(Om), zmax=float(zmax_table))
+
+    if invmap_n is None:
+        invmap = None
+    else:
+        invmap = build_inverse_zmap(tables, lta_obj, epochs, zmax=zmax_table, nz=int(invmap_n))
+
+    return predict_bao_vector_from_tables(
+        bao=bao,
+        alpha_rd=float(alpha_rd),
+        tables=tables,
+        lta=lta_obj,
+        epochs=epochs,
+        invmap=invmap,
+    )
 
 def predict_sn_mu(
     sn: SNData,
@@ -1973,37 +2210,6 @@ def predict_sn_mu(
     dL_mpc = (1.0 + sn.zHEL) * chi
     return 5.0 * np.log10(dL_mpc) + 25.0
 
-
-def predict_bao_DM_Hz(
-    bao: BAOData,
-    H0: float,
-    Om: float,
-    alpha_rd: float,
-    epochs: LTAEpochs,
-    zmax_table: float,
-    lta_obj: object,
-    invmap_n: Optional[int] = 4000,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    If invmap_n is None: use Newton inversion (matches fit-time behavior).
-    Else: use a precomputed inverse map (faster, approximate).
-    """
-    tables = build_cosmology_tables(H0=H0, Om=Om, zmax=zmax_table)
-
-    if invmap_n is None:
-        zcos = invert_zobs_to_zcos(bao.z, tables, lta_obj, epochs)
-    else:
-        invmap = build_inverse_zmap(tables, lta_obj, epochs, zmax=zmax_table, nz=int(invmap_n))
-        zcos = invmap(bao.z)
-
-    chi = tables.chi_of_z(zcos)
-    DM = chi / float(alpha_rd)
-
-    Hcos = tables.H_of_z(zcos)
-    jac = dzobs_dzcos(zcos, tables, lta_obj, epochs)
-    Hz = (Hcos * jac) * float(alpha_rd)
-    return DM, Hz
-
 def sn_bestfit_M_for_indices(sn: SNData, mu_pred: np.ndarray, idx_fit: Optional[np.ndarray]) -> float:
     if sn.y_is_mu:
         return 0.0
@@ -2027,8 +2233,7 @@ def simulate_mock_dataset(
     sn: SNData,
     bao: BAOData,
     mu_model: np.ndarray,
-    DM_model: np.ndarray,
-    Hz_model: np.ndarray,
+    bao_model_vec: np.ndarray,
     rng: np.random.Generator,
     M_intercept: float = 0.0,
 ) -> tuple[SNData, BAOData]:
@@ -2044,32 +2249,28 @@ def simulate_mock_dataset(
       - data vector ordering is [DM1, H1, DM2, H2, ...] and cov matches that ordering.
     """
     mu_model = np.asarray(mu_model, dtype=float)
-    DM_model = np.asarray(DM_model, dtype=float)
-    Hz_model = np.asarray(Hz_model, dtype=float)
+    bao_model_vec = np.asarray(bao_model_vec, dtype=float).ravel()
 
-    # SN mean in data space
+    # SN mean in data space (unchanged)
     if sn.y_is_mu:
         y_mean = mu_model
     else:
         mu_ref = sn_mu_reference(sn, mu_model)
         y_mean = mu_ref + float(M_intercept)
 
-
     # Draw correlated SN noise
     Lsn_raw, lower = sn.cho
     Lsn = np.tril(Lsn_raw) if lower else np.triu(Lsn_raw)
     y_mock = y_mean + (Lsn @ rng.standard_normal(y_mean.size))
-
     sn_mock = clone_sn_with_y(sn, y_mock)
 
-    # BAO mean vector
-    vec_mean = np.column_stack([DM_model, Hz_model]).reshape(-1)
+    # BAO mean vector (already aligned with covariance ordering)
+    if bao_model_vec.size != bao.data_vector.size:
+        raise ValueError("simulate_mock_dataset: bao_model_vec length mismatch.")
 
-    # Draw correlated BAO noise
     Lbao_raw, lower = bao.cho
     Lbao = np.tril(Lbao_raw) if lower else np.triu(Lbao_raw)
-    vec_mock = vec_mean + (Lbao @ rng.standard_normal(vec_mean.size))
-
+    vec_mock = bao_model_vec + (Lbao @ rng.standard_normal(bao_model_vec.size))
     bao_mock = clone_bao_with_vec(bao, vec_mock)
 
     return sn_mock, bao_mock
@@ -2277,7 +2478,7 @@ def conditional_precompute(
     idx_test: np.ndarray,
     jitter_frac: float = 1e-12,
     *,
-    cross_mode: str = "full",            # "full" | "full_quotient" | "zero" | "within_survey" | "survey_avg"
+    cross_mode: str = "full",            # "full" |  "zero"
     groups: Optional[np.ndarray] = None, # IDSURVEY aligned with C_full indexing
 ) -> dict:
     """
@@ -2285,23 +2486,14 @@ def conditional_precompute(
 
     cross_mode:
       - full:         use the covariance as-is
-      - full_quotient: use FULL C_VT pattern, but rescale cross-survey VT entries by a
-                    deterministic quotient q in [0,1] computed from the covariance:
-                        q = min(1, med(|corr| train–train cross-survey) / med(|corr| test–train cross-survey))
-                    This preserves FULL structure but prevents “inflated VT” outlier folds.
-                    Same-survey VT entries (if any) are NOT scaled.
       - zero:         force C_VT=0 (test independent of train)
-      - within_survey:keep only C_VT entries where group(test)==group(train)
-      - survey_avg:   IMPUTE C_VT using TRAIN-derived survey-average cross correlations:
-                      rho_s = mean corr between survey s and other TRAIN surveys
-                      C_VT[i,j] = rho_{survey(train j)} * sqrt(varV_i * varT_j)
     """
     idx_train = np.asarray(idx_train, dtype=int)
     idx_test  = np.asarray(idx_test, dtype=int)
     C_full = np.asarray(C_full, dtype=float)
 
     cross_mode = str(cross_mode).strip().lower()
-    if cross_mode not in ("full", "full_quotient", "zero", "within_survey", "survey_avg"):
+    if cross_mode not in ("full", "zero"):
         raise ValueError(f"Unknown cross_mode={cross_mode!r}")
 
     # Diagnostics/bookkeeping for cross regularization
@@ -2315,104 +2507,10 @@ def conditional_precompute(
     C_TV = C_full[np.ix_(idx_train, idx_test)]
     C_VT = C_TV.T
 
-    # Need groups for within_survey / survey_avg / full_quotient
-    if cross_mode in ("within_survey", "survey_avg", "full_quotient"):
-        if groups is None:
-            raise ValueError(f"cross_mode={cross_mode!r} requires groups=... aligned with C_full indices.")
-        groups = np.asarray(groups, dtype=int)
-        gT = groups[idx_train]
-        gV = groups[idx_test]
-
     # Apply cross-mode
     if cross_mode == "zero":
         C_TV = np.zeros_like(C_TV)
         C_VT = np.zeros_like(C_VT)
-    
-    elif cross_mode == "full_quotient":
-        # FULL pattern cross-covariance, but rescale cross-survey VT entries by a deterministic
-        # quotient q in [0,1] so that test–train cross-survey coupling does not exceed the
-        # typical train–train cross-survey coupling (robust median |corr|).
-        dT = np.maximum(np.diag(C_TT).astype(float), np.finfo(float).tiny)
-        dV = np.maximum(np.diag(C_VV).astype(float), np.finfo(float).tiny)
-
-        corr_TT = C_TT / np.sqrt(np.outer(dT, dT))
-        corr_VT_full = C_VT / np.sqrt(np.outer(dV, dT))
-
-        # Typical cross-survey |corr| inside TRAIN
-        m_train_cross = (gT[:, None] != gT[None, :])
-        vals_train = np.abs(corr_TT[m_train_cross]).ravel()
-        vals_train = vals_train[np.isfinite(vals_train)]
-        cross_stat_train_med_abs_corr = float(np.median(vals_train)) if vals_train.size else 0.0
-
-        # Cross-survey |corr| between TEST and TRAIN (only for pairs with different IDSURVEY)
-        m_vt_cross = (gV[:, None] != gT[None, :])
-        vals_vt = np.abs(corr_VT_full[m_vt_cross]).ravel()
-        vals_vt = vals_vt[np.isfinite(vals_vt)]
-        cross_stat_vt_med_abs_corr = float(np.median(vals_vt)) if vals_vt.size else 0.0
-
-        # Compute quotient (never amplify; only shrink)
-        if cross_stat_vt_med_abs_corr <= 0.0:
-            # If VT cross-survey is essentially zero, don't touch it.
-            cross_scale = 1.0
-        else:
-            cross_scale = float(min(1.0, cross_stat_train_med_abs_corr / cross_stat_vt_med_abs_corr))
-
-        # Apply scaling ONLY to cross-survey VT entries (same-survey VT entries remain FULL)
-        if cross_scale < 1.0 and np.any(m_vt_cross):
-            C_VT = C_VT.copy()
-            C_VT[m_vt_cross] *= cross_scale
-            C_TV = C_VT.T
-
-    elif cross_mode == "within_survey":
-        # keep only same-group cross entries
-        m = (gV[:, None] == gT[None, :])
-        C_VT = C_VT * m
-        C_TV = C_VT.T
-
-    elif cross_mode == "survey_avg":
-        # Build TRAIN-derived rho_s for each TRAIN survey s:
-        # rho_s = mean_{i in s, j not in s} corr(i,j) using TRAIN covariance only
-        dT = np.maximum(np.diag(C_TT).astype(float), np.finfo(float).tiny)
-        sT = np.sqrt(dT)
-
-        # Correlation between TRAIN points
-        denom_TT = np.sqrt(np.outer(dT, dT))
-        corr_TT = C_TT / denom_TT
-
-        uniq = np.unique(gT)
-
-        rho_by_sid: dict[int, float] = {}
-        for sid in uniq:
-            m_in = (gT == sid)
-
-            per_other = []
-            for tid in uniq:
-                if tid == sid:
-                    continue
-                m_out = (gT == tid)
-                if not np.any(m_out):
-                    continue
-
-                block = corr_TT[np.ix_(m_in, m_out)].ravel()
-                block = block[np.isfinite(block)]
-                if block.size == 0:
-                    continue
-
-                # Robust within-pair summary (median is parameter-free)
-                per_other.append(float(np.median(block)))
-
-            # Survey-balanced mean across other surveys (each tid counts equally)
-            rho_by_sid[int(sid)] = float(np.mean(per_other)) if per_other else 0.0
-
-        rho_train = np.array([rho_by_sid[int(s)] for s in gT], dtype=float)
-
-        # Impute C_VT from rho_train and diagonals of TT/VV
-        dV = np.maximum(np.diag(C_VV).astype(float), np.finfo(float).tiny)
-        sV = np.sqrt(dV)
-
-        # correlation(test i, train j) = rho_train[j]
-        C_VT = np.outer(sV, sT * rho_train)
-        C_TV = C_VT.T
 
     # Factorize TT once
     cho_TT = cho_factor(C_TT, lower=True, check_finite=False)
@@ -2489,26 +2587,6 @@ def _blockdiag_from_blocks(C: np.ndarray, blocks: list[np.ndarray]) -> np.ndarra
     return B
 
 
-def shrink_offdiag_by_blocks(C: np.ndarray, blocks: list[np.ndarray], gamma: float) -> np.ndarray:
-    """
-    Regularize cross-block covariance only:
-      - within-block entries unchanged
-      - cross-block entries multiplied by (1 - gamma)
-    gamma=0 -> FULL
-    gamma=1 -> block-diagonal by blocks
-    """
-    if not (0.0 <= gamma <= 1.0):
-        raise ValueError(f"gamma must be in [0,1], got {gamma}")
-
-    B = _blockdiag_from_blocks(C, blocks)
-    # Equivalent to: within stays, offdiag shrinks
-    C_reg = (1.0 - gamma) * C + gamma * B
-
-    # Symmetrize (numerical safety)
-    C_reg = 0.5 * (C_reg + C_reg.T)
-    return C_reg
-
-
 def _kfold_splits(n: int, k: int, seed: int = 0):
     rng = np.random.default_rng(seed)
     perm = rng.permutation(n)
@@ -2533,58 +2611,6 @@ def _gaussian_loglike_zero_mean(X: np.ndarray, C: np.ndarray) -> float:
     m = X.shape[0]
     return -0.5 * (m * logdet + quad)
 
-
-def estimate_gamma_offdiag_cv(
-    mocks: np.ndarray,
-    blocks: list[np.ndarray],
-    k: int = 5,
-    gamma_grid: np.ndarray | None = None,
-    seed: int = 0,
-) -> tuple[float, dict]:
-    """
-    Choose gamma by K-fold CV on mocks:
-      - build sample covariance on train mocks
-      - regularize cross-block covariance with gamma
-      - score by Gaussian predictive log-likelihood on val mocks
-    """
-    if gamma_grid is None:
-        gamma_grid = np.linspace(0.0, 1.0, 41)
-
-    X = np.asarray(mocks, dtype=float)
-    if X.ndim != 2:
-        raise ValueError("mocks must be 2D array: (n_mocks, n_data)")
-
-    # mean-subtract mocks
-    X = X - np.mean(X, axis=0, keepdims=True)
-
-    scores = np.zeros_like(gamma_grid, dtype=float)
-
-    for tr_idx, va_idx in _kfold_splits(X.shape[0], k=k, seed=seed):
-        Xtr = X[tr_idx]
-        Xva = X[va_idx]
-
-        Ctr = np.cov(Xtr, rowvar=False, ddof=1)
-
-        # Blockdiag target is constructed from Ctr itself (preserve within-block exactly)
-        Btr = _blockdiag_from_blocks(Ctr, blocks)
-
-        for i, g in enumerate(gamma_grid):
-            Cg = (1.0 - g) * Ctr + g * Btr
-            Cg = 0.5 * (Cg + Cg.T)
-            scores[i] += _gaussian_loglike_zero_mean(Xva, Cg)
-
-    best_i = int(np.argmax(scores))
-    best_gamma = float(gamma_grid[best_i])
-
-    diag = {
-        "gamma_grid": gamma_grid,
-        "scores": scores,
-        "best_index": best_i,
-        "best_gamma": best_gamma,
-    }
-    return best_gamma, diag
-
-
 def conditional_chi2_from_precompute(r_full: np.ndarray, pre: dict) -> float:
     """Compute χ²_test|train using a precomputed Schur complement."""
     r_full = np.asarray(r_full, dtype=float)
@@ -2599,45 +2625,6 @@ def conditional_chi2_from_precompute(r_full: np.ndarray, pre: dict) -> float:
 
     return float(r_cond @ cho_solve(pre["cho_cond"], r_cond, check_finite=False))
 
-def conditional_chi2_gaussian(resid: np.ndarray, C: np.ndarray, test_idx: np.ndarray) -> float:
-    """
-    Compute chi^2 for x_test | x_train under a joint Gaussian with covariance C,
-    where resid = (data - model) in the SAME ordering as C.
-    """
-    resid = np.asarray(resid, dtype=float)
-    test_idx = np.asarray(test_idx, dtype=int)
-
-    n = C.shape[0]
-    mask = np.ones(n, dtype=bool)
-    mask[test_idx] = False
-    train_idx = np.nonzero(mask)[0]
-
-    r_t = resid[test_idx]
-    r_T = resid[train_idx]
-
-    C_tt = C[np.ix_(test_idx, test_idx)]
-    C_tT = C[np.ix_(test_idx, train_idx)]
-    C_Tt = C_tT.T
-    C_TT = C[np.ix_(train_idx, train_idx)]
-
-    # Solve C_TT^{-1} r_T and C_TT^{-1} C_Tt via Cholesky (avoid explicit inverse)
-    L = np.linalg.cholesky(C_TT)
-    alpha = np.linalg.solve(L.T, np.linalg.solve(L, r_T))      # C_TT^{-1} r_T
-    M = np.linalg.solve(L.T, np.linalg.solve(L, C_Tt))         # C_TT^{-1} C_Tt
-
-    # conditional mean shift
-    mu = C_tT @ alpha
-    r_cond = r_t - mu
-
-    # conditional covariance (Schur complement)
-    C_cond = C_tt - C_tT @ M
-    C_cond = 0.5 * (C_cond + C_cond.T)
-
-    # chi^2 with Cholesky
-    Lc = np.linalg.cholesky(C_cond)
-    z = np.linalg.solve(Lc, r_cond)
-    return float(z.T @ z)
-
 def chi2_gaussian(r: np.ndarray, C: np.ndarray) -> float:
     """
     Quadratic form χ² = rᵀ C⁻¹ r using a Cholesky solve (stable).
@@ -2646,22 +2633,6 @@ def chi2_gaussian(r: np.ndarray, C: np.ndarray) -> float:
     C = np.asarray(C, dtype=float)
     cho = cho_factor(C, lower=True, check_finite=False)
     return float(r @ cho_solve(cho, r, check_finite=False))
-
-def chi2_sn_marginalized_M(sn: SNData, r0: np.ndarray) -> float:
-    """
-    Marginalize (profile out) the global additive SN intercept M for m_b_corr-like observables.
-
-    r0 MUST be: r0 = y - mu_ref   (i.e. NO intercept subtraction).
-
-    This matches the algebra already used in chi2_sn() when sn.y_is_mu is False,
-    but is convenient for CV where we want conditional scores via:
-        chi2_cond(test|train) = chi2_marg(full) - chi2_marg(train)
-    """
-    r0 = np.asarray(r0, dtype=float)
-    Cinv_r0 = cho_solve(sn.cho, r0, check_finite=False)
-    numer = float(sn.ones @ Cinv_r0)
-    return float(r0 @ Cinv_r0 - (numer * numer) / sn.ones_Cinv_ones)
-
 
 def make_folds_zstratified(z: np.ndarray, k: int, seed: int) -> list[np.ndarray]:
     """
@@ -3112,7 +3083,13 @@ def run_null_injections(
     # Null-generating model: baseline ΛCDM best-fit
     lta0 = LTAParams(s_anchor_km_s_per_mpc=0.0, g_complex=0.0, g_life=0.0)
     mu0 = predict_sn_mu(sn, H0=H0_base, Om=Om_base, epochs=epochs, zmax_table=zmax_table, lta_obj=lta0)
-    DM0, Hz0 = predict_bao_DM_Hz(bao, H0=H0_base, Om=Om_base, alpha_rd=alpha_base, epochs=epochs, zmax_table=zmax_table, lta_obj=lta0)
+    bao0 = predict_bao_vector(
+        bao,
+        H0=H0_base, Om=Om_base, alpha_rd=alpha_base,
+        epochs=epochs, zmax_table=zmax_table,
+        lta_obj=lta0,
+        invmap_n=None,
+    )
     if sn.anchor is not None:
         M_intercept0 = float(sn.anchor.M_cal)
     else:
@@ -3132,7 +3109,7 @@ def run_null_injections(
 
     for i in range(int(args.null_n)):
         sn_mock, bao_mock = simulate_mock_dataset(
-            sn, bao, mu0, DM0, Hz0, rng,
+            sn, bao, mu0, bao0, rng,
             M_intercept=M_intercept0,
         )
 
@@ -3249,14 +3226,14 @@ def run_cv_null_injections(
         lta_obj=lta0,
         invmap_n=None,
     )
-    DM0, Hz0 = predict_bao_DM_Hz(
+    bao0 = predict_bao_vector(
         bao,
-        H0=float(H0_base), Om=float(Om_base), alpha_rd=float(alpha_base),
+        H0=H0_base, Om=Om_base, alpha_rd=alpha_base,
         epochs=epochs, zmax_table=zmax_table,
         lta_obj=lta0,
         invmap_n=None,
     )
-
+    
     # SN intercept used to generate y in data space
     if sn.anchor is not None:
         M_intercept0 = float(sn.anchor.M_cal)
@@ -3306,12 +3283,8 @@ def run_cv_null_injections(
 
     for i in range(n_draw):
         sn_mock, bao_mock = simulate_mock_dataset(
-            sn, bao,
-            mu_model=mu0,
-            DM_model=DM0,
-            Hz_model=Hz0,
-            rng=rng,
-            M_intercept=float(M_intercept0),
+            sn, bao, mu0, bao0, rng,
+            M_intercept=M_intercept0,
         )
 
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
@@ -3425,7 +3398,7 @@ def run_cross_validation(
         raise ValueError(f"Unknown --cv-block {cv_block!r}")
 
     cond_cross = str(getattr(args, "cv_conditional_cross", "full")).strip().lower()
-    if cond_cross not in ("auto", "full", "full_quotient", "zero", "within_survey", "survey_avg"):
+    if cond_cross not in ("full", "zero"):
         raise ValueError(f"Unknown --cv-conditional-cross {cond_cross!r}")
 
     pred_mode = str(getattr(args, "cv_predictive", "plugin")).strip().lower()
@@ -3435,22 +3408,6 @@ def run_cross_validation(
     lap_eps_scale = float(getattr(args, "cv_laplace_eps_scale", 1.0))
     lap_ridge = float(getattr(args, "cv_laplace_ridge", 1e-6))
     lap_jitter = float(getattr(args, "cv_laplace_jitter_frac", 1e-12))
-
-
-    # Backwards-compatible behavior:
-    # Previously, 'auto' forced 'zero' when --cv-block survey.
-    # For full Gaussian conditional CV, we want 'auto' -> 'full'.
-    if cond_cross == "auto":
-        if cv_block == "survey":
-            print(
-                "[CV] --cv-conditional-cross auto: using FULL cross-covariance (Gaussian conditional). "
-                "For the old independent-block behavior, pass --cv-conditional-cross zero."
-            )
-        cond_cross = "full"
-
-    within_survey_cross = (cond_cross == "within_survey")
-    zero_cross_cond = (cond_cross == "zero")
-    cond_cross_effective = "zero" if zero_cross_cond else "full"
 
     has_cal = (sn.is_calibrator is not None) and np.any(sn.is_calibrator) and (not sn.y_is_mu)
 
@@ -4210,8 +4167,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--sn-dat", default="./Pantheon+SH0ES.dat")
     ap.add_argument("--sn-cov", default="./Pantheon+SH0ES_STAT+SYS.cov")
-    ap.add_argument("--bao-res", default="./BAO_consensus_results_dM_Hz.txt")
-    ap.add_argument("--bao-cov", default="./BAO_consensus_covtot_dM_Hz.txt")
+    ap.add_argument("--bao-res", default="./desi_gaussian_bao_ALL_GCcomb_mean.txt")
+    ap.add_argument("--bao-cov", default="./desi_gaussian_bao_ALL_GCcomb_cov.txt")
     ap.add_argument(
         "--sn-ycol",
         default="m_b_corr",
@@ -4236,7 +4193,7 @@ def main() -> int:
 
     ap.add_argument(
         "--sn-errcol",
-        default="MU_SH0ES_ERR_DIAG",
+        default=None,
         help=(
             "Error column to use when --sn-cov-mode diag.\n"
             "If omitted, inferred from --sn-ycol:\n"
@@ -4337,21 +4294,11 @@ def main() -> int:
     ap.add_argument(
         "--cv-conditional-cross",
         default="full",
-        choices=["auto", "full", "full_quotient", "zero", "within_survey", "survey_avg"],
+        choices=["full", "zero",],
         help=(
             "For conditional CV scoring, how to treat train–test cross-covariance C_VT.\n"
             "  - full: use C_VT from the provided covariance (true Gaussian conditional p(test|train))\n"
-            "  - full_quotient: use FULL C_VT pattern but rescale cross-survey VT entries by a deterministic\n"
-            "                   quotient q computed from robust |corr| stats inside TRAIN (parameter-free).\n"
             "  - zero: force C_VT=0 so test is independent of train (conditional reduces to marginal)\n"
-            "  - within_survey: keep only C_VT entries where IDSURVEY(test)==IDSURVEY(train)\n"
-            "                   (for leave-one-survey-out, this zeroes C_VT by construction)\n"
-            "  - auto: backwards-compatible alias (currently treated as 'full'; use 'zero' explicitly for old behavior)"
-            "  - survey_avg: replace train–test C_VT with an 'expected' cross-survey coupling computed\n"
-            "                from TRAIN: for each train survey, use its mean cross-survey correlation\n"
-            "                to other TRAIN surveys, then set C_VT[i,j]=rho_survey(j)*sqrt(var_i var_j)\n"
-            "                (nonzero even for leave-one-survey-out, no tunable parameter)\n"
-
         ),
     )
 
@@ -4455,6 +4402,18 @@ def main() -> int:
         help="Planck prior type: 'diag' uses (mean±sigma) uncorrelated; 'chain' uses correlated covariance from MCMC chains.",
     )
     ap.add_argument(
+        "--planck-prior-space",
+        default="omega_m_alpha",
+        choices=["h0_om_alpha", "omega_m_alpha"],
+        help=(
+            "Which parameterization to use for the Planck-derived Gaussian prior.\n"
+            "  - h0_om_alpha:   prior on (H0, Omega_m, alpha_rd)  [legacy / assumes standard late-time mapping]\n"
+            "  - omega_m_alpha: prior on (omega_m, alpha_rd), where omega_m=Omega_m*h^2 and h=H0/100\n"
+            "                  (recommended for LTA: uses early-time density + ruler, avoids imposing Planck-derived H0).\n"
+        ),
+    )
+
+    ap.add_argument(
         "--planck-chain-root",
         default="./planck_chains/COM_CosmoParams_base-plikHM_R3.01/base/plikHM_TTTEEE_lowl_lowE_lensing/base_plikHM_TTTEEE_lowl_lowE_lensing",
         help=(
@@ -4475,7 +4434,7 @@ def main() -> int:
         choices=["plugin", "laplace"],
         help=(
             "How to score held-out folds.\n"
-            "  - plugin:  current behavior using point estimate theta_hat\n"
+            "  - plugin:  using point estimate theta_hat\n"
             "  - laplace: approximate posterior predictive by Laplace (Gaussian) parameter posterior + linearized residuals\n"
         ),
     )
@@ -4521,6 +4480,21 @@ def main() -> int:
     if fixed_om is not None:
         if (not np.isfinite(fixed_om)) or (fixed_om <= 0.0) or (fixed_om >= 1.0):
             raise ValueError(f"--fix-om must satisfy 0 < Om < 1, got {args.fix_om}")
+        
+    if args.sn_cov_mode == "diag":
+        if args.sn_errcol is None:
+            inferred = {
+                "MU_SH0ES": "MU_SH0ES_ERR_DIAG",
+                "m_b_corr": "m_b_corr_err_DIAG",
+            }.get(args.sn_ycol)
+
+            if inferred is None:
+                raise ValueError(
+                    f"Cannot infer --sn-errcol from --sn-ycol={args.sn_ycol!r}. "
+                    "Please provide --sn-errcol explicitly."
+                )
+
+            args.sn_errcol = inferred
 
     global EARLY_PRIORS
     EARLY_PRIORS = None
@@ -4537,19 +4511,42 @@ def main() -> int:
             if not args.planck_chain_root:
                 raise ValueError("--planck-prior-mode chain requires --planck-chain-root")
 
+            planck_space = str(getattr(args, "planck_prior_space", "h0_om_alpha")).strip().lower()
+
             mv_full = build_planck_prior_from_chain(
                 chain_root=args.planck_chain_root,
                 rd_fid=rd_fid,
+                space=planck_space,
             )
 
             keep_idx: list[int] = []
             keep_labels: list[str] = []
-            if include_h0:
-                keep_idx.append(0); keep_labels.append("H0")
-            if include_om:
-                keep_idx.append(1); keep_labels.append("Omega_m")
-            if include_a:
-                keep_idx.append(2); keep_labels.append("alpha_rd")
+
+            if planck_space == "h0_om_alpha":
+                if include_h0:
+                    keep_idx.append(0); keep_labels.append("H0")
+                if include_om:
+                    keep_idx.append(1); keep_labels.append("Omega_m")
+                if include_a:
+                    keep_idx.append(2); keep_labels.append("alpha_rd")
+
+            elif planck_space == "omega_m_alpha":
+                # In this corrected space, there is no direct H0 component.
+                if include_h0:
+                    print(
+                        "[prior][warn] --planck-prior-space omega_m_alpha ignores the H0 component. "
+                        "If you truly want a Planck-derived H0 prior, use --planck-prior-space h0_om_alpha."
+                    )
+                # Reuse the existing include flags:
+                #   include_om controls omega_m component
+                #   include_a  controls alpha_rd component
+                if include_om:
+                    keep_idx.append(0); keep_labels.append("omega_m")
+                if include_a:
+                    keep_idx.append(1); keep_labels.append("alpha_rd")
+
+            else:
+                raise ValueError(f"Unknown --planck-prior-space {planck_space!r}")
 
             if len(keep_idx) == 0:
                 EARLY_PRIORS = None
@@ -4565,7 +4562,7 @@ def main() -> int:
                     label=f"{mv_full.label} (subset)",
                 )
 
-                EARLY_PRIORS = EarlyPriors(mv=mv, mv_idx=tuple(keep_idx))
+                EARLY_PRIORS = EarlyPriors(mv=mv, mv_idx=tuple(keep_idx), mv_space=planck_space)
 
                 # Optional: print correlation matrix for sanity
                 C = mv.cov
@@ -4573,13 +4570,89 @@ def main() -> int:
                 sig = np.maximum(sig, np.finfo(float).tiny)
                 corr = C / np.outer(sig, sig)
                 print("[prior] Planck CHAIN correlated prior enabled (subset):")
+                print("  space  =", planck_space)
                 print("  labels =", mv.labels if mv.labels else keep_labels)
                 print("  mean   =", mv.mean)
                 print("  sig    =", sig)
                 print("  corr   =\n", corr)
 
+                # Extra robustness / interpretability diagnostics
+                eig = np.linalg.eigvalsh(C)
+                eig_min = float(np.min(eig))
+                eig_max = float(np.max(eig))
+                cond = float(eig_max / eig_min) if eig_min > 0 else float("inf")
+                print(f"  eigmin/eigmax = {eig_min:.3e} / {eig_max:.3e}   cond≈{cond:.3e}")
+
+                lbls = tuple(mv.labels) if mv.labels else tuple(keep_labels)
+
+                # If alpha_rd is present, show implied r_drag in Mpc (ties back to BAO convention)
+                j_alpha = None
+                for j, lab in enumerate(lbls):
+                    if "alpha" in str(lab).lower():
+                        j_alpha = int(j)
+                        break
+                if j_alpha is not None:
+                    alpha_mu = float(mv.mean[j_alpha])
+                    alpha_sig = float(np.sqrt(max(C[j_alpha, j_alpha], np.finfo(float).tiny)))
+                    rd_mu = alpha_mu * rd_fid
+                    rd_sig = alpha_sig * rd_fid
+                    print(f"  implies r_drag = alpha*rd_fid: {rd_mu:.6f} ± {rd_sig:.6f} (1σ), rd_fid={rd_fid:.6f}")
+
+                # If H0 and Omega_m are present, print the at-mean omega_m=Om*h^2 (common early-time density)
+                try:
+                    j_H0 = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() in ("h0",)][0]
+                except Exception:
+                    j_H0 = None
+                try:
+                    j_Om = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() in ("omega_m", "omegam", "omega_matter", "omegamatter", "omega_m", "omega_m", "omega_m", "omega_m") or str(lab).strip().lower() in ("omega_m", "omega_m")][0]
+                except Exception:
+                    j_Om = None
+                # Handle exact label used in your code: "Omega_m"
+                if j_Om is None:
+                    try:
+                        j_Om = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() in ("omega_m", "omega_m") or str(lab).strip().lower() == "omega_m"][0]
+                    except Exception:
+                        j_Om = None
+                if j_Om is None:
+                    try:
+                        j_Om = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() == "omega_m"][0]
+                    except Exception:
+                        pass
+                if j_Om is None:
+                    # Your label is exactly "Omega_m"
+                    try:
+                        j_Om = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() == "omega_m" or str(lab).strip().lower() == "omega_m"][0]
+                    except Exception:
+                        pass
+                if j_Om is None:
+                    try:
+                        j_Om = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() == "omega_m"][0]
+                    except Exception:
+                        pass
+                # Finally, catch "Omega_m" explicitly
+                if j_Om is None:
+                    try:
+                        j_Om = [j for j, lab in enumerate(lbls) if str(lab).strip().lower() == "omega_m" or str(lab).strip().lower() == "omega_m"][0]
+                    except Exception:
+                        pass
+
+                if (j_H0 is not None) and (j_Om is not None):
+                    H0_mu = float(mv.mean[j_H0])
+                    Om_mu = float(mv.mean[j_Om])
+                    h_mu = H0_mu / 100.0
+                    omega_m_mu = Om_mu * h_mu * h_mu
+                    print(f"  at-mean derived omega_m=Om*(H0/100)^2 ≈ {omega_m_mu:.8f}  (from mean point; ignores covariance)")
+
+
         else:
             # Diagonal (uncorrelated) priors
+            planck_space = str(getattr(args, "planck_prior_space", "h0_om_alpha")).strip().lower()
+            if planck_space != "h0_om_alpha":
+                raise ValueError(
+                    "--planck-prior-mode diag only supports --planck-prior-space h0_om_alpha. "
+                    "Use --planck-prior-mode chain for omega_m_alpha (recommended)."
+                )
+
             h0_prior = None
             om_prior = None
             alpha_prior = None
@@ -4667,7 +4740,7 @@ def main() -> int:
         print(f"[SN] cov diag median (calib)    : {float(np.median(diag[sn.is_calibrator])):.6g}")
         print(f"[SN] cov diag median (non-calib): {float(np.median(diag[~sn.is_calibrator])):.6g}")
 
-    bao = build_bao_data(args.bao_res, args.bao_cov)
+    bao = build_bao_data(args.bao_res, args.bao_cov, rd_fid=float(args.bao_rd_fid))
 
     # Make sure zmax_table covers both datasets
     zmax_needed = float(max(np.max(sn.zHD), np.max(bao.z))) + 0.05
@@ -4706,6 +4779,16 @@ def main() -> int:
     H0_b, Om_b, alpha_b = res_base.x
     chi2_b = res_base.fun
     print(f"Baseline best-fit: H0={H0_b:.4f}, Om={Om_b:.5f}, chi2={chi2_b:.3f}, alpha_rd={alpha_b:.5f}")
+
+    # ---- Standard-model self-consistency checks (ties back to ΛCDM equations) ----
+    tables_b_check = build_cosmology_tables(H0=float(H0_b), Om=float(Om_b), zmax=zmax_table)
+    log_lcdm_table_sanity("baseline_tables", tables_b_check, H0=float(H0_b), Om=float(Om_b))
+    log_lta_zero_limit_sanity("baseline_tables", tables_b_check, epochs)
+
+    # ---- Planck-prior evaluation at baseline best-fit ----
+    if EARLY_PRIORS is not None:
+        log_planck_prior_point("baseline_bestfit", float(H0_b), float(Om_b), float(alpha_b), rd_fid=float(args.bao_rd_fid))
+
 
     # ---- Sanity test: LTA can reproduce baseline when s_anchor=0 ----
     # If this is not true (to ~1e-6), something is inconsistent in the implementation.
@@ -4958,7 +5041,10 @@ def main() -> int:
         print(f"  chi2_data   ≈ {chi2_data_l:.6f}")
         print(f"  chi2_prior  ≈ {chi2_prior_l:.6f}")
         print(f"  chi2_total  ≈ {chi2_l:.6f}  (what optimizer minimized)")
- 
+        
+        # ---- Planck-prior evaluation at LTA best-fit ----
+        if EARLY_PRIORS is not None:
+            log_planck_prior_point(f"{form}_bestfit", float(H0_l), float(Om_l), float(alpha_l), rd_fid=float(args.bao_rd_fid))
 
         # Model selection
         Nsn = len(sn.y)
@@ -5031,6 +5117,27 @@ def main() -> int:
             print(f"[anchor]   chi2_hf {form}   = {info_l['chi2_hf']:.3f}")
             print(f"[anchor]   Δchi2_hf (baseline − {form}) = {info_b['chi2_hf'] - info_l['chi2_hf']:+.3f}")
 
+        def plot_bao_by_qty(bao: BAOData, pred_b: np.ndarray, pred_l: np.ndarray, form: str):
+            q = np.asarray(bao.qty, dtype=str)
+            for qname in sorted(set(q.tolist())):
+                m = (q == qname)
+                if not np.any(m):
+                    continue
+                fig = plt.figure()
+                plt.scatter(bao.z[m], bao.y[m], label=f"obs {qname}")
+                plt.scatter(bao.z[m], pred_b[m], label="pred baseline")
+                plt.scatter(bao.z[m], pred_l[m], label=f"pred LTA ({form})")
+                plt.xlabel("z (observed)")
+                plt.ylabel(qname)
+                plt.title(f"BAO comparison: {qname} ({form})")
+                plt.legend()
+                plt.tight_layout()
+                save_fig(fig, f"bao_{qname}_{form}")
+        lta0 = LTAParams(s_anchor_km_s_per_mpc=0.0, g_complex=0.0, g_life=0.0)
+        bao_pred_b = predict_bao_vector(bao, H0_b, Om_b, alpha_b, epochs, zmax_table, lta0, invmap_n=None)
+        bao_pred_l = predict_bao_vector(bao, H0_l, Om_l, alpha_l, epochs_best, zmax_table, lta_best_obj, invmap_n=None)
+        plot_bao_by_qty(bao, bao_pred_b, bao_pred_l, form=form)
+
         fig_dmu = plt.figure()
         plt.scatter(sn.zHD, mu_l - mu_b, s=6, alpha=0.5)
         plt.xscale("log")
@@ -5070,30 +5177,6 @@ def main() -> int:
         plt.legend()
         plt.tight_layout()
         save_fig(fig1, f"sn_residuals_{form}")
-
-        # BAO D_M
-        fig2 = plt.figure()
-        plt.scatter(bao.z, bao.DM, label="D_M obs")
-        plt.scatter(bao.z, DM_b, label="D_M pred baseline")
-        plt.scatter(bao.z, DM_l, label=f"D_M pred LTA ({form})")
-        plt.xlabel("z (observed)")
-        plt.ylabel("D_M [Mpc]")
-        plt.title(f"BAO D_M comparison ({form})")
-        plt.legend()
-        plt.tight_layout()
-        save_fig(fig2, f"bao_DM_{form}")
-
-        # BAO H_z
-        fig3 = plt.figure()
-        plt.scatter(bao.z, bao.Hz, label="H_z obs")
-        plt.scatter(bao.z, Hz_b, label="H_z pred baseline")
-        plt.scatter(bao.z, Hz_l, label=f"H_z pred LTA ({form})")
-        plt.xlabel("z (observed)")
-        plt.ylabel("H_z [km/s/Mpc]")
-        plt.title(f"BAO H_z comparison ({form})")
-        plt.legend()
-        plt.tight_layout()
-        save_fig(fig3, f"bao_Hz_{form}")
 
         # z mapping
         fig4 = plt.figure()
@@ -5267,27 +5350,6 @@ def main() -> int:
         save_fig(fig_inv, f"z_inverse_{form}")
 
         # ------------------------------------------------------------
-        # Diagnostic only: compare transverse BAO D_M under conventions A vs B
-        # (Likelihood should use A only.)
-        # ------------------------------------------------------------
-        chi_bao_diag = tables_lta.chi_of_z(zcos_bao_diag)
-        I_bao_diag = lta_integral_I(chi_bao_diag, tables_lta, lta_best, epochs_best)
-
-        DM_A = chi_bao_diag / alpha_l
-        DM_B_diag = (chi_bao_diag * np.exp(np.clip(I_bao_diag, -EXP_CLIP, EXP_CLIP))) / alpha_l
-
-        fig_bao_dmAB = plt.figure()
-        plt.scatter(bao.z, bao.DM, label="D_M obs")
-        plt.scatter(bao.z, DM_A, label="D_M pred (A)")
-        plt.scatter(bao.z, DM_B_diag, label="D_M pred (B diagnostic)")
-        plt.xlabel("z (observed)")
-        plt.ylabel("D_M [Mpc]")
-        plt.title(f"BAO transverse diagnostic: A vs B ({form})")
-        plt.legend()
-        plt.tight_layout()
-        save_fig(fig_bao_dmAB, f"bao_DM_A_vs_B_diagnostic_{form}")
-
-        # ------------------------------------------------------------
         # Diagnostic: whitened residual improvement (handles full covariance)
         # ------------------------------------------------------------
         r_b = sn_residuals(mu_b)
@@ -5447,20 +5509,6 @@ def main() -> int:
         cv_null_form = str(getattr(args, "cv_null_form", "") or "").strip()
         if not cv_null_form:
             cv_null_form = str(args.cv_form).strip()
-
-        run_cv_null_injections(
-            form=cv_null_form,
-            sn=sn,
-            bao=bao,
-            epochs=epochs,
-            zmax_table=zmax_table,
-            H0_base=float(H0_b),
-            Om_base=float(Om_b),
-            alpha_base=float(alpha_b),
-            bounds_base=bounds_base,
-            args=args,
-            save_fig=save_fig,
-        )
 
         # --- CV-null for telescope/survey-group held-out scoring ---
         if sn.group is not None:

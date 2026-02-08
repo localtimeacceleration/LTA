@@ -54,6 +54,24 @@
 \newcommand{\dchi}{\Delta\chi^2}
 \providecommand{\dd}{\mathrm{d}}
 
+% ----------------------------------------------------------------------
+% Jordan/Einstein frame notation (Jordan frame is physical for matter)
+% ----------------------------------------------------------------------
+\newcommand{\gJ}{g^{\mathrm{J}}}        % Jordan metric (matter frame)
+\newcommand{\gE}{g^{\mathrm{E}}}        % Einstein metric (canonical gravity frame)
+\newcommand{\aJ}{a_{\mathrm{J}}}
+\newcommand{\aE}{a_{\mathrm{E}}}
+\newcommand{\HJ}{H_{\mathrm{J}}}
+\newcommand{\HE}{H_{\mathrm{E}}}
+\newcommand{\tJ}{t_{\mathrm{J}}}
+\newcommand{\tE}{t_{\mathrm{E}}}
+\newcommand{\Mp}{M_{\mathrm{Pl}}}
+\newcommand{\Fpsi}{F(\psi)}
+\newcommand{\Upsi}{U(\psi)}
+\newcommand{\Apsi}{A(\psi)}
+\newcommand{\Cpsi}{\mathcal{C}(\psi)} % with \Cpsi \equiv \ln \Apsi
+
+
 \title{Local Time Acceleration:\\
 \large A Phenomenological Solution to the Hubble Tension Driven by\\
 \large Kinematic Anomalies in the Local Void}
@@ -82,13 +100,6 @@
 \href{mailto:localtimeacceleration@gmail.com}{\texttt{LocalTimeAcceleration@gmail.com}}
 \end{minipage}\hfill
 \end{center}
-
-% --- epigraph ---
-\vspace{0.6\baselineskip}
-\begin{center}
-\small\itshape For the benefit of humankind, we stand on the shoulders of giants.
-\end{center}
-\vspace{0.9\baselineskip}
 
 \begin{abstract}
 The tension between local ($H_0 \approx 73$ km/s/Mpc) and early-universe ($H_0 \approx 67$ km/s/Mpc) 
@@ -186,6 +197,16 @@ treatment and numerical safeguards.
 Because the LTA extension is nested and we impose physical bounds on the LTA amplitude, the null is
 a boundary point and standard asymptotic $\chi^2$-difference heuristics are not guaranteed to be
 reliable.
+
+Because the LTA amplitude is constrained (e.g.\ \(s_{\rm anchor}\ge 0\)), the null is a boundary
+point and standard Wilks-theorem \(\chi^2\) asymptotics need not hold; in simple one-sided cases the
+likelihood-ratio statistic approaches a nonstandard mixture distribution rather than \(\chi^2_1\)
+\cite{Chernoff1954,SelfLiang1987}.
+In astronomy/cosmology contexts this issue is well known in the detection of additional model
+components and motivates Monte Carlo calibration when regularity conditions fail \cite{Protassov2002}.
+We therefore treat the parametric bootstrap as the primary calibration for \(\Delta\chi^2\) in this
+paper (Sec.~\ref{sec:null_bootstrap}).
+
 We therefore calibrate the detection significance using a Monte Carlo parametric bootstrap (null
 injections) under the baseline model, generating mock realizations with the \emph{same} released
 covariances and refitting both models end-to-end (Sec.~\ref{sec:opt_stat} and
@@ -407,13 +428,14 @@ nested, bounded, and testable.
 \subsection{Why an Earth-retarded time argument appears}
 
 The distinctive structural element of the LTA ansatz is that the drift-rate profile is evaluated as
-a function of an \emph{Earth-retarded lookback time} $\tret$ rather than as a generic function of
-cosmic time or scale factor.
-The purpose of this construction is causal bookkeeping: if the source of the effect is local to the
-observer’s environment (broadly construed), then any influence on the observed lightcone must be
+a function of an \emph{observer-retarded} lookback time \(\tret\), rather than as a generic function
+of cosmic time or scale factor.
+The purpose of this construction is causal bookkeeping: if the underlying chronometric coupling is
+a \emph{universal} law but the dominant contribution in the present epoch is sourced by the
+observer’s nearby environment, then any influence on the observed past light cone must be
 consistent with propagation at or below the speed of light.
 We therefore tie the effective drift strength at a point along the photon path to a retarded-time
-assignment based on the observer’s worldline and the background geometry (Sec.~\ref{sec:tret2}).
+assignment based on the observer worldline and the background geometry (Sec.~\ref{sec:tret2}).
 
 Importantly, ``Earth-sourced'' here should be read as \emph{observer-anchored} rather than as a
 commitment to a particular terrestrial mechanism.
@@ -485,70 +507,869 @@ In this sense, LTA is treated here as a \emph{testable phenomenological hypothes
 data are used to evaluate whether the mapping is statistically preferred, while the interpretation
 of its ultimate origin is left to independent constraints and future targeted tests
 (Sec.~\ref{sec:discussion}).
+
 % ======================================================================
-\section{Model definition: $\Lambda$CDM background plus LTA}
+\section{Photon-frequency transport and the physical meaning of an integrated $\Delta\ln(1+z)$}
+\label{sec:photon_transport}
+
+This paper’s data analysis is built around an \emph{integrated} redshift modification,
+\(\Delta\ln(1+z)\equiv I(\chi)\), and a corresponding local drift field \(s(\chi)\).
+Because this structure is central (and is used directly in the BAO Jacobian), we make explicit here
+how an integrated correction arises from standard photon-frequency transport once one posits a
+universal chronometric coupling between \emph{organization} and \emph{realized clock time}.
+
+\subsection{Redshift as a frequency ratio measured by matter clocks (Jordan frame)}
+\label{sec:photon_transport_gr}
+
+In geometric optics, a photon is described by a null wavevector \(k^\mu\) tangent to a null geodesic
+of the \emph{physical} (matter) metric. In the Jordan-first completion adopted in this revision,
+that physical metric is \(\gJ_{\mu\nu}\). Thus
+\begin{equation}
+k^\mu k_\mu = 0,
+\qquad
+k^\nu \nabla^{\mathrm{J}}_\nu k^\mu = 0,
+\end{equation}
+and the frequency measured by an observer with Jordan-frame 4-velocity \(u^\mu\) is
+\begin{equation}
+\nu_{\mathrm{J}} \propto -\,k_\mu u^\mu \quad (\text{contraction with } \gJ_{\mu\nu}).
+\label{eq:nu_gr_def}
+\end{equation}
+Operationally, redshift is a \emph{ratio of measured frequencies}:
+\begin{equation}
+1+z_{\rm obs} \equiv \frac{\nu_{\rm emit,J}}{\nu_{\rm obs,J}}
+= \frac{(-k_\mu u^\mu)_{\rm emit}}{(-k_\mu u^\mu)_{\rm obs}}.
+\label{eq:z_gr_ratio}
+\end{equation}
+
+For comoving observers in an unperturbed Jordan-frame FLRW background,
+\(\gJ_{\mu\nu}dx^\mu dx^\nu = -d\tJ^2 + \aJ^2(\tJ)d\bm{x}^2\),
+Eq.~\eqref{eq:z_gr_ratio} yields the familiar scale-factor law
+\begin{equation}
+1+z_{\rm cos}=\frac{\aJ(\tJ_{\rm obs})}{\aJ(\tJ_{\rm emit})}.
+\label{eq:z_cos_flrw}
+\end{equation}
+(See, e.g., standard GR/cosmology treatments \cite{Wald1984GR}.)
+
+\subsection{Derived chronometric factor from Jordan-frame scalar--tensor structure}
+\label{sec:photon_transport_chrono}
+
+Earlier versions of this work introduced a universal chronometric factor \(A(\psi)\) as a direct
+postulate relating ``realized clock time'' to a background proper time. In the Jordan-frame-first
+scalar--tensor completion adopted here, the chronometric factor is \emph{derived} by the standard
+conformal transformation between Jordan and Einstein frames.
+
+\paragraph{Jordan vs.\ Einstein frames and a derived \(A\).}
+Recall from Sec.~\ref{sec:conformal_completion} that the Einstein-frame metric is defined by
+\(\gE_{\mu\nu}=\Fpsi\,\gJ_{\mu\nu}\), so that matter becomes conformally coupled in Einstein variables.
+The conformal factor that appears in the matter coupling is
+\begin{equation}
+\Apsi \equiv \Fpsi^{-1/2},
+\qquad
+\Cpsi \equiv \ln \Apsi = -\frac{1}{2}\ln \Fpsi,
+\label{eq:clk_factor_main}
+\end{equation}
+which is not an independent ingredient; it is fixed once \(F(\psi)\) is specified.
+
+\paragraph{Clock-time relation (frame conversion).}
+Jordan proper time is the physical clock time, while Einstein proper time is a computational
+convenience. Along any worldline,
+\begin{equation}
+d\tau_{\mathrm{J}} = \Apsi\, d\tau_{\mathrm{E}}.
+\label{eq:nu_meas_main}
+\end{equation}
+
+\paragraph{Frequency conversion and redshift bookkeeping.}
+A detector counts cycles \(N\) per unit proper time. Therefore the frequency measured by matter clocks
+in the physical frame is
+\begin{equation}
+\nu_{\mathrm{J}} \equiv \frac{dN}{d\tau_{\mathrm{J}}}
+= \frac{1}{\Apsi}\frac{dN}{d\tau_{\mathrm{E}}}
+= \frac{1}{\Apsi}\,\nu_{\mathrm{E}}.
+\end{equation}
+Using Eq.~\eqref{eq:z_gr_ratio}, the observed redshift may be written in Einstein variables as
+\begin{equation}
+1+z_{\rm obs}
+= \frac{\nu_{\rm emit,J}}{\nu_{\rm obs,J}}
+= \frac{\nu_{\rm emit,E}/\Apsi_{\rm emit}}{\nu_{\rm obs,E}/\Apsi_{\rm obs}}
+= (1+z_{\rm E})\,\frac{\Apsi_{\rm obs}}{\Apsi_{\rm emit}},
+\label{eq:zmap_endpoints_main}
+\end{equation}
+where \(1+z_{\rm E}\equiv \nu_{\rm emit,E}/\nu_{\rm obs,E}\) is the redshift defined in the Einstein
+variables.
+
+\paragraph{Homogeneous cancellation (why the background ladder is standard in Jordan).}
+In homogeneous FLRW, the Jordan and Einstein scale factors are related by
+\(\aE = \sqrt{\Fpsi}\,\aJ = \aJ/\Apsi\). Therefore
+\begin{equation}
+(1+z_{\rm E})\,\frac{\Apsi_{\rm obs}}{\Apsi_{\rm emit}}
+=
+\frac{\aE(\tE_{\rm obs})}{\aE(\tE_{\rm emit})}\,\frac{\Apsi_{\rm obs}}{\Apsi_{\rm emit}}
+=
+\frac{\aJ(\tJ_{\rm obs})}{\aJ(\tJ_{\rm emit})}
+\equiv 1+z_{\rm cos},
+\end{equation}
+so that in the strictly homogeneous limit \(z_{\rm obs}=z_{\rm cos}\) and the standard ladder relations
+are recovered in the physical Jordan frame (Sec.~\ref{sec:jordan_ladder}). In other words, the
+\emph{background} effect of \(\Apsi\) is already encoded in \(\HJ(z)\) once one solves the Jordan-frame
+scalar--tensor background.
+
+\paragraph{Where an additional \(\Delta\ln(1+z)\) imprint can arise.}
+Any extra mapping between an ``underlying'' cosmological redshift and the observed redshift must come
+from \emph{inhomogeneous} structure (endpoint and integrated effects) or from the backreaction of the
+homogeneous mode on \(\HJ(z)\). Writing
+\(\psi=\bar\psi(\tJ)+\delta\psi(x)\) and \(\Cpsi=\bar{\C}(\tJ)+\delta\C(x)\), the observer-local imprint
+tested by the LTA mapping corresponds to packaging the net perturbative contribution as
+\begin{equation}
+\ln\!\left(\frac{1+\zobs}{1+\zcos}\right)
+\equiv I
+\simeq
+\left[\delta\C\right]_{\rm obs}-\left[\delta\C\right]_{\rm emit}
++\int_\gamma k^\mu \nabla^{\mathrm{J}}_\mu(\delta\C)\,d\lambda,
+\label{eq:zmap_C_main}
+\end{equation}
+which motivates the purely phenomenological \(I(\chi)\) parameterization used in the SN+BAO pipeline
+as a controlled observer-local limit (Sec.~\ref{sec:lta_mapping}).
+
+\subsection{Why the correction is naturally written as an \emph{integral} in $\ln(1+z)$}
+\label{sec:photon_transport_integrated}
+
+Even though Eq.~\eqref{eq:zmap_C_main} may be written as an endpoint difference plus an integrated
+term, it is mathematically (and physically) natural to represent the \emph{perturbative} chronometric
+imprint as an \emph{accumulated} contribution to \(\ln(1+z)\).
+
+Along a photon path \(\gamma\), the difference
+\(\mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}\) may be written as a line integral of the local
+gradient:
+\begin{equation}
+\mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}
+=
+\int_{\gamma} d\mathcal{C}
+=
+\int_{\gamma} (\nabla_\mu \mathcal{C})\,dx^\mu
+=
+\int_{\gamma} (k^\mu \nabla_\mu \mathcal{C})\,d\lambda,
+\label{eq:C_line_integral}
+\end{equation}
+where \(\lambda\) is any affine parameter along the null geodesic.
+
+This motivates defining an effective \emph{local} fractional frequency-drift contribution along the
+line of sight and integrating it in \(\ln(1+z)\), exactly as done in the LTA pipeline.
+In the isotropic observer-local approximation used for SN+BAO fitting, we parameterize this imprint
+as a function of comoving distance alone:
+\begin{equation}
+I(\chi) \;\equiv\; \mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}(\chi),
+\qquad
+I(\chi)=\frac{1}{c}\int_{0}^{\chi} s(\chi')\,d\chi',
+\qquad
+s(\chi)\equiv c\,\frac{dI}{d\chi}.
+\label{eq:I_s_def_main}
+\end{equation}
+Combining Eq.~\eqref{eq:z_cos_flrw} with Eq.~\eqref{eq:I_s_def_main} yields the LTA mapping used in
+the likelihood:
+\begin{equation}
+1+z_{\rm obs} = (1+z_{\rm cos})\,\exp[I(\chi)].
+\label{eq:zmap_main_rederived}
+\end{equation}
+
+A useful differential form makes explicit the “sum along the path” intuition:
+\begin{equation}
+\frac{d}{d\chi}\ln(1+z_{\rm obs})
+=
+\frac{d}{d\chi}\ln(1+z_{\rm cos}) + \frac{s(\chi)}{c}
+=
+\frac{H(z_{\rm cos})}{c} + \frac{s(\chi)}{c},
+\label{eq:dln1pz_dchi}
+\end{equation}
+where we used \(dz_{\rm cos}/d\chi = H(z_{\rm cos})/c\) in FLRW.
+Thus \(s(\chi)\) is precisely the additional local contribution to the \emph{log-redshift
+accumulation} per unit comoving distance.
+
+\subsection{Universal law vs.\ the observer-local limit tested in this paper}
+\label{sec:photon_transport_universal_vs_local}
+
+Conceptually, Eq.~\eqref{eq:clk_factor_main} is intended as a \emph{universal} law:
+wherever sustained organization increases \(\psi\), the realized accumulation rate of clock time is
+biased by \(A(\psi)\).
+In a fully general cosmological setting, \(\psi(x)\) would be sourced by \emph{all} organized systems
+(and potentially by organized eras) and may vary across space and time. The net imprint on an
+incoming photon would then be described by the same local transport statement
+(Eq.~\eqref{eq:C_line_integral}), with possible direction dependence:
+\begin{equation}
+I[\gamma] = \int_{\gamma} (k^\mu \nabla_\mu \mathcal{C})\,d\lambda.
+\label{eq:I_general_path}
+\end{equation}
+
+However, the empirical anomaly we isolate in the SN Hubble diagram is sharply localized to the
+nearby volume. For the present paper we therefore test a \emph{controlled observer-local dominant}
+limit: we model the redshift-dependent part of \(I(\chi)\) as arising primarily from the evolution
+and causal reach of the chronometric field sourced in the observer’s local environment. This
+produces an approximately isotropic mapping at low redshift while remaining falsifiable through the
+BAO Jacobian (Sec.~\ref{sec:bao_like}). Generalizing \(I[\gamma]\) beyond the observer-local limit
+(i.e.\ including distributed cosmological sources of \(\psi\)) is an important next step, but it is
+not required to test whether the \emph{local} Hubble-flow residual structure prefers an integrated
+\(\Delta\ln(1+z)\) mapping.
+
+
+\subsection{Jordan-frame scalar--tensor completion and a derived chronometric factor}
+\label{sec:conformal_completion}
+
+To make the chronometric hypothesis mathematically well-posed \emph{and} to ensure a self-consistent
+late-time cosmology capable of mimicking dark-energy-like expansion histories, we adopt a standard
+scalar--tensor (ST) structure and take the \emph{Jordan frame} to be the physical (matter) frame.
+Operational observables---atomic clock rates, Cepheid periods, supernova light-curve timescales,
+ruler lengths, and the redshift measured by spectroscopy---are defined with respect to the Jordan
+metric $\gJ_{\mu\nu}$.
+
+\paragraph{Jordan-frame action (physical matter frame).}
+We work with signature $(-,+,+,+)$ and define $\Mp^{2}\equiv(8\pi G)^{-1}$.
+A minimal ST completion with an additional nonequilibrium ``order'' sector is
+\begin{equation}
+\mathcal{S}
+=
+\int d^4x\,\sqrt{-g_{\mathrm{J}}}\left[
+\frac{\Mp^{2}}{2}\,\Fpsi\,R_{\mathrm{J}}
+-\frac{f^{2}}{2}\,(\nabla_{\mathrm{J}}\psi)^2
+-f^{4}\Upsi
+\right]
++\mathcal{S}_{\rm m}[\,\gJ,\Phi\,]
++\mathcal{S}_{\rm neq}[\,\gJ,\psi,\Xi\,],
+\label{eq:JF_action}
+\end{equation}
+where $F$ and $U$ are dimensionless functions, $f$ is a stiffness scale (mass dimension 1),
+$(\nabla_{\mathrm{J}}\psi)^2\equiv \gJ^{\mu\nu}\nabla_\mu\psi\nabla_\nu\psi$, and
+$\mathcal{S}_{\rm neq}$ is the covariant insertion point for sustained nonequilibrium activity /
+constraint-maintenance that sources $\psi$.
+
+\paragraph{Einstein frame and the \emph{derived} chronometric factor.}
+Define the Einstein-frame metric by the standard conformal transformation
+\begin{equation}
+\gE_{\mu\nu} \equiv \Fpsi\, \gJ_{\mu\nu}.
+\label{eq:conformal_J_to_E}
+\end{equation}
+In this frame the gravitational sector is canonical, but the matter action becomes conformally
+coupled:
+\begin{equation}
+\mathcal{S}_{\rm m}[\,\gJ,\Phi\,]
+=
+\mathcal{S}_{\rm m}[\,\Apsi^2 \gE,\Phi\,],
+\qquad
+\Apsi \equiv \Fpsi^{-1/2},
+\label{eq:A_derived}
+\end{equation}
+so the conformal/chronometric factor $\Apsi$ is \emph{not} an independent postulate in the scalar--tensor
+completion; it is \emph{derived} from the Jordan-frame coupling function $F(\psi)$.
+
+It is useful to define the chronometric potential
+\begin{equation}
+\Cpsi \equiv \ln \Apsi = -\frac{1}{2}\ln \Fpsi,
+\label{eq:C_def}
+\end{equation}
+so that small variations are $\delta \Cpsi = -\frac{1}{2}\delta\ln F$.
+
+\paragraph{Clock-time relation (frame conversion).}
+Physical clock time is Jordan proper time $d\tau_{\mathrm{J}}$.
+In Einstein-frame variables,
+\begin{equation}
+d\tau_{\mathrm{J}}^2
+\equiv
+-\gJ_{\mu\nu}dx^\mu dx^\nu
+=
+-\Apsi^{2}\,\gE_{\mu\nu}dx^\mu dx^\nu
+\equiv
+\Apsi^{2}\,d\tau_{\mathrm{E}}^2
+\quad\Rightarrow\quad
+d\tau_{\mathrm{J}} = \Apsi\, d\tau_{\mathrm{E}}.
+\label{eq:clock_relation_JE}
+\end{equation}
+Equation \eqref{eq:clock_relation_JE} is the precise sense in which a scalar--tensor completion
+induces a ``chronometric factor'': it is the conversion between Einstein-frame proper time and the
+proper time measured by matter clocks.
+
+\paragraph{Homogeneous limit vs.\ observer-local imprints.}
+In a homogeneous FLRW background, the measured cosmological redshift is determined by the Jordan
+scale factor: $1+z = \aJ(t_0)/\aJ(t_e)$.
+Section~\ref{sec:model} re-derives the SN/BAO distance ladder in the Jordan frame based on the
+Jordan-frame expansion $\HJ(z)$ implied by \eqref{eq:JF_action}. Local time-acceleration effects
+correspond to \emph{inhomogeneous} perturbations $\psi=\bar\psi(t)+\delta\psi(x,t)$, which can generate
+endpoint and integrated contributions to the observed redshift and time-domain observables. The
+phenomenological LTA mapping of earlier versions of this work is recovered as a controlled
+observer-local limit (Sec.~\ref{sec:lta_mapping}).
+
+% ======================================================================
+\subsection{Model hierarchy used in this paper: Jordan-frame scalar--tensor background $\rightarrow$ observer-local imprint}
+\label{sec:model_hierarchy}
+
+To keep the theory logically unified yet empirically testable, we distinguish three layers:
+
+\begin{enumerate}[leftmargin=1.2em]
+\item \textbf{Jordan-frame scalar--tensor completion (theory level).}
+We posit an action of the form \eqref{eq:JF_action} in which the order scalar \(\psi(x)\) enters the
+gravitational sector through a coupling \(F(\psi)\) and is sourced by a nonequilibrium insertion
+\(\mathcal{S}_{\rm neq}\). In this completion, the \emph{chronometric factor} is not a separate axiom:
+it is \emph{derived} under the standard Jordan\(\rightarrow\)Einstein conformal transformation,
+\(\Apsi=\Fpsi^{-1/2}\) (Sec.~\ref{sec:conformal_completion}).
+
+\item \textbf{Homogeneous background (cosmology level).}
+The homogeneous mode \(\bar\psi(t)\) backreacts on the Jordan-frame expansion history \(\HJ(z)\),
+which fully determines the standard SN/BAO distance ladder in the physical frame
+(Secs.~\ref{sec:jordan_background}--\ref{sec:jordan_ladder}). This is the channel through which the
+theory can mimic dark-energy-like expansion without introducing \(\Lambda\) as a separate component.
+
+\item \textbf{Observer-local imprint (controlled phenomenology).}
+Inhomogeneities \(\delta\psi(x)\) and their associated chronometric potential perturbations
+\(\delta\C(x)\) can generate endpoint and integrated contributions to the observed redshift beyond the
+homogeneous background. In the observer-local regime tested by our current SN+BAO pipeline, we package
+this net perturbative contribution into an effective mapping
+\(1+\zobs=(1+\zcos)\exp[I(\chi)]\) (Sec.~\ref{sec:lta_mapping}), which is a controlled approximation to
+the inhomogeneous scalar--tensor propagation problem.
+\end{enumerate}
+
+This hierarchy clarifies what is and is not assumed in any given fit: the SN+BAO mapping layer tests
+whether the data prefer an observer-local distortion, while the Jordan-frame background layer is the
+self-consistent route to explaining dark-energy-like effects via the same field.
+
+% ======================================================================
+\section{Order field dynamics, causality, and the observer-retarded approximation}
+\label{sec:psi_dynamics_main}
+
+The chronometric completion in Sec.~\ref{sec:photon_transport} identifies the redshift mapping with a scalar
+chronometric potential \(\mathcal{C}(\psi)=\ln A(\psi)\). To connect the mapping to causal sourcing by organized
+nonequilibrium activity, we introduce an effective dynamics for \(\psi(x)\).
+
+\subsection{Effective sourced scalar dynamics}
+\label{sec:psi_dynamics_eq}
+
+At coarse-grained level, we treat \(\psi(x)\) as a covariant scalar sourced by a nonnegative proxy for sustained
+nonequilibrium activity, denoted \(\sigma(x)\ge 0\) (e.g.\ an entropy production density or dissipated free-energy
+throughput divided by an effective temperature). A minimal causal model is a sourced Klein--Gordon form,
+\begin{equation}
+(\Box - m_\psi^2)\,\psi(x) = \kappa\,\sigma(x),
+\label{eq:psi_kg}
+\end{equation}
+with retarded boundary conditions. The mass scale \(m_\psi\) sets an effective range/time scale over which the
+influence of sources persists. This is not asserted to be fundamental microphysics; it is the minimal effective
+field-theory statement required to enforce locality and causality in the sourcing of \(\psi\).
+
+\subsection{Observer-local dominant limit and the retarded-time mapping}
+\label{sec:psi_retarded}
+
+In the general universal-law setting, \(\sigma(x)\) is distributed throughout the Universe and \(I[\gamma]\) is
+path-dependent (Eq.~\eqref{eq:I_general_path}). The empirical anomaly isolated in this paper is, however,
+localized to the low-$z$ Hubble-flow regime. We therefore test a controlled approximation in which the
+\emph{redshift-dependent} part of the imprint is dominated by the observer’s local environment and its
+causal reach.
+
+Operationally, this observer-local dominant limit is implemented by evaluating the activation history as a
+function of an observer-retarded time parameter \(t_{\rm ret}(\chi)\) (Sec.~\ref{sec:tret2}).
+The specific two-leg construction \(\chi(z_e)=2\chi\) and \(t_{\rm ret}=\tlb(z_e)\) is used as a convenient causal
+bookkeeping proxy for the retarded solution of Eq.~\eqref{eq:psi_kg} in an expanding background.
+This yields a smooth, bounded \(I(\chi)\) that can be fit to SN+BAO and falsified via the BAO Jacobian.
+% ======================================================================
+
+% ======================================================================
+\section{Thermodynamic foundation: from energy throughput to a bounded constraint inventory}
+\label{sec:thermo_foundation}
+
+The empirical LTA mapping in this paper is written as an accumulated contribution to
+$\ln(1+z)$ along the past light cone. To connect that phenomenology to established physics, we need 
+a quantitative, well-behaved scalar that captures ``order / constraint creation'' in a way that (i) 
+is mathematically precise under coarse-graining, (ii) is directly tied to the second law, and (iii) 
+admits hard bounds from energy throughput.
+
+The key choice is to represent sustained ``constraint'' as \emph{relative entropy} (KL divergence)
+with respect to an appropriate maximum-entropy (reference) distribution.
+This is standard in nonequilibrium statistical mechanics and stochastic thermodynamics, where
+relative entropy quantifies the \emph{excess} thermodynamic potential available in a nonequilibrium
+state \cite{Seifert2012ST,Parrondo2015ThermoInfo}.
+
+Throughout this section, we assume a coarse-grained description in which microstates are labeled
+by $x$ and the system has an instantaneous state distribution $p(x,t)$. We also assume a chosen
+reference distribution $\pi(\xi)$ representing the maximally unstructured (maximum-entropy) baseline
+given the constraints one is \emph{not} counting as ``order'' (e.g.\ a canonical equilibrium, or a
+MaxEnt state under specified macroscopic constraints).
+
+% ----------------------------------------------------------------------
+\subsection{Lemma 1: A constraint inventory $\varphi$ that is nonnegative, monotone under coarse-graining, and additive under composition}
+\label{sec:lemma1_constraint_inventory}
+
+\paragraph{Definition (constraint inventory).}
+Define the dimensionless \emph{constraint inventory}
+\begin{equation}
+\phi(t) \;\equiv\; D_{\mathrm{KL}}\!\bigl(p(\cdot,t)\,\|\,\pi(\cdot)\bigr)
+\;=\;
+\int \! \dd x\; p(x,t)\,\ln\!\frac{p(x,t)}{\pi(\xi)},
+\label{eq:phi_def}
+\end{equation}
+and its entropy-unit version
+\begin{equation}
+\varphi(t) \;\equiv\; k_B\,\phi(t)
+\qquad [\varphi]=\mathrm{J\,K^{-1}}.
+\label{eq:varphi_def}
+\end{equation}
+The KL divergence was introduced in \cite{KullbackLeibler1951}.
+
+We will refer to $\varphi$ as the ``constraint inventory'' because it measures how many
+\emph{nats} (or, dividing by $\ln 2$, \emph{bits}) of information are required to specify the
+additional structure in $p$ relative to the chosen reference $\pi$.
+
+\paragraph{Lemma 1a (nonnegativity).}
+\begin{equation}
+\varphi(t)\ge 0 \quad \text{for all }t,\qquad
+\varphi(t)=0 \iff p(\cdot,t)=\pi(\cdot)\;\text{a.e.}
+\label{eq:phi_nonneg}
+\end{equation}
+\emph{Reason:} $D_{\mathrm{KL}}(\cdot\|\cdot)$ is nonnegative by Gibbs' inequality.
+
+\paragraph{Lemma 1b (monotonicity under coarse-graining).}
+Let $\mathcal{M}$ be any stochastic coarse-graining (Markov) map from microstates $x$ to
+macro-cells $y$; denote $p_y=\mathcal{M}p$ and $\pi_y=\mathcal{M}\pi$. Then
+\begin{equation}
+D_{\mathrm{KL}}(p\|\pi) \;\ge\; D_{\mathrm{KL}}(p_y\|\pi_y),
+\qquad\text{equivalently}\qquad
+\varphi \;\ge\; \varphi_y.
+\label{eq:data_processing}
+\end{equation}
+This is the \emph{data-processing inequality} for KL divergence: coarse-graining cannot increase
+distinguishability from the reference and therefore cannot increase the counted constraint
+inventory \cite{CoverThomas2006}.
+
+\paragraph{Lemma 1c (additivity / extensivity under independent composition).}
+If the system decomposes into weakly interacting subsystems with
+$p(x_1,x_2)=p_1(x_1)p_2(x_2)$ and $\pi(x_1,x_2)=\pi_1(x_1)\pi_2(x_2)$, then
+\begin{equation}
+D_{\mathrm{KL}}(p\|\pi)=D_{\mathrm{KL}}(p_1\|\pi_1)+D_{\mathrm{KL}}(p_2\|\pi_2),
+\qquad
+\varphi=\varphi_1+\varphi_2.
+\label{eq:additivity}
+\end{equation}
+Thus $\varphi$ is \emph{extensive} under composition when correlations between components are
+negligible at the chosen coarse-graining scale.
+
+\paragraph{Microstate-space interpretation (explicit link to ``constraining microstates'').}
+In the special case where $\pi$ is uniform on an allowed set of size $\Omega_0$ and $p$ is uniform
+on a constrained subset of size $\Omega_1\le \Omega_0$, one finds
+\begin{equation}
+D_{\mathrm{KL}}(p\|\pi)=\ln\!\frac{\Omega_0}{\Omega_1},
+\qquad
+\varphi = k_B \ln\!\frac{\Omega_0}{\Omega_1}.
+\label{eq:phi_microstates}
+\end{equation}
+So $\varphi$ literally counts the log-compression of accessible microstates induced by the
+constraints being maintained.
+
+\paragraph{Comment (why we do \emph{not} anchor on entropy alone).}
+Total entropy production is a throughput and is always nonnegative, but it does not by itself
+distinguish ``order creation'' from generic dissipation. By contrast, $\varphi$ is a \emph{state
+variable} that measures how far the maintained state is from a maximum-entropy reference and thus
+tracks constraint maintenance directly; the second law will then bound how fast $\varphi$ can grow.
+
+% ----------------------------------------------------------------------
+\subsection{Lemma 2: $T\,\varphi$ is the nonequilibrium free-energy budget stored in constraints}
+\label{sec:lemma2_free_energy}
+
+To connect $\varphi$ to energetics, specialize to a canonical reference distribution
+\begin{equation}
+\pi(\xi)=\frac{e^{-\beta E(x)}}{Z},\qquad \beta\equiv (k_B T)^{-1},
+\label{eq:canonical_pi}
+\end{equation}
+at temperature $T$ for the same energy function $E(x)$.
+
+Define the (instantaneous) nonequilibrium Helmholtz free energy functional
+\begin{equation}
+F[p] \;\equiv\; \langle E\rangle_p - T S[p],
+\qquad
+S[p]\equiv -k_B\int \dd x\, p(x)\ln p(x),
+\label{eq:F_def}
+\end{equation}
+and the equilibrium free energy
+\begin{equation}
+F_{\rm eq}\equiv -k_B T \ln Z.
+\label{eq:Feq_def}
+\end{equation}
+
+\paragraph{Lemma 2 (relative entropy identity).}
+Under the canonical choice \eqref{eq:canonical_pi},
+\begin{equation}
+F[p] - F_{\rm eq} \;=\; k_B T\,D_{\mathrm{KL}}(p\|\pi)
+\;=\; T\,\varphi.
+\label{eq:F_minus_Feq}
+\end{equation}
+\emph{Proof sketch:} Insert $\ln\pi=-\beta E-\ln Z$ into the definition of $D_{\mathrm{KL}}$, then
+use $S[p]=-k_B\int p\ln p$ and $F_{\rm eq}=-k_B T\ln Z$.
+
+\paragraph{Interpretation.}
+Equation~\eqref{eq:F_minus_Feq} states that $\varphi$ is not a metaphor: it is exactly the
+\emph{excess free energy above equilibrium} stored in the maintained constraints. This is a standard 
+result in nonequilibrium thermodynamics and stochastic thermodynamics \cite{Seifert2012ST,Parrondo2015ThermoInfo}.
+
+\paragraph{Bits and Landauer scaling (optional but useful).}
+Define $\varphi_{\rm bits}\equiv \varphi/(k_B\ln 2)=\phi/\ln 2$. Then $T\varphi$ corresponds to an
+energy scale of $k_B T\ln 2$ per bit of maintained constraint, matching the Landauer cost scale for 
+logically irreversible information erasure \cite{Landauer1961,Bennett1982}.
+We emphasize: this does \emph{not} claim biology saturates Landauer bounds; it is a hard lower bound
+and provides a clean dimensional bridge between constraint maintenance and energetic cost.
+
+% ----------------------------------------------------------------------
+\subsection{Lemma 3: The second law bounds $\dot\varphi$ by energy throughput}
+\label{sec:lemma3_power_bound}
+
+We now connect constraint growth to the second law in a form that yields a quantitative bound from
+power flow.
+
+\paragraph{Scope of the bound.}
+The inequalities below are stated for an effective \emph{isothermal} driven setting at a single temperature \(T\),
+with a fixed reference distribution \(\pi\) (equivalently fixed \(F_{\rm eq}\)) for the degrees of freedom whose
+constraint inventory is being tracked. In more general settings with multiple reservoirs, chemical work, or
+time-dependent reference constraints, the same structure holds with \(P_{\rm in}\) interpreted as the appropriate
+generalized free-energy/work influx, but we restrict to the isothermal form here because it is sufficient for
+the conservative Earth-budget envelope used later.
+
+
+Consider a system coupled to an (effective) isothermal reservoir at temperature $T$.
+Let $\dot Q$ be heat flow \emph{into} the system and $\dot W$ be work done \emph{on} the system.
+The first law reads
+\begin{equation}
+\frac{\dd}{\dd t}\langle E\rangle = \dot Q + \dot W.
+\label{eq:first_law_rates}
+\end{equation}
+Define total entropy production rate (system + environment) as
+\begin{equation}
+\dot\Sigma \;\equiv\; \frac{\dd S}{\dd t} - \frac{\dot Q}{T}\;\ge\;0,
+\label{eq:entropy_prod_rate}
+\end{equation}
+where the inequality is the (local) second law for this driven isothermal setting \cite{Seifert2012ST}.
+
+Using $F=\langle E\rangle-TS$ and Eqs.~\eqref{eq:first_law_rates}--\eqref{eq:entropy_prod_rate},
+one obtains the standard work--free-energy--dissipation identity:
+\begin{equation}
+\dot W \;=\; \frac{\dd F}{\dd t} + T\,\dot\Sigma.
+\label{eq:work_balance}
+\end{equation}
+
+\paragraph{Lemma 3a (power bounds constraint growth).}
+If the reference equilibrium $F_{\rm eq}$ is fixed (same $E(x)$ and $T$), then Lemma~2 implies
+$\dd(F-F_{\rm eq})/\dd t = T\,\dot\varphi$. Combining with \eqref{eq:work_balance} and $\dot\Sigma\ge0$ gives
+\begin{equation}
+T\,\dot\varphi \;\le\; \dot W \equiv P_{\rm in},
+\qquad\text{equivalently}\qquad
+\dot\varphi \;\le\; \frac{P_{\rm in}}{T}.
+\label{eq:varphi_dot_bound}
+\end{equation}
+This is the rigorous form of the chain
+\[
+\text{energy consumption} \;\Rightarrow\; \text{bounded constraint accumulation}.
+\]
+
+\paragraph{Lemma 3b (relation to entropy production).}
+From \eqref{eq:work_balance} and $\dd(F-F_{\rm eq})/\dd t = T\dot\varphi$, we also have
+\begin{equation}
+\dot\Sigma \;=\; \frac{P_{\rm in}}{T} - \dot\varphi.
+\label{eq:sigma_phi_relation}
+\end{equation}
+Therefore, $\dot\Sigma\le P_{\rm in}/T$ holds \emph{whenever} $\dot\varphi\ge 0$ (net constraint
+accumulation), and in steady maintenance regimes where $\langle\dot\varphi\rangle\simeq 0$ one has
+$\langle\dot\Sigma\rangle\simeq \langle P_{\rm in}\rangle/T$.
+
+\paragraph{Earth-bound specialization (what we will use later).}
+Once a conservative upper bound on $P_{\rm in}(t)$ is specified (e.g.\ solar free-energy throughput
+available to the biosphere/technosphere) and a conservative effective temperature $T$ is chosen,
+Eq.~\eqref{eq:varphi_dot_bound} provides a hard upper bound on the growth rate of the constraint
+inventory that any Earth-local ``order field'' can be fed by without violating the second law.
+
+\paragraph{Transition to gravity.}
+Lemmas~1--3 complete the ``energy $\to$ constraints'' portion of the chain with standard,
+well-established nonequilibrium/statistical thermodynamics. The remaining step (Lemma~4) is
+\emph{not} thermodynamics: it is the additional postulate specifying how a covariant scalar
+constraint inventory $\varphi$ couples into the gravitational sector (metric potentials / time
+metric), and how that coupling produces an accumulated frequency shift along null geodesics that
+reduces to the LTA mapping used in the SN+BAO analysis.
+
+Our goal is to properly integrate this math into known
+field equations for GR such that we can then use these equations to evaluate whether they can be
+used to calculate timing arrays on pulsars or other cosmological datapoints by inputting the
+relative order of the system in question.
+% ======================================================================
+\subsection{Lemma 4 (Postulate): a chronometric coupling that biases clock rates without modifying spacetime geometry}
+\label{sec:lemma4_chronometric}
+
+Lemmas~\ref{sec:lemma1_constraint_inventory}--\ref{sec:lemma3_power_bound} provide a standard,
+thermodynamically rigorous chain from energy throughput to a bounded constraint inventory
+$\varphi$ (and its dimensionless version $\psi=\varphi/\varphi_\*$).
+We now introduce the \emph{single new postulate} required to connect this inventory to the observed
+redshift mapping used in the LTA analysis, while preserving the standard GR spacetime geometry and
+therefore avoiding new lensing/deflection signatures.
+
+\paragraph{Postulate 4 (chronometric field).}
+Spacetime geometry is governed by standard GR (the same $g_{\mu\nu}$ used for $\Lambda$CDM distances
+and null geodesics), but the \emph{realized physical clock time} $\tau_{\rm clk}$ measured by
+matter clocks is related to GR proper time $\tau$ by a dimensionless \emph{time-flow factor}
+$A(\psi)$:
+\begin{equation}
+d\tau_{\rm clk} = A(\psi)\,d\tau,
+\qquad
+A(0)=1,
+\qquad
+\frac{\partial A}{\partial \psi} > 0.
+\label{eq:clock_factor_postulate}
+\end{equation}
+Thus sustained organization ($\psi>0$) increases the local accumulation rate of clock time relative
+to GR proper time (``local time acceleration'').
+
+For small $\psi$ we parameterize
+\begin{equation}
+A(\psi)=\exp(\epsilon\,\psi)\simeq 1+\epsilon\,\psi+\mathcal{O}(\psi^2),
+\label{eq:A_of_psi}
+\end{equation}
+with a dimensionless coupling $\epsilon$.
+
+\paragraph{Frequency measurement and redshift mapping.}
+Given the chronometric postulate \eqref{eq:clock_factor_postulate}, the measured frequency is rescaled as
+\(\nu_{\rm meas}=\nu_{\rm GR}/A(\psi)\), and the observed redshift acquires an additional factor
+\(A(\psi_{\rm obs})/A(\psi_{\rm emit})\). The full derivation (including the integrated \(\Delta\ln(1+z)\) form,
+its local drift representation, and the general path-dependent expression \(I[\gamma]\)) is given in
+Sec.~\ref{sec:photon_transport}. Here we record only the resulting mapping used in the SN+BAO likelihood:
+\begin{equation}
+1+z_{\rm obs} = (1+z_{\rm cos})\,\exp[I],
+\qquad
+I\equiv \ln\!\frac{A(\psi_{\rm obs})}{A(\psi_{\rm emit})}.
+\end{equation}
+
+\paragraph{Causality in the observer-local dominant limit.}
+In the low-$z$ anomaly tested here, the redshift-dependent part of \(I\) is modeled as being dominated by the
+observer’s local environment and its causal reach; this motivates evaluating the activation through an
+observer-retarded time argument \(t_{\rm ret}(\chi)\) (Sec.~\ref{sec:psi_dynamics_main} and Sec.~\ref{sec:tret2}).
+
+
+\paragraph{Relation to the phenomenological drift field $s(\chi)$.}
+Using $I(\chi)$ as defined in \eqref{eq:I_chrono_def}, we define the drift field exactly as in the
+main analysis:
+\begin{equation}
+s(\chi) \equiv c\,\frac{dI}{d\chi}.
+\label{eq:s_def_chrono}
+\end{equation}
+With $A(\psi)=\exp(\epsilon\psi)$ this becomes
+\begin{equation}
+s(\chi)= -c\,\epsilon\,\frac{d\psi_{\rm emit}(\chi)}{d\chi},
+\label{eq:s_chrono_psi}
+\end{equation}
+where the minus sign reflects that more distant emission events typically correspond to earlier
+(retarded) epochs when $\psi$ was smaller.
+Under the simple causal bookkeeping used in this work, $t_{\rm ret}\approx 2\chi/c$ at low redshift,
+so $d\psi_{\rm emit}/d\chi \approx (2/c)\,\dot\psi(t_{\rm ret})$, giving the useful approximate link
+\begin{equation}
+s(\chi)\approx -2\epsilon\,\dot\psi\!\bigl(t_{\rm ret}(\chi)\bigr)
+\qquad (\text{low-$z$ causal approximation}).
+\label{eq:s_approx_psi_dot}
+\end{equation}
+This connects the empirical $s(t_{\rm ret})$ profile directly to the time-derivative of the
+underlying order field.
+
+\paragraph{No new lensing by construction.}
+Because we do not modify the GR metric governing null geodesics in this postulate, photon
+trajectories (and therefore gravitational lensing/deflection predictions) remain those of the
+baseline cosmology. The additional effect enters only through the realized clock time used in the
+frequency comparison that defines observed redshift.
+
+\paragraph{Thermodynamic bound on the effect amplitude.}
+Combining Lemma~3 with $\psi=\varphi/\varphi_\*$ yields
+\begin{equation}
+\dot\psi \;=\;\frac{\dot\varphi}{\varphi_\*}\;\le\;\frac{P_{\rm in}}{T\,\varphi_\*}.
+\label{eq:psi_dot_bound}
+\end{equation}
+Using \eqref{eq:s_approx_psi_dot}, this implies an energetics-based envelope on the LTA drift field,
+\begin{equation}
+|s(\chi)| \;\lesssim\; 2\epsilon\,\frac{P_{\rm in}}{T\,\varphi_\*}
+\qquad (\text{low-$z$ causal approximation}),
+\label{eq:s_energy_bound_chrono}
+\end{equation}
+and correspondingly a bound on the saturation imprint $I_{\rm sat}=\max I(\chi)$ in terms of the
+integrated Earth-system energy/entropy throughput over the active epoch.
+% ======================================================================
+
+
+% ======================================================================
+\section{Model definition: Jordan-frame scalar--tensor background plus local chronometric imprint}
 \label{sec:model}
 
-This section specifies the forward model used throughout: a standard flat $\Lambda$CDM background
-for distances and lookback times, coupled to an LTA redshift mapping in which the observed redshift
-$\zobs$ differs from the background cosmological redshift $\zcos$ by a bounded, causal,
-observer-anchored accumulated drift.
+This section specifies the forward model used throughout in a form suitable for a
+\emph{self-consistent} scalar--tensor treatment of both (i) dark-energy-like acceleration in the
+homogeneous background and (ii) observer-/environment-linked chronometric imprints in the local
+Universe.
 
-\subsection{Baseline flat $\Lambda$CDM background}
-\label{sec:lcdm_background}
+We distinguish:
+\begin{enumerate}[leftmargin=1.2em]
+\item A \textbf{homogeneous Jordan-frame scalar--tensor background} that determines the expansion
+history $\HJ(z)$ and therefore the standard distance ladder.
+\item An \textbf{optional local chronometric imprint} (observer-local perturbation) that can shift
+the mapping between an ``underlying'' cosmological redshift $\zcos$ and the observed redshift $\zobs$,
+recovering the LTA mapping as a controlled limit.
+\end{enumerate}
 
-We assume a spatially flat $\Lambda$CDM background with parameters $(H_0,\Om)$ and define
+\subsection{Jordan-frame background: expansion history from scalar--tensor dynamics}
+\label{sec:jordan_background}
+
+\paragraph{Background geometry and redshift.}
+We take the physical (matter) metric to be a spatially flat FLRW line element in the Jordan frame:
 \begin{equation}
-E(z) \equiv \sqrt{\Om(1+z)^3 + (1-\Om)},
+ds_{\mathrm{J}}^{2} = -d\tJ^{2} + \aJ^{2}(\tJ)\,d\bm{x}^{2},
 \qquad
-\Hc(z) \equiv H_0 E(z).
+\HJ \equiv \frac{1}{\aJ}\frac{d\aJ}{d\tJ}.
 \end{equation}
+The \emph{cosmological} redshift is defined by
+\begin{equation}
+1+\zcos \equiv \frac{\aJ(\tJ_0)}{\aJ(\tJ_e)}.
+\label{eq:zcos_J_def}
+\end{equation}
+In the homogeneous limit, the observed redshift equals the cosmological redshift:
+$\zobs=\zcos$ up to the standard local corrections (peculiar velocities, local gravitational potentials).
+
+\paragraph{Field equations (Jordan frame).}
+Varying the Jordan-frame action \eqref{eq:JF_action} yields
+\begin{equation}
+\Mp^{2}\Fpsi\,G^{\mathrm{J}}_{\mu\nu}
+=
+T^{(m)}_{\mu\nu}
++
+T^{(\psi)}_{\mu\nu}
++
+T^{(\rm neq)}_{\mu\nu}
++
+\Mp^{2}\left(\nabla^{\mathrm{J}}_{\mu}\nabla^{\mathrm{J}}_{\nu}\Fpsi - \gJ_{\mu\nu}\Box_{\mathrm{J}}\Fpsi\right),
+\label{eq:JF_einstein}
+\end{equation}
+with
+\begin{equation}
+T^{(\psi)}_{\mu\nu}
+=
+f^{2}\nabla^{\mathrm{J}}_{\mu}\psi\,\nabla^{\mathrm{J}}_{\nu}\psi
+-
+\gJ_{\mu\nu}\left[\frac{f^{2}}{2}(\nabla_{\mathrm{J}}\psi)^2+f^{4}\Upsi\right],
+\label{eq:JF_Tpsi}
+\end{equation}
+and a scalar equation
+\begin{equation}
+f^{2}\Box_{\mathrm{J}}\psi - f^{4}\Upsi' + \frac{\Mp^{2}}{2}\Fpsi'\,R_{\mathrm{J}}
+=
+J_{\rm neq},
+\qquad
+J_{\rm neq}\equiv -\frac{1}{\sqrt{-g_{\mathrm{J}}}}\frac{\delta \mathcal{S}_{\rm neq}}{\delta\psi}.
+\label{eq:JF_scalar}
+\end{equation}
+In this Jordan-first setup, matter is minimally coupled, so $T^{(m)}_{\mu\nu}$ is covariantly conserved
+with respect to $\nabla^{\mathrm{J}}$ (in the absence of explicit matter--$\Xi$ exchange in $\mathcal{S}_{\rm neq}$).
+
+\paragraph{Friedmann form.}
+For a homogeneous $\psi(\tJ)$, the $00$ equation may be written as
+\begin{equation}
+3\Mp^{2}\Fpsi\,\HJ^{2}
+=
+\rho_m+\rho_r+\rho_\psi+\rho_{\rm neq}
+-3\Mp^{2}\HJ\,\frac{d\Fpsi}{d\tJ},
+\label{eq:JF_friedmann}
+\end{equation}
+where
+\begin{equation}
+\rho_\psi = \frac{f^{2}}{2}\left(\frac{d\psi}{d\tJ}\right)^{2} + f^{4}\Upsi,
+\end{equation}
+and $\rho_{\rm neq}$ denotes the homogeneous energy density carried by the nonequilibrium sector
+(if present in the background). The corresponding acceleration equation can be written as
+\begin{equation}
+-2\Mp^{2}\Fpsi\,\frac{d\HJ}{d\tJ}
+=
+\left(\rho_m+p_m\right)+\left(\rho_r+p_r\right)+\left(\rho_\psi+p_\psi\right)
++\left(\rho_{\rm neq}+p_{\rm neq}\right)
++\Mp^{2}\left(\frac{d^{2}\Fpsi}{d\tJ^{2}}-\HJ\,\frac{d\Fpsi}{d\tJ}\right),
+\label{eq:JF_accel}
+\end{equation}
+with $p_m\simeq 0$, $p_r=\rho_r/3$, and
+\begin{equation}
+p_\psi = \frac{f^{2}}{2}\left(\frac{d\psi}{d\tJ}\right)^{2} - f^{4}\Upsi.
+\end{equation}
+
+\paragraph{Practical parameterization.}
+For inference, we continue to parameterize the late-time background by a present-day Hubble scale $H_0$
+and a present-day matter density fraction $\Om$ (defined in the Jordan frame), together with scalar-sector
+parameters specifying $\Fpsi$ and $\Upsi$ (and any nonequilibrium/source parameters in $\mathcal{S}_{\rm neq}$).
+In general there is no closed-form $E(z)$; instead $\HJ(z)$ is obtained by solving the coupled background system.
+
+\subsection{Observable ladder in the homogeneous Jordan background}
+\label{sec:jordan_ladder}
+
+Given $\HJ(z)$, the distance ladder follows the standard FLRW relations \emph{in the Jordan frame}
+(where matter defines clocks and rulers).
+
+\paragraph{Comoving distance and lookback time.}
 The line-of-sight comoving distance is
 \begin{equation}
-\chis(z) = \frac{c}{H_0}\int_0^z \frac{\dd z'}{E(z')},
+\chis(z) = c\int_0^{z}\frac{\dd z'}{\HJ(z')},
 \label{eq:chi_def}
 \end{equation}
-and the standard proper lookback time is
+and the proper lookback time is
 \begin{equation}
-\tlb(z) = \frac{1}{H_0}\int_0^z \frac{\dd z'}{(1+z')E(z')}.
+\tlb(z) = \int_0^{z}\frac{\dd z'}{(1+z')\HJ(z')}.
 \label{eq:tlb_def}
 \end{equation}
-In the implementation, $\chis$ is evaluated in $\Mpc$ using $c=\SI{299792.458}{km\,s^{-1}}$ and
-$H_0$ in $\kmsMpc$; $\tlb$ is converted to $\mathrm{Gyr}$ for use in the LTA activation.
+(These reduce to the familiar $\Lambda$CDM expressions when the model reduces to GR+$\Lambda$.)
 
-\subsection{LTA as an accumulated fractional frequency drift}
+\paragraph{Luminosity and angular-diameter distances.}
+For spatial flatness,
+\begin{equation}
+D_M(z)=\chis(z),
+\qquad
+D_A(z)=\frac{\chis(z)}{1+z},
+\qquad
+d_L(z)=(1+z)\chis(z).
+\label{eq:distances_J}
+\end{equation}
+The SN distance modulus prediction is therefore
+\begin{equation}
+\mu_{\mathrm{pred}}(z) = 5\log_{10}\!\left(\frac{d_L(z)}{\Mpc}\right)+25.
+\label{eq:mu_pred_J}
+\end{equation}
+
+\paragraph{BAO observables.}
+The standard BAO distance combinations in the Jordan background are
+\begin{equation}
+D_H(z)\equiv \frac{c}{\HJ(z)},
+\qquad
+D_V(z)\equiv \left[z\,D_H(z)\,D_M^2(z)\right]^{1/3},
+\label{eq:bao_defs_J}
+\end{equation}
+and the comparison to data is made through ratios to the sound horizon $r_d$.
+In this paper we retain a phenomenological scaling parameter $\alpha_{\rm rd}\equiv r_d/r_{d,\rm fid}$
+in the BAO likelihood; in the fully self-consistent program, $r_d$ is computed from the
+Jordan-frame early-time dynamics.
+
+\subsection{Local chronometric imprint and connection to the LTA mapping}
 \label{sec:lta_mapping}
 
-We model \emph{Local Time Acceleration} (LTA) as an additional, line-of-sight accumulated,
-\emph{multiplicative} contribution to $(1+z)$, which is naturally represented as an additive term
-in $\ln(1+z)$.
+In a strictly homogeneous Jordan-frame cosmology, $\zobs=\zcos$ and the ladder above is complete.
+Observer-local time-acceleration effects correspond to \emph{inhomogeneous} chronometric structure
+(e.g.\ $\psi=\bar\psi(t)+\delta\psi(x,t)$) that modifies clock comparisons and therefore the
+operationally inferred redshift.
 
-We define the dimensionless accumulated integral
+A convenient way to connect this local-perturbation picture back to the phenomenological LTA
+analysis is to package the net chronometric imprint into an additive contribution to $\ln(1+z)$:
+\begin{equation}
+1+\zobs = (1+\zcos)\exp\!\bigl[\Iofchi(\zcos)\bigr].
+\label{eq:zmap2}
+\end{equation}
+Here $\zcos$ is the cosmological redshift defined by the homogeneous Jordan background
+\eqref{eq:zcos_J_def}, while $\zobs$ is the measured redshift including the observer-local imprint.
+
+As in the phenomenological formulation, we define
 \begin{equation}
 \Iofchi \equiv \frac{1}{c}\int_{0}^{\chis} \sofchi' \,\dd \chis',
 \label{eq:I_def2}
 \end{equation}
-where $\sofchi$ has units of $\kmsMpc$ (the same dimensions as a Hubble rate). Operationally,
-$\sofchi/c$ acts as a fractional frequency-drift per unit comoving distance.
+where $\sofchi$ has dimensions of a Hubble rate (e.g.\ $\kmsMpc$) and $\sofchi/c$ plays the role of an
+effective fractional frequency drift per unit comoving distance in the observer-local approximation.
 
-The mapping between cosmological redshift and observed redshift is
-\begin{equation}
-1+\zobs = (1+\zcos)\exp\!\bigl[\Iofchi(\zcos)\bigr],
-\label{eq:zmap2}
-\end{equation}
-where $\Iofchi(\zcos)\equiv I(\chis(\zcos))$. For $\Iofchi\ll 1$ this reduces to
-\begin{equation}
-\zobs \approx \zcos + (1+\zcos)\Iofchi,
-\end{equation}
-but we retain the exponential form to preserve positivity, improve numerical conditioning, and make
-the nested limit manifest: $s_{\rm anchor}\to 0$ implies $\Iofchi\to 0$ and recovers baseline
-$\Lambda$CDM exactly.
-
-Differentiating Eq.~\eqref{eq:zmap2} gives an identity used repeatedly for Jacobians and diagnostics:
+Differentiating Eq.~\eqref{eq:zmap2} and using $\dd\chis/\dd\zcos = c/\HJ(\zcos)$ gives
 \begin{equation}
 \frac{\dd \Iofchi}{\dd \zcos}
 = \frac{1}{c}\sofchi(\zcos)\frac{\dd \chis}{\dd \zcos}
-= \frac{\sofchi(\zcos)}{\Hc(\zcos)}.
+= \frac{\sofchi(\zcos)}{\HJ(\zcos)}.
 \label{eq:dIdz}
 \end{equation}
 
@@ -557,7 +1378,7 @@ Differentiating Eq.~\eqref{eq:zmap2} gives an identity used repeatedly for Jacob
 
 To encode the motivating ``observer-sourced'' (Earth-anchored) character in a causally consistent
 way, we evaluate the activation along the photon path using an \emph{Earth-retarded lookback time}
-argument $\tret(\chis)$.
+argument $\tret(\chis)$ computed in the same Jordan-frame background.
 
 For a given line-of-sight distance $\chis$ (corresponding to $\zcos$), we define an ``Earth emission''
 redshift $z_e$ implicitly by
@@ -570,11 +1391,8 @@ and then set
 \tret(\chis) \equiv \tlb(z_e).
 \label{eq:tret_def}
 \end{equation}
-Intuitively, $2\chis/c$ represents a round-trip light-travel construction: it assigns to each point
-on the line of sight a retarded time at which an influence originating locally could causally reach
-that point in the background geometry.\footnote{At low redshift, where $\chis\approx (c/H_0)z$ and
-$\tlb\approx H_0^{-1}z$, Eq.~\eqref{eq:ze_def} implies $z_e\approx 2z$ and $\tret\approx 2\tlb$,
-making the causal interpretation explicit.}
+At low redshift, where $\chis\approx (c/H_0)z$ and $\tlb\approx H_0^{-1}z$, Eq.~\eqref{eq:ze_def}
+implies $z_e\approx 2z$ and $\tret\approx 2\tlb$, making the causal bookkeeping interpretation explicit.
 
 \subsection{Bounded activation and parameterization of $\sofchi$}
 \label{sec:earth_history2}
@@ -587,16 +1405,13 @@ explicit \emph{anchor time} $\tA$:
 \label{eq:s_profile2}
 \end{equation}
 Here $g(t)\in[0,1]$ is an activation function of Earth-retarded lookback time, normalized so that
-$g(0)=1$ and $g(t)=0$ for $t\ge \tL$, where $\tL$ is a finite cutoff epoch. The normalization by
-$g(\tA)$ ensures that the reported parameter $s_{\rm anchor}$ corresponds to the drift rate at the
-chosen anchor time: $s(\tA)\equiv s_{\rm anchor}$.
+$g(0)=1$ and $g(t)=0$ for $t\ge \tL$, where $\tL$ is a finite cutoff epoch.
 
 \paragraph{Anchor-time choice (leakage control).}
 To avoid any dependence of the LTA normalization on the calibrator subset, we compute $\tA$ using
 only the Hubble-flow subset (excluding calibrators). Concretely, we define $\tA$ as the 5th
 percentile of the $\tret$ distribution over Hubble-flow objects. This rule is stable under
-resampling and keeps the normalization tied to the Hubble-flow regime that drives the cosmological
-fit.
+resampling and keeps the normalization tied to the Hubble-flow regime that drives the cosmological fit.
 
 \paragraph{Power-law activation family (fiducial choice).}
 In this work we adopt a smooth power-law decay. For $0\le t\le \tL$ define
@@ -612,27 +1427,24 @@ This guarantees $g(0)=1$ and $g(\tL)=0$, yielding a continuous, bounded activati
 early-time scale ($B$) and tail steepness ($p$).
 
 \paragraph{Fiducial degrees of freedom (what is actually fit).}
-Because LTA enters through a line-of-sight integral, there are strong degeneracies between the
-overall amplitude and detailed curve-shape parameters. Our primary analysis therefore fixes the
-activation \emph{shape} to representative smooth values and fits only the amplitude
-$s_{\rm anchor}$ as the additional LTA degree of freedom beyond $(H_0,\Omega_m,\alpha_{\rm rd})$.
-Unless otherwise stated, we use fixed $(\tL,B,p)$ values in the power-law family and treat the
-$\Lambda$CDM+LTA model as a one-parameter nested extension in model-selection metrics.
-(Where we report exploratory runs with additional free shape parameters, we state that explicitly.)
+Because the observer-local imprint enters through a line-of-sight integral, there are strong
+degeneracies between overall amplitude and detailed curve-shape parameters. Our primary analysis
+therefore fixes the activation \emph{shape} to representative smooth values and fits only the
+amplitude $s_{\rm anchor}$ as the additional imprint degree of freedom beyond the background
+parameters (including $\alpha_{\rm rd}$ in the BAO likelihood).
 
 \paragraph{Optional modulation exponents (fixed in this work).}
 The analysis code supports additional multiplicative modulation exponents (e.g.\ ``complexity'' and
 ``life'' weights) that rescale the activation family. In the fiducial results emphasized in this
-paper, these exponents are fixed to unity (via runtime flags) so that they do not contribute
-additional degrees of freedom and do not affect AIC/BIC accounting.
+paper, these exponents are fixed to unity so that they do not contribute additional degrees of freedom.
 
 \subsection{Inverse mapping and redshift Jacobian}
 \label{sec:inverse2}
 
-Data are indexed by $\zobs$ (or by a measured redshift proxy such as $\zhd$ for SNe), whereas
-background distances are naturally functions of $\zcos$. Therefore, for each observed redshift
-$\zobs$ we obtain $\zcos(\zobs)$ by numerically inverting Eq.~\eqref{eq:zmap2} under the monotonicity
-condition
+Data are indexed by $\zobs$ (or by a measured redshift proxy such as $\zhd$ for SNe), whereas the
+homogeneous background distances are naturally functions of $\zcos$.
+Therefore, for each observed redshift $\zobs$ we obtain $\zcos(\zobs)$ by numerically inverting
+Eq.~\eqref{eq:zmap2} under the monotonicity condition
 \begin{equation}
 \frac{\dd \zobs}{\dd \zcos} > 0.
 \end{equation}
@@ -645,7 +1457,7 @@ Differentiating Eq.~\eqref{eq:zmap2} gives
 \right]
 = \exp\!\bigl[\Iofchi\bigr]
 \left[
-1+(1+\zcos)\frac{\sofchi(\zcos)}{\Hc(\zcos)}
+1+(1+\zcos)\frac{\sofchi(\zcos)}{\HJ(\zcos)}
 \right],
 \label{eq:jac_general2}
 \end{equation}
@@ -657,26 +1469,96 @@ predictions and serves as an important diagnostic of mapping regularity.
 
 The comoving distance as a function of observed redshift is evaluated as
 \begin{equation}
-\chis(\zobs) \equiv \chis\!\bigl(\zcos(\zobs)\bigr).
+\chis(\zobs) \equiv \chis\!\bigl(\zcos(\zobs)\bigr),
 \end{equation}
-For radial derivatives,
+with $\chis(z)$ computed in the Jordan background via Eq.~\eqref{eq:chi_def}. For radial derivatives,
 \begin{equation}
 \frac{\dd \chis}{\dd \zobs}
 = \frac{\dd \chis}{\dd \zcos}\frac{\dd \zcos}{\dd \zobs}
-= \frac{c}{\Hc(\zcos)}\left(\frac{\dd \zobs}{\dd \zcos}\right)^{-1}.
+= \frac{c}{\HJ(\zcos)}\left(\frac{\dd \zobs}{\dd \zcos}\right)^{-1}.
 \end{equation}
 Accordingly, the \emph{effective} Hubble rate inferred from the $\zobs$--$\chis$ relation is
 \begin{equation}
 H_{\mathrm{eff}}(\zobs)\equiv \frac{c}{\dd \chis/\dd \zobs}
-= \Hc(\zcos)\left(\frac{\dd \zobs}{\dd \zcos}\right).
+= \HJ(\zcos)\left(\frac{\dd \zobs}{\dd \zcos}\right).
 \label{eq:Heff_def}
 \end{equation}
-Here ``effective'' means ``as inferred from the $\zobs$--distance mapping in the presence of LTA'';
-it does \emph{not} redefine the background expansion law $\Hc(z)$.
+Here ``effective'' means ``as inferred from the $\zobs$--distance mapping in the presence of an
+observer-local chronometric imprint''; it does \emph{not} redefine the homogeneous background law $\HJ(z)$.
 
 In the joint SN+BAO analysis below, transverse distances depend primarily on $\chis(\zobs)$, while
 radial observables depend explicitly on the Jacobian factor $\dd \zobs/\dd \zcos$ through
 $H_{\rm eff}(\zobs)$ (Sec.~\ref{sec:bao_like}).
+
+% ======================================================================
+\section{Consistency constraints and falsification channels}
+\label{sec:constraints_main}
+
+A Jordan-frame scalar--tensor completion has sharp falsification channels in:
+(i) local gravity tests (PPN, fifth forces, and time variation of the effective Newton constant),
+(ii) clock and redshift comparisons (as operational probes of inhomogeneous endpoint/integrated terms),
+and (iii) early-universe calibration (sound horizon, recombination, and CMB inference).
+This section records the principal channels that must be confronted as the analysis moves from the
+observer-local mapping limit to a fully self-consistent cosmology.
+
+\subsection{Local gravity constraints: PPN, fifth forces, and $\dot G_{\rm eff}/G_{\rm eff}$}
+\label{sec:constraints_clocks}
+
+In the Jordan-first completion, matter is minimally coupled in the physical frame, while the
+effective gravitational coupling scales as
+\begin{equation}
+G_{\rm eff} \propto \frac{1}{F(\psi)}.
+\end{equation}
+Therefore any late-time evolution of \(\bar\psi(t)\) generically implies a time variation of
+\(G_{\rm eff}\) and potentially fifth-force/PPN signatures unless the model includes a screening
+mechanism or a parameter regime compatible with local tests.
+
+In addition to cosmological fits, any viable parameter region must satisfy:
+\begin{enumerate}[leftmargin=1.2em]
+\item \textbf{Bounds on \(\dot G/G\)} from solar-system, binary pulsar, and other timing constraints,
+interpretable as \(\dot F/F\) bounds in the model.
+\item \textbf{PPN constraints / equivalence principle tests} that limit scalar-mediated deviations
+from GR in weak-field environments (see, e.g., \cite{Will2014LRR} and modern satellite redshift tests
+\cite{Delva2018Galileo,Herrmann2018Galileo}).
+\end{enumerate}
+
+\subsection{Time-domain consistency: spectroscopy vs.\ time dilation in transients}
+\label{sec:constraints_timedomain}
+
+A particularly crisp self-consistency check is that the redshift inferred from spectroscopy and the
+time-dilation inferred from light-curve stretching (or other transient timescales) must agree once
+all observables are computed in the same physical frame.
+
+In a homogeneous Jordan-frame FLRW cosmology,
+\begin{equation}
+\Delta t_{\rm obs} = (1+z)\,\Delta t_{\rm emit},
+\end{equation}
+with the same \(z\) as inferred from spectral line ratios. In the presence of an observer-local
+inhomogeneous imprint (the \(I(\chi)\) mapping limit), the theory must specify whether the imprint
+acts as a purely spectroscopic endpoint/integrated frequency bias, a genuine modification of
+propagation, or a combination. This is therefore a primary falsification channel for any model that
+attempts to explain substantial cosmological effects via chronometric structure.
+
+\subsection{Early-universe calibration: sound horizon, recombination, and Planck priors}
+\label{sec:constraints_cmb}
+
+Once the scalar--tensor completion is treated as the cosmological background (rather than a local
+mapping), the sound horizon \(r_d\) and recombination-era observables are no longer external inputs:
+they are \emph{model outputs} that depend on the physical expansion history \(\HJ(z)\) and on any
+energy exchange implied by the Einstein-frame representation of the theory. Accordingly:
+\begin{enumerate}[leftmargin=1.2em]
+\item The BAO ruler calibration (\(\alpha_{\rm rd}\) or \(r_d\)) should ultimately be computed from the
+model, not treated purely phenomenologically.
+\item Any use of Planck-derived priors extracted under \(\Lambda\)CDM must be treated as \emph{approximate}
+until recombination and CMB inference are recomputed within the scalar--tensor model.
+\end{enumerate}
+
+For completeness we provide in Appendix~\ref{app:early_universe_full} the frame bookkeeping and
+equations needed for the early-time extension; the current SN+BAO analysis retains a phenomenological
+\(\alpha_{\rm rd}\) while the full early-universe closure is implemented.
+
+% ======================================================================
+
 % ======================================================================
 \section{Data}
 \label{sec:data}
@@ -880,40 +1762,32 @@ Let $\bm{y}_{\mathrm{BAO}}$ be the stacked BAO data vector and $\bm{m}_{\mathrm{
 \bigl(\bm{y}_{\mathrm{BAO}}-\bm{m}_{\mathrm{BAO}}(\bm{\theta})\bigr).
 \end{equation}
 
-\subsection{Correlated Planck-chain Gaussian prior}
+\subsection{Correlated Planck-chain Gaussian prior (optional; model-dependent)}
 \label{sec:planck_prior}
 
-Optionally (and in the representative run reported here), we include a correlated Gaussian prior derived from a Planck-chain subset over the parameters
+Optionally, we include a correlated Gaussian prior derived from a Planck-chain subset.
+Because Planck posteriors are model-dependent (typically extracted under \(\Lambda\)CDM and a specific
+gravity sector), this prior is used only as an \emph{approximate} early-universe calibration aid
+unless the full recombination/CMB inference is recomputed within the scalar--tensor model
+(Sec.~\ref{sec:constraints_cmb} and App.~\ref{app:early_universe_full}).
+
+In the code implementation, we support priors on either:
 \begin{equation}
-\bm{\phi} \equiv (H_0,\Om,\alpha_{\mathrm{rd}}).
+\bm{\phi} \equiv (\omega_m,\alpha_{\mathrm{rd}}),
+\qquad
+\text{or}\qquad
+\bm{\phi}\equiv(H_0,\Omega_m,\alpha_{\mathrm{rd}}),
 \end{equation}
-The prior is
+where \(\omega_m\equiv \Omega_m h^2\) and \(\alpha_{\rm rd}\equiv r_d/r_{d,\rm fid}\).
+The Gaussian prior takes the form
 \begin{equation}
 \chi^2_{\mathrm{prior}}(\bm{\phi})
 = (\bm{\phi}-\bm{\mu}_{\mathrm{P}})^{\mathsf{T}}
 \bm{\Sigma}_{\mathrm{P}}^{-1}
 (\bm{\phi}-\bm{\mu}_{\mathrm{P}}),
 \end{equation}
-with mean
-\begin{equation}
-\bm{\mu}_{\mathrm{P}} =
-\begin{bmatrix}
-67.35987729\\
-0.315284\\
-0.99533613
-\end{bmatrix},
-\end{equation}
-and covariance
-\begin{equation}
-\bm{\Sigma}_{\mathrm{P}} =
-\begin{bmatrix}
-2.8666\times 10^{-1} & -3.8905\times 10^{-3} & 6.6134\times 10^{-4}\\
--3.8905\times 10^{-3} & 5.3718\times 10^{-5} & -1.0157\times 10^{-5}\\
-6.6134\times 10^{-4} & -1.0157\times 10^{-5} & 3.2006\times 10^{-6}
-\end{bmatrix},
-\end{equation}
-corresponding to $(\sigma_{H_0},\sigma_{\Om},\sigma_{\alpha_{\mathrm{rd}}})=
-(0.5354,\ 0.007329,\ 0.001789)$ and the reported correlation coefficients \cite{Planck2018Params}.
+with \(\bm{\mu}_{\mathrm{P}}\) and \(\bm{\Sigma}_{\mathrm{P}}\) obtained from a chosen Planck chain subset.
+When shown, the exact subset and parameter space are explicitly reported alongside fit results.
 
 \subsection{Total objective and parameter sets}
 \label{sec:params2}
@@ -921,20 +1795,40 @@ corresponding to $(\sigma_{H_0},\sigma_{\Om},\sigma_{\alpha_{\mathrm{rd}}})=
 The total objective minimized is
 \begin{equation}
 \chi^2_{\mathrm{tot}}(\bm{\theta}) =
-\chi^2_{\mathrm{SN}}(\bm{\theta}) + \chi^2_{\mathrm{BAO}}(\bm{\theta}) + \chi^2_{\mathrm{prior}}(\bm{\phi}).
+\chi^2_{\mathrm{SN}}(\bm{\theta}) + \chi^2_{\mathrm{BAO}}(\bm{\theta}) + \chi^2_{\mathrm{prior}}(\bm{\phi}),
 \label{eq:chi2_tot}
 \end{equation}
+where \(\chi^2_{\rm prior}\) is included only when explicitly enabled (Sec.~\ref{sec:planck_prior}).
 
-Baseline $\Lambda$CDM parameters:
+\paragraph{Background parameter sets.}
+We distinguish two background choices:
+\begin{enumerate}[leftmargin=1.2em]
+\item \textbf{Model A (fixed background; legacy baseline):} a conventional flat \(\Lambda\)CDM background
+used as a control case for the observer-local mapping limit.
+\item \textbf{Model B (Jordan-frame scalar--tensor background):} a \(\Lambda=0\) scalar--tensor background
+defined by \(\Fpsi\), \(\Upsi\), and any nonequilibrium/source parameters entering \(J_{\rm neq}\)
+(Eqs.~\eqref{eq:JF_action}--\eqref{eq:JF_scalar}), from which \(\HJ(z)\) and the ladder are computed.
+\end{enumerate}
+
+Accordingly, we write the background parameter vector generically as
 \begin{equation}
-\bm{\theta}_{\Lambda\mathrm{CDM}} = (H_0,\Om,\alpha_{\mathrm{rd}}).
+\bm{\theta}_{\rm bg} = (H_0,\Omega_m,\alpha_{\mathrm{rd}},\bm{\vartheta}_{\rm ST}),
 \end{equation}
-LTA extension parameters (power-law family):
+where \(\bm{\vartheta}_{\rm ST}\) denotes the scalar--tensor sector parameters (e.g.\ coupling and
+potential parameters, and any nonequilibrium/source parameters), and \(\bm{\vartheta}_{\rm ST}=\emptyset\)
+for Model A.
+
+\paragraph{Observer-local imprint parameters (mapping layer).}
+When the local imprint is enabled, we augment by a mapping parameter set
 \begin{equation}
-\bm{\theta}_{\mathrm{LTA}} = (H_0,\Om,\alpha_{\mathrm{rd}}, \tL, s_{\mathrm{anchor}}, B, p),
+\bm{\theta}_{\rm map} = (s_{\mathrm{anchor}},\; \text{(optional shape parameters)}),
 \end{equation}
-with $\tL$ fixed in the baseline analysis to the chosen life-epoch cutoff (e.g.\ $\tL=3.8\,\mathrm{Gyr}$ in the representative run).
-The model is nested: setting $s_{\mathrm{anchor}}=0$ yields $\Iofchi\equiv 0$ and recovers baseline $\Lambda$CDM exactly.
+with the fiducial analysis fixing the activation \emph{shape} and fitting only the amplitude
+\(s_{\rm anchor}\) (Sec.~\ref{sec:earth_history2}).
+The full parameter vector is
+\begin{equation}
+\bm{\theta} = (\bm{\theta}_{\rm bg},\bm{\theta}_{\rm map}).
+\end{equation}
 
 \subsection{Optimization and test statistic}
 \label{sec:opt_stat}
@@ -968,12 +1862,16 @@ interest.
 \section{Primary Results}
 \label{sec:results}
 
-This section reports the primary empirical outcomes of the fiducial $\Lambda$CDM and
-$\Lambda$CDM+LTA(powerlaw) fits, emphasizing (i) the global goodness-of-fit improvement under the
-\emph{full released covariance} and ladder-anchored likelihood, and (ii) where in redshift space
-that improvement is sourced. We then present reconstructed mapping diagnostics (the LTA profile,
-$\Delta\ln(1+z)$ saturation, and the redshift Jacobian) and the BAO consistency checks implied by
-the mapping.
+This section reports the primary empirical outcomes of the \emph{observer-local mapping} analysis
+layer (the \(I(\chi)\) phenomenology) when evaluated on a conventional control background (Model A),
+emphasizing (i) the global goodness-of-fit improvement under the \emph{full released covariance} and
+ladder-anchored likelihood, and (ii) where in redshift space that improvement is sourced.
+
+The Jordan-frame scalar--tensor background completion (Model B), which is the self-consistent route
+to explaining dark-energy-like effects via the same field, is derived in
+Secs.~\ref{sec:jordan_background}--\ref{sec:jordan_ladder} and Appendices
+\ref{app:early_universe_full} and \ref{app:geom_entropy}. Its full SN+BAO (and eventually CMB)
+inference results are deferred until the corresponding codebase implementation is complete.
 
 \subsection{Fiducial analysis configuration and strict nesting sanity check}
 \label{sec:results_config}
@@ -1576,6 +2474,116 @@ with locality, Lorentz invariance, and precision metrology constraints---is an o
 problem. In this paper we do not attempt that construction; we restrict ourselves to a minimal,
 falsifiable phenomenological mapping and test it against SN+BAO data.
 
+\paragraph{Thermodynamic closure and the role of clocks.}
+In Jacobson’s thermodynamic derivation of general relativity, the Einstein field equations arise as a
+local equilibrium condition enforcing the Clausius relation $\delta Q = T\,\delta S$ across all
+local causal horizons \cite{Jacobson1995EinsteinEOS}. A complementary and thematically related viewpoint is the ``thermal time'' hypothesis, in which a
+notion of time flow is associated with the statistical state of a generally covariant system via
+modular structure rather than being taken as primitive \cite{ConnesRovelli1994ThermalTime}.
+While our chronometric postulate is different in content, the shared motif is that the operational
+time experienced by physical systems may be linked to coarse-grained state structure and
+thermodynamic bookkeeping. In this framework, spacetime curvature is fixed
+by the requirement that horizon entropy, taken to be proportional to area, evolves consistently
+under local energy flux.
+
+The Local Time Acceleration (LTA) hypothesis explored here is most naturally interpreted as a
+\emph{nonequilibrium extension} of this picture. Sustained organization in driven subsystems does not
+modify the equilibrium area--entropy relation directly, but instead introduces continuous entropy
+production $\sigma = \nabla_\mu s^\mu \ge 0$ \cite{ElingGuedensJacobson2006Noneq}. Rather than sourcing
+large curvature gradients, such nonequilibrium contributions can enter dominantly through the
+\emph{clock sector}: they bias the local rate at which proper time accumulates relative to the
+background cosmological time coordinate.
+
+Operationally, redshift is a comparison between an emitted photon frequency and the observer’s local
+frequency standard. A persistent, observer-local bias in clock rate therefore appears as a
+multiplicative correction to $(1+z)$, independent of any large modification to null geodesics or
+lensing. This motivates treating LTA primarily as an effective clock-rate perturbation sourced by
+entropy production, with metric backreaction remaining subleading in the weak-field regime probed by
+low-redshift supernovae.
+
+% ======================================================================
+\subsection{Earth budget closure: magnitude consistency with planetary free-energy throughput}
+\label{sec:earth_budget_closure}
+
+A central question for any observer-local, organization-sourced clock-bias hypothesis is whether
+the inferred magnitude is even remotely compatible with known terrestrial energy and entropy
+budgets. In our fiducial fit, the LTA mapping saturates at
+\begin{equation}
+I_{\rm sat} \simeq 2.67\times 10^{-3},
+\end{equation}
+corresponding to a fractional multiplicative factor in \((1+z)\) of
+\(\exp(I_{\rm sat})-1 \approx 2.7\times 10^{-3}\) (a \(\sim 0.27\%\) effect).
+
+In the constraint-field formulation developed in Appendix~\ref{app:lta_constraint_field}
+(energy \(\rightarrow\) constraints \(\rightarrow\) clock-bias chain),
+the relevant thermodynamic control parameter is not ``entropy'' in the sense of disorder, but the
+\emph{nonequilibrium free-energy throughput that can be stored in, and continually used to maintain,
+constraints} (i.e.\ microstate-space restrictions). The second law then supplies a robust bound:
+maintaining (or increasing) any coarse-grained constraint inventory requires dissipation, and the
+rate of constraint maintenance is bounded by available power and the effective dissipation
+temperature.
+
+\paragraph{Conservative biospheric throughput estimate.}
+A conservative proxy for Earth’s sustained constraint-building throughput is the chemical free-energy
+stored by global net primary production (NPP) \cite{Field1998NPP,BioNumbersNPP}.
+Using a global NPP of
+\(\dot M_C \sim 10^2\,{\rm PgC\,yr^{-1}}\) and a standard free-energy requirement
+\(\Delta G^\circ \simeq 4.78\times 10^5\,{\rm J\,mol^{-1}}\) per mole of CO\(_2\) reduced to the
+carbohydrate level \cite{Whitmarsh478kJ}, the implied biospheric free-energy throughput is of order
+\begin{equation}
+P_{\rm bio} \sim 10^{14}\ {\rm W},
+\end{equation}
+and the corresponding entropy-production scale at ambient temperature is
+\begin{equation}
+\dot S_{\rm bio} \sim \frac{P_{\rm bio}}{T_{\rm amb}}
+\sim 10^{11}\ {\rm W\,K^{-1}}
+\quad (T_{\rm amb}\sim 300\,{\rm K}).
+\end{equation}
+This is a \emph{throughput} bound: it does not assert that NPP equals total biospheric dissipation,
+only that it sets a conservative scale for sustained, order-linked chemical free-energy processing.
+
+\paragraph{Planetary entropy-production reference scale.}
+A natural comparison scale for any Earth-sourced mechanism is the planetary entropy production
+associated with the solar-to-infrared energy degradation of the Earth system, which is of order
+\cite{Kleidon2010HierarchyMEP}
+\begin{equation}
+\dot S_{\oplus} \sim 10^{14}\ {\rm W\,K^{-1}}.
+\end{equation}
+Published radiative-entropy-budget estimates also report a smaller but still large internal
+irreversible entropy-production scale,
+\(\dot S_{\oplus,{\rm int}}\sim 10^{13}\,{\rm W\,K^{-1}}\),
+associated with non-radiative irreversible processes within the climate system.
+
+\paragraph{Closure in a dimensionless form.}
+Because \(I_{\rm sat}\) is dimensionless, a minimal (and explicitly bounded) closure consistent with
+second-law bookkeeping is to write the saturation depth as proportional to a dimensionless source
+strength defined by an entropy-throughput fraction:
+\begin{equation}
+I_{\rm sat} \equiv \epsilon_{\rm tc}\,
+\frac{\dot S_{\rm src}}{\dot S_{\rm ref}},
+\label{eq:Isat_budget_closure}
+\end{equation}
+where \(\dot S_{\rm src}\) is the entropy-production throughput associated with the organized,
+constraint-maintaining source region (conservatively \(\dot S_{\rm src}\sim \dot S_{\rm bio}\)),
+\(\dot S_{\rm ref}\) is a planetary reference throughput (e.g.\ \(\dot S_{\oplus}\) or
+\(\dot S_{\oplus,{\rm int}}\)), and \(\epsilon_{\rm tc}\) is a dimensionless transduction parameter
+encoding the microphysical efficiency with which organized nonequilibrium throughput biases the
+local clock sector.
+
+With \(\dot S_{\rm bio}/\dot S_{\oplus}\sim 10^{-3}\) (radiative reference) or
+\(\dot S_{\rm bio}/\dot S_{\oplus,{\rm int}}\sim 10^{-2}\) (internal reference),
+the observed \(I_{\rm sat}\sim 2.7\times 10^{-3}\) corresponds to
+\(\epsilon_{\rm tc}\) in the broad range \(\sim 10^{-1}\) to a few, i.e.\ not an astronomically
+large or obviously impossible efficiency parameter. The important point is not that this fixes
+\(\epsilon_{\rm tc}\), but that the \emph{required clock-bias amplitude is compatible, at the level
+of order-of-magnitude energy/entropy throughput, with what Earth can sustain without violating the
+second law.}
+
+Full arithmetic and explicit numerical values used for the above ratios are given in
+Appendix~\ref{app:earth_budget_numbers}.
+% ======================================================================
+
+
 \subsection{Spacetime interpretation: an observer-anchored frequency-drift imprint on the past light cone}
 \label{sec:discussion_timewave}
 
@@ -1874,108 +2882,2194 @@ B.~P.~Abbott \emph{et al.} (LIGO Scientific Collaboration and Virgo Collaboratio
 \emph{Nature} \textbf{551}, 85--88 (2017).
 % arXiv:1710.05835
 
+\bibitem{Jacobson1995EinsteinEOS}
+T.~Jacobson,
+``Thermodynamics of Spacetime: The Einstein Equation of State,''
+\emph{Phys. Rev. Lett.} \textbf{75}, 1260--1263 (1995).
+% arXiv:gr-qc/9504004
+
+\bibitem{ElingGuedensJacobson2006Noneq}
+C.~Eling, R.~Guedens, and T.~Jacobson,
+``Non-equilibrium Thermodynamics of Spacetime,''
+\emph{Phys. Rev. Lett.} \textbf{96}, 121301 (2006).
+% arXiv:gr-qc/0602001
+
+\bibitem{Kleidon2010HierarchyMEP}
+A.~Kleidon,
+``Life, hierarchy, and the thermodynamic machinery of planet Earth,''
+\emph{Physics of Life Reviews} \textbf{7}, 424--460 (2010).
+
+\bibitem{BioNumbersNPP}
+R.~Milo and R.~Phillips,
+``BioNumbers --- the database of key numbers in molecular and cell biology,''
+\emph{Nucleic Acids Research} \textbf{43}, D964--D970 (2015).
+% See BioNumbers entries on global net primary production (NPP)
+
+\bibitem{Field1998NPP}
+C.~B.~Field, M.~J.~Behrenfeld, J.~T.~Randerson, and P.~Falkowski,
+``Primary production of the biosphere: Integrating terrestrial and oceanic components,''
+\emph{Science} \textbf{281}, 237--240 (1998).
+
+\bibitem{Whitmarsh478kJ}
+J.~Whitmarsh and Govindjee,
+``The energetics of photosynthetic carbon reduction,''
+in \emph{Concepts in Photobiology: Photosynthesis and Photomorphogenesis},
+ed.~G.~S.~Singhal, G.~Renger, S.~K.~Sopory, K.~Irrgang, and Govindjee
+(Springer, Dordrecht, 1999), pp.~11--51.
+
+\bibitem{ConnesRovelli1994ThermalTime}
+A.~Connes and C.~Rovelli,
+``Von Neumann algebra automorphisms and time--thermodynamics relation in generally covariant quantum theories,''
+\emph{Class. Quant. Grav.} \textbf{11}, 2899--2918 (1994).
+
+\bibitem{Wald1984GR}
+R.~M.~Wald,
+\emph{General Relativity}
+(University of Chicago Press, 1984).
+
+\bibitem{KullbackLeibler1951}
+S.~Kullback and R.~A.~Leibler,
+``On Information and Sufficiency,''
+\emph{Ann. Math. Statist.} \textbf{22}, 79--86 (1951).
+
+\bibitem{CoverThomas2006}
+T.~M.~Cover and J.~A.~Thomas,
+\emph{Elements of Information Theory}, 2nd ed.
+(John Wiley \& Sons, 2006).
+
+\bibitem{Seifert2012ST}
+U.~Seifert,
+``Stochastic thermodynamics, fluctuation theorems and molecular machines,''
+\emph{Rep. Prog. Phys.} \textbf{75}, 126001 (2012).
+
+\bibitem{Parrondo2015ThermoInfo}
+J.~M.~R.~Parrondo, J.~M.~Horowitz, and T.~Sagawa,
+``Thermodynamics of information,''
+\emph{Nature Physics} \textbf{11}, 131--139 (2015).
+
+\bibitem{Landauer1961}
+R.~Landauer,
+``Irreversibility and Heat Generation in the Computing Process,''
+\emph{IBM J. Res. Dev.} \textbf{5}, 183--191 (1961).
+
+\bibitem{Bennett1982}
+C.~H.~Bennett,
+``The Thermodynamics of Computation---A Review,''
+\emph{Int. J. Theor. Phys.} \textbf{21}, 905--940 (1982).
+
+\bibitem{Chernoff1954}
+H.~Chernoff,
+``On the Distribution of the Likelihood Ratio,''
+\emph{Ann. Math. Statist.} \textbf{25}, 573--578 (1954).
+
+\bibitem{SelfLiang1987}
+S.~G.~Self and K.-Y.~Liang,
+``Asymptotic Properties of Maximum Likelihood Estimators and Likelihood Ratio Tests under Nonstandard Conditions,''
+\emph{J. Amer. Stat. Assoc.} \textbf{82}, 605--610 (1987).
+
+\bibitem{Protassov2002}
+R.~Protassov, A.~van~Dyk, A.~Connors, V.~Kashyap, and A.~Siemiginowska,
+``Statistics, Handle with Care: Detecting Multiple Model Components with the Likelihood Ratio Test,''
+\emph{Astrophys. J.} \textbf{571}, 545--559 (2002).
+
+\bibitem{Faraoni2004ST}
+V.~Faraoni,
+\emph{Cosmology in Scalar-Tensor Gravity}
+(Springer, 2004).
+
+\bibitem{NeukartMarxVinokur2026ISL}
+F.~Neukart, E.~Marx, and V.~Vinokur,
+``Entropy, Information, and the Curvature of Spacetime in the Informational Second Law,''
+Preprints.org (2026), doi:10.20944/preprints202601.0455.v1.
+
+\bibitem{Will2014LRR}
+C.~M.~Will,
+``The Confrontation between General Relativity and Experiment,''
+\emph{Living Rev. Relativity} \textbf{17}, 4 (2014).
+
+\bibitem{Delva2018Galileo}
+P.~Delva \emph{et al.},
+``Test of the Gravitational Redshift with Galileo Satellites,''
+\emph{Phys. Rev. Lett.} \textbf{121}, 231101 (2018).
+
+\bibitem{Herrmann2018Galileo}
+S.~Herrmann \emph{et al.},
+``Test of the Gravitational Redshift with Galileo Satellites,''
+\emph{Phys. Rev. Lett.} \textbf{121}, 231102 (2018).
+
+\bibitem{Schnakenberg1976}
+J.~Schnakenberg,
+``Network theory of microscopic and macroscopic behavior of master equation systems,''
+\emph{Rev. Mod. Phys.} \textbf{48}, 571--585 (1976).
+
+\bibitem{Mitchell1961Chemiosmotic}
+P.~Mitchell,
+``Coupling of phosphorylation to electron and hydrogen transfer by a chemiosmotic type of mechanism,''
+\emph{Nature} \textbf{191}, 144--148 (1961).
+
+\bibitem{Alberts2014MBoC}
+B.~Alberts \emph{et al.},
+\emph{Molecular Biology of the Cell}, 6th ed.
+(Garland Science, 2014).
+
+\bibitem{Phillips2012PBoC}
+R.~Phillips, J.~Kondev, J.~Theriot, and H.~Garcia,
+\emph{Physical Biology of the Cell}, 2nd ed.
+(Garland Science, 2012).
+
+\bibitem{Hill1977FreeEnergyTransduction}
+T.~L.~Hill,
+\emph{Free Energy Transduction and Biochemical Cycle Kinetics}
+(Dover Publications, 2005).
+% (Original edition: 1977; Dover is a common reprint. If you prefer, cite the original publisher/year.)
+
+\bibitem{Hopfield1974Proofreading}
+J.~J.~Hopfield,
+``Kinetic proofreading: A new mechanism for reducing errors in biosynthetic processes requiring high specificity,''
+\emph{Proc. Natl. Acad. Sci. USA} \textbf{71}, 4135--4139 (1974).
+
+\bibitem{Ninio1975Proofreading}
+J.~Ninio,
+``Kinetic amplification of enzyme discrimination,''
+\emph{Biochimie} \textbf{57}, 587--595 (1975).
+
 
 \end{thebibliography}
 
 % ======================================================================
 \appendix
 
-\subsection{Toward a covariant effective origin for LTA: an entropy-production--sourced clock field}
-\label{sec:lta_origin_covariant}
+% ======================================================================
+\section{Thermodynamic and chronometric foundations of LTA}
+\label{app:foundation}
 
-The LTA mapping tested in this work is deliberately phenomenological: it introduces an
-observer-anchored, causal, bounded modification to the mapping between observed redshift and the
-background cosmological redshift entering homogeneous distances. Here we outline one minimal way to
-embed the same structure in a covariant effective-theory language, clarifying (i) why the effect
-can predominantly appear as a clock-rate (time-flow) perturbation rather than a large lensing
-deflection, and (ii) why the CMB monopole temperature and Planck inference become natural external
-constraints.
+This appendix provides a single continuous derivation chain connecting:
+\[
+\text{energy throughput} \;\Longrightarrow\; \text{bounded constraint inventory} \;\Longrightarrow\;
+\text{order field } \psi(x) \;\Longrightarrow\; \text{scalar--tensor coupling }F(\psi)
+\;\Longrightarrow\; \text{(derived) chronometric factor }A(\psi)=F^{-1/2}
+\]
+and clarifies how these ingredients feed into two distinct observational channels:
+\begin{enumerate}[leftmargin=1.2em]
+\item \textbf{Homogeneous cosmology:} the background mode \(\bar\psi(t)\) modifies the Jordan-frame
+expansion history \(\HJ(z)\), enabling dark-energy-like effects without introducing \(\Lambda\) as a
+separate component (Sec.~\ref{sec:jordan_background}).
+\item \textbf{Observer-local imprint:} inhomogeneous perturbations \(\delta\psi(x)\) can generate
+endpoint/integrated frequency-comparison effects that, in a controlled approximation, may be packaged
+into an effective \(\Delta\ln(1+z)\) mapping (Sec.~\ref{sec:lta_mapping}).
+\end{enumerate}
 
-\paragraph{Constraint density and the second law.}
-A central interpretive idea motivating LTA is that sustained organization does not violate the
-second law, but is maintained by continuous dissipation and entropy export. In relativistic
-nonequilibrium thermodynamics a natural covariant scalar proxy for this ``throughput of
-constraints'' is the local entropy production rate density
+Everything up to the covariant insertion point \(\mathcal{S}_{\rm neq}\) uses standard
+nonequilibrium/statistical thermodynamics and conservative bookkeeping. The nonstandard physics is
+localized to: (i) the choice of scalar--tensor functions \(F(\psi)\), \(U(\psi)\), and (ii) the form
+of the nonequilibrium source \(J_{\rm neq}\) that links sustained constraint-maintenance to the scalar
+sector.
+
+% ----------------------------------------------------------------------
+
+\paragraph{Conventions (fixed reference; GR recovery in vacuum).}
+Throughout Appendix~\ref{app:foundation} we choose the maximum-entropy reference distribution $\pi$
+\emph{once} and hold it fixed in time. Equivalently, the macroscopic conditions defining the
+``unconstrained baseline'' (bath temperature $T$, energy function $E(\xi)$, conserved quantities,
+etc.) are taken time-independent on the timescales of interest. With this convention the reference
+equilibrium free energy $F_{\rm eq}$ is constant, and $\varphi$ can be interpreted as a true
+``constraint inventory'' whose growth is bounded by input work (Sec.~\ref{app:second_law_bound}).
+
+In the absence of matter/nonequilibrium sources (ideal vacuum), the local state coincides with the
+reference ($p=\pi$), so $\varphi=\psi=0$ and realized clock time reduces to standard Jordan-frame proper time.
+All LTA phenomenology is sourced by nonzero $\psi$ in material environments.
+
+
+\subsection{A.1 Constraint inventory as microstate-space reduction}
+\label{app:constraint_inventory}
+
+We require a mathematically precise scalar quantifying ``constraint / order'' that:
+(i) is nonnegative; (ii) behaves conservatively under coarse-graining; and (iii) has a direct
+energetic meaning under the second law.
+
+Let $\xi$ denote a microstate at a chosen coarse-graining and let $p(\xi,t)$ be the system’s
+(coarse-grained) microstate distribution. Let $\pi(\xi,t)$ denote a reference maximum-entropy
+distribution representing the \emph{unconstrained} baseline given whatever macroscopic constraints
+we are \emph{not} counting as ``order'' (e.g.\ fixed energy, particle content, etc.). In the simplest
+canonical case at temperature $T$, $\pi$ is Gibbs; more generally it can be a MaxEnt reference.
+
+\paragraph{Definition (constraint inventory).}
+Define
 \begin{equation}
-\sigma(x) \equiv \nabla_\mu s^\mu \ge 0,
+\phi(t) \equiv D_{\mathrm{KL}}\!\bigl(p(\cdot,t)\,\Vert\,\pi\bigr)
+=\int \dd \xi\,p(\xi,t)\ln\!\frac{p(\xi,t)}{\pi(\xi)}.
+\label{eq:app_phi_def}
 \end{equation}
-where $s^\mu$ is the entropy current. The inequality is the local statement of the second law.
-In information-thermodynamic language, maintaining correlations and feedback control requires
-dissipation (e.g.\ Landauer-type bounds), so $\sigma$ can be viewed as a conservative, measurable
-proxy for the density of sustained information-bearing constraints.
-
-\paragraph{A minimal causal mediator.}
-Introduce an effective scalar field $\varphi(x)$ sourced by $\sigma$,
+and the entropy-unit inventory
 \begin{equation}
-(\Box - m_\varphi^2)\,\varphi(x) = \lambda\,\sigma(x),
-\label{eq:phi_source}
+\varphi(t)\equiv k_B\,\phi(t)
+\qquad [\varphi]=\mathrm{J\,K^{-1}}.
+\label{eq:app_varphi_def}
 \end{equation}
-where $\lambda$ is a coupling constant and $m_\varphi$ sets an interaction range / decay scale.
-Solving Eq.~\eqref{eq:phi_source} with a retarded Green's function makes the construction causal:
-the field at a spacetime point depends on the past history of the source on the observer world-tube.
-If the dominant source region is localized near the observer (Earth), the resulting field on the
-past light cone is naturally observer-anchored and retarded, providing a microphysical
-interpretation of the Earth-retarded time argument used in the LTA activation ansatz.
 
-\paragraph{Clock-sector coupling and redshift remapping.}
-To generate an observer-local modification to measured redshift without requiring a large change in
-the global expansion history, one may couple $\varphi$ primarily to the local clock/frequency
-standard. A minimal parameterization is a conformal rescaling of the matter (clock) sector by a
-factor $A(\varphi)$, so that the proper time accumulated by local clocks is
-$d\tau_{\rm clock} = A(\varphi)\,d\tau$.
-In that case the measured redshift between an emitter and the observer acquires an additional
-multiplicative factor
+\paragraph{Core properties (why this is a conservative notion of ``order'').}
+KL divergence satisfies:
+\begin{align}
+\varphi(t) &\ge 0, \quad \varphi(t)=0 \iff p=\pi\;\text{a.e.}, \label{eq:app_phi_nonneg}\\
+\varphi(t) &\ge \varphi_{\rm coarse}(t) \quad \text{under any coarse-graining map (data-processing)}, \label{eq:app_phi_dataproc}\\
+\varphi_{AB} &= \varphi_A+\varphi_B \quad \text{for independent composition } p_{AB}=p_Ap_B,\ \pi_{AB}=\pi_A\pi_B. \label{eq:app_phi_add}
+\end{align}
+Thus $\varphi$ is nonnegative, cannot be inflated by coarse-graining, and is additive under
+independent composition.
+
+\paragraph{Explicit microstate-space link.}
+If $\pi$ is uniform on an allowed set of size $\Omega_0$ and $p$ is uniform on a constrained subset
+of size $\Omega_1\le\Omega_0$, then
 \begin{equation}
-1+z_{\rm obs} = (1+z_{\rm cos})\,
-\frac{A(\varphi_{\rm obs})}{A(\varphi_{\rm emit})}.
-\label{eq:zmap_A}
+\phi = \ln\!\frac{\Omega_0}{\Omega_1}, \qquad
+\varphi = k_B \ln\!\frac{\Omega_0}{\Omega_1}.
+\label{eq:app_microstates}
 \end{equation}
-If the field is negligible outside the observer-local causal domain, then for sufficiently distant
-sources $A(\varphi_{\rm emit})\rightarrow 1$ and the modification saturates, while for nearby
-sources inside the domain $A(\varphi_{\rm emit})$ varies with distance in a way determined by the
-retarded source history. Defining $I(\chi)\equiv\ln\!\left[A(\varphi_{\rm obs})/A(\varphi(\chi))\right]$
-reduces Eq.~\eqref{eq:zmap_A} to the LTA form
+In this special case, $\varphi$ literally counts the log-reduction in accessible microstates.
+This is the precise sense in which ``constraints reduce microstate space.''
+
+% ----------------------------------------------------------------------
+\subsection{A.2 Nonequilibrium free energy: $T\varphi$ is a stored constraint budget}
+\label{app:noneq_free_energy}
+
+In an isothermal setting at temperature $T$, define the entropy functional
 \begin{equation}
-1+z_{\rm obs} = (1+z_{\rm cos})\,\exp[I(\chi)].
+S[p]\equiv -k_B\int \dd \xi\, p(\xi,t)\ln p(\xi,t),
+\label{eq:app_entropy}
 \end{equation}
-Writing $s(\chi)\equiv c\,dI/d\chi$ recovers the line-of-sight integral representation used in the
-main text.
-
-\paragraph{Why this need not strongly bend photon directions.}
-If the dominant modification is to the clock/frequency standard (Eq.~\eqref{eq:zmap_A}) and the
-effective field profile is approximately spherically symmetric about the observer, the leading
-signature is monopolar (radial) in redshift rather than a large transverse gradient. Since lensing
-deflection depends on transverse gradients, an observer-centered monopole-like perturbation can
-shift the frequency mapping while producing only subleading angular deflections. This is
-consistent with the empirical motivation of LTA: it targets low-$z$ Hubble-diagram residual
-structure without requiring a large, sky-dependent lensing signal.
-
-\subsection{Implications for the CMB monopole and Planck inference}
-\label{sec:lta_cmb}
-
-Because the LTA mapping saturates at modest lookback time in the configurations explored here,
-high-redshift signals such as the CMB experience an approximately constant remapping,
-$1+z_{\rm obs}\simeq (1+z_{\rm cos})e^{I_{\rm sat}}$.
-This acts as a monopole rescaling of the observed CMB temperature relative to the standard mapping:
+and the nonequilibrium Helmholtz free energy functional
 \begin{equation}
-T_{\rm obs} = \frac{T_{\rm emit}}{1+z_{\rm obs}}
-= \frac{T_{\rm emit}}{(1+z_{\rm cos})\,e^{I_{\rm sat}}}
-= \frac{T_{\rm std}}{e^{I_{\rm sat}}}.
+F[p]\equiv \langle E\rangle_p - T S[p].
+\label{eq:app_F_def}
 \end{equation}
-Therefore, if LTA is interpreted as a genuine clock/frequency-standard effect, it cannot be
-strictly confined to supernova redshifts alone: it also shifts the relation between the physical
-CMB temperature today (which controls $\rho_\gamma\propto T_0^4$ and early expansion) and the
-measured monopole temperature.
+We assume the bath temperature $T$ and the energy function $E(\xi)$ defining the canonical reference are time-independent,
+so that $F_{\rm eq}$ is a constant and $d(F-F_{\rm eq})/dt = dF/dt$.
 
-Operationally, this implies that Planck-derived constraints on $(H_0,\Omega_m,r_d)$ should in
-principle be re-inferred in a cosmology that includes an additional parameter
-$\epsilon\equiv e^{I_{\rm sat}}$, for example by treating the physical CMB temperature as
-$T_{0,\rm phys}=\epsilon\,T_{0,\rm obs}$ in the Boltzmann/recombination calculation and sampling
-$\epsilon$ jointly with standard cosmological parameters. The resulting posterior covariance in
-$(H_0,\Omega_m,\alpha_{r_d})$ would then define a ``corrected Planck prior'' consistent with the
-LTA interpretation. Conversely, external measurements of $T_0$ and $T(z)$ become sharp
-falsification channels: any nonzero $I_{\rm sat}$ must be consistent with CMB monopole constraints
-and with empirical tests of the temperature--redshift relation.
+For a canonical reference $\pi(\xi)\propto e^{-\beta E(\xi)}$ with $\beta=(k_BT)^{-1}$, the equilibrium
+free energy is $F_{\rm eq}=-k_BT\ln Z$, and one has the standard identity
+\begin{equation}
+F[p]-F_{\rm eq} = k_B T\,D_{\mathrm{KL}}(p\Vert\pi)=T\,\varphi.
+\label{eq:app_F_minus_Feq}
+\end{equation}
+In the fixed-reference convention adopted here, $F_{\rm eq}$ is constant in time.
+Therefore $T\varphi$ is exactly the \emph{excess free energy above equilibrium} stored in the
+maintained constraints/correlations relative to $\pi$.
+
+\paragraph{Bits language (optional).}
+Define $\varphi_{\rm bits}\equiv \varphi/(k_B\ln2)=\phi/\ln2$. Then $T\varphi$ corresponds to an
+energy scale of $k_BT\ln2$ per bit, matching the Landauer scale for logically irreversible
+operations. We do \emph{not} assume biological systems saturate this bound; it is used only as a
+clean dimensional benchmark.
+
+% ----------------------------------------------------------------------
+\subsection{A.3 Second-law throughput bound: power limits constraint growth}
+\label{app:second_law_bound}
+
+Assume an effective isothermal reservoir at temperature $T$.
+Let $\dot Q$ be heat flow into the system and $\dot W$ work done on the system; the first law gives
+\begin{equation}
+\frac{\dd}{\dd t}\langle E\rangle = \dot Q + \dot W.
+\label{eq:app_firstlaw}
+\end{equation}
+Define total entropy production rate (system + environment) by
+\begin{equation}
+\dot\Sigma \equiv \frac{\dd S}{\dd t}-\frac{\dot Q}{T}\ \ge\ 0,
+\label{eq:app_sigmadot}
+\end{equation}
+the local second law for this setting.
+
+Using $F=\langle E\rangle-TS$ yields the standard balance
+\begin{equation}
+\dot W = \frac{\dd F}{\dd t} + T\dot\Sigma.
+\label{eq:app_work_balance}
+\end{equation}
+Because the reference $\pi$ (hence $F_{\rm eq}$) and the bath temperature $T$ are fixed in the present convention,
+combining \eqref{eq:app_F_minus_Feq} with \eqref{eq:app_work_balance} gives
+\begin{equation}
+T\,\dot\varphi = \frac{\dd}{\dd t}(F-F_{\rm eq}) \le \dot W \equiv P_{\rm in},
+\qquad\Rightarrow\qquad
+\dot\varphi \le \frac{P_{\rm in}}{T}.
+\label{eq:app_varphi_dot_bound}
+\end{equation}
+This is the key throughput bound used later: \emph{constraint inventory cannot grow faster than
+available power divided by temperature.}
+
+In steady maintenance regimes where $\langle \dot\varphi\rangle\simeq0$, one has
+$\langle \dot\Sigma\rangle\simeq \langle P_{\rm in}\rangle/T$.
+
+% ----------------------------------------------------------------------
+\subsection{A.4 From constraint throughput to a causal order field $\psi(x)$}
+\label{app:psi_field}
+
+The cosmological LTA mapping is a function of spacetime position along the observer past light cone.
+To connect \eqref{eq:app_varphi_dot_bound} to a lightcone imprint, we introduce a coarse-grained,
+covariant scalar \emph{order field} $\psi(x)$ sourced by local nonequilibrium activity.
+
+\paragraph{Order field definition (local inventory density).}
+To obtain a spacetime field, apply the same fixed-reference KL construction to a coarse-graining cell
+of physical volume $V_c$ centered at spacetime event $x$, yielding a cell inventory
+$\varphi_c(x)\equiv k_B D_{\mathrm{KL}}(p_c(\cdot;x)\Vert \pi_c)$ with units ${\rm J\,K^{-1}}$.
+Define the corresponding local inventory \emph{density}
+\begin{equation}
+\varphi_{\rm loc}(x)\equiv \frac{\varphi_c(x)}{V_c},
+\qquad [\varphi_{\rm loc}]={\rm J\,K^{-1}\,m^{-3}}.
+\end{equation}
+The total inventory associated with a spatial region $\mathcal{R}$ on a constant-time slice is then
+$\varphi_{\mathcal{R}}(t)=\int_{\mathcal{R}} d^3x\,\sqrt{h}\,\varphi_{\rm loc}(x,t)$, where $h$ is the induced 3-metric determinant.
+
+Define a dimensionless order field by
+\begin{equation}
+\psi(x)\equiv \frac{\varphi_{\rm loc}(x)}{\varphi_\ast},
+\label{eq:app_psi_def}
+\end{equation}
+where $\varphi_\ast$ is a fixed reference \emph{density} scale.
+
+\paragraph{Entropy-field interpretation and current.}
+It is often convenient to keep track of an entropy-unit scalar by undoing the normalization,
+$S_{\rm ord}(x)\equiv S_\ast\,\psi(x)$ with $[S_{\rm ord}]={\rm J\,K^{-1}}$ (or $S_\ast\equiv\varphi_\ast V_c$
+if one prefers the density normalization used above).
+With metric signature $(-,+,+,+)$, a future-directed ``informational/entropy'' current built from $S_{\rm ord}$
+is naturally defined as
+\begin{equation}
+J^\mu_{\rm ord}\;\equiv\;-\nabla^\mu S_{\rm ord},
+\qquad
+\sigma_{\rm ord}\;\equiv\;\nabla_\mu J^\mu_{\rm ord}\;=\;-\Box S_{\rm ord}.
+\label{eq:app_entropy_current}
+\end{equation}
+For a homogeneous field on FLRW this choice gives $J^0_{\rm ord}=+\dot S_{\rm ord}$ and
+$\sigma_{\rm ord}=\ddot S_{\rm ord}+3H\dot S_{\rm ord}$.
+
+\paragraph{Causal propagation (minimal effective field).}
+To encode finite-range causal influence and saturation, we treat $\psi$ as an effective scalar
+propagating on the standard GR background with a retarded Green’s function. The minimal local form
+is a sourced Klein--Gordon-type equation
+\begin{equation}
+(\Box - m_\psi^2)\psi(x) = \kappa\,\sigma(x),
+\label{eq:app_psi_source}
+\end{equation}
+where $\sigma(x)\ge0$ is a scalar proxy for nonequilibrium throughput (e.g.\ local entropy
+production density $\sigma\equiv\nabla_\mu s^\mu$), $m_\psi$ sets an effective range / saturation
+scale, and $\kappa$ is a coupling constant. Retarded boundary conditions ensure causality:
+$\psi(x)$ depends only on past sources.
+
+\paragraph{Observer-local source approximation and retarded-time bookkeeping.}
+If $\sigma(x)$ is strongly localized near the observer world-tube (Earth), then on the past light
+cone the dominant dependence reduces to a function of a retarded time parameter,
+$\psi\approx \psi\!\bigl(t_{\rm ret}(\chi)\bigr)$.
+In the low-$z$ FLRW limit, the standard ``two-leg'' causal intersection geometry motivates the
+approximation $t_{\rm ret}\approx 2\chi/c$, and in the main text this is implemented via the
+Earth-retarded lookback-time mapping defined by $\chi(z_e)=2\chi$ and $t_{\rm ret}=\tlb(z_e)$
+(Sec.~\ref{sec:tret2}). This step is a bookkeeping approximation of the retarded solution of
+\eqref{eq:app_psi_source}; it is not a modification of the background expansion.
+
+% ======================================================================
+% End Appendix A
+% ======================================================================
+
+% ======================================================================
+\section{Earth budget closure: numerical entropy-throughput ratios}
+\label{app:earth_budget_numbers}
+
+This appendix provides the explicit arithmetic supporting the order-of-magnitude statements in
+Sec.~\ref{sec:earth_budget_closure}. The purpose is a \emph{feasibility bound}: demonstrate that the
+required LTA saturation magnitude \(I_{\rm sat}\sim 10^{-3}\) does not immediately contradict known
+terrestrial free-energy and entropy-production scales.
+
+\subsection{Biospheric chemical free-energy throughput from NPP}
+
+We take a representative global net primary production (NPP) value
+\cite{Field1998NPP,BioNumbersNPP}
+\begin{equation}
+\dot M_C \simeq 104.9\ {\rm PgC\,yr^{-1}}.
+\end{equation}
+Convert to moles of carbon fixed per unit time using \(12\,{\rm g\,mol^{-1}}\):
+\begin{equation}
+\dot n_C
+= \frac{104.9\times 10^{15}\,{\rm g\,yr^{-1}}}{12\,{\rm g\,mol^{-1}}}
+\simeq 8.74\times 10^{15}\ {\rm mol\,yr^{-1}}.
+\end{equation}
+Using a standard free-energy requirement for reduction of one mole of CO\(_2\) to the carbohydrate
+level,
+\begin{equation}
+\Delta G^\circ_{\rm red} \simeq 4.78\times 10^5\ {\rm J\,mol^{-1}} \cite{Whitmarsh478kJ},
+\end{equation}
+the global chemical free-energy throughput is
+\begin{equation}
+P_{\rm bio}
+= \frac{\dot n_C\,\Delta G^\circ_{\rm red}}{(1\,{\rm yr})}
+\simeq
+\frac{(8.74\times 10^{15})(4.78\times 10^5)\ {\rm J\,yr^{-1}}}{3.156\times 10^7\,{\rm s\,yr^{-1}}}
+\simeq 1.32\times 10^{14}\ {\rm W}.
+\label{eq:Pbio_value}
+\end{equation}
+At \(T_{\rm amb}\simeq 288\,{\rm K}\), the associated entropy-throughput scale is
+\begin{equation}
+\dot S_{\rm bio} \sim \frac{P_{\rm bio}}{T_{\rm amb}}
+\simeq \frac{1.32\times 10^{14}\,{\rm W}}{288\,{\rm K}}
+\simeq 4.6\times 10^{11}\ {\rm W\,K^{-1}}.
+\label{eq:Sbio_value}
+\end{equation}
+We stress: this is a conservative scale-setting calculation; gross primary production and additional
+biogeochemical and technospheric throughput can increase the true total organized-dissipation budget.
+
+\subsection{Planetary entropy-production reference scales}
+
+Representative entropy-budget calculations (reviewed, e.g., in \cite{Kleidon2010HierarchyMEP}) report
+global-mean radiative entropy production of order
+\(\sim 0.9\,{\rm W\,m^{-2}\,K^{-1}}\) and internal irreversible entropy production of order
+\(\sim 0.076\,{\rm W\,m^{-2}\,K^{-1}}\).
+Using Earth’s surface area \(A_\oplus \simeq 4\pi R_\oplus^2\) with
+\(R_\oplus=6.371\times 10^6\,{\rm m}\) gives \(A_\oplus\simeq 5.10\times 10^{14}\,{\rm m^2}\). Thus:
+\begin{align}
+\dot S_{\oplus} &\sim (0.93)\,A_\oplus \simeq 4.7\times 10^{14}\ {\rm W\,K^{-1}},\\
+\dot S_{\oplus,{\rm int}} &\sim (0.076)\,A_\oplus \simeq 3.9\times 10^{13}\ {\rm W\,K^{-1}}.
+\end{align}
+
+\subsection{Dimensionless ratios and implied transduction parameter}
+
+From Eqs.~\eqref{eq:Sbio_value}--(above), the biospheric ratios are
+\begin{align}
+\frac{\dot S_{\rm bio}}{\dot S_{\oplus}}
+&\simeq \frac{4.6\times 10^{11}}{4.7\times 10^{14}}
+\simeq 9.7\times 10^{-4},\\
+\frac{\dot S_{\rm bio}}{\dot S_{\oplus,{\rm int}}}
+&\simeq \frac{4.6\times 10^{11}}{3.9\times 10^{13}}
+\simeq 1.2\times 10^{-2}.
+\end{align}
+For the fiducial best-fit saturation \(I_{\rm sat}\simeq 2.67\times 10^{-3}\),
+the closure relation in Eq.~\eqref{eq:Isat_budget_closure} implies a transduction parameter
+\(\epsilon_{\rm tc}\) of order
+\begin{align}
+\epsilon_{\rm tc}
+&\simeq \frac{I_{\rm sat}}{\dot S_{\rm bio}/\dot S_{\oplus}}
+\simeq 2.7
+\qquad (\text{radiative reference}),\\
+\epsilon_{\rm tc}
+&\simeq \frac{I_{\rm sat}}{\dot S_{\rm bio}/\dot S_{\oplus,{\rm int}}}
+\simeq 0.23
+\qquad (\text{internal reference}).
+\end{align}
+Thus, at the level of second-law throughput accounting, the saturation magnitude inferred from the
+SN+BAO mapping is not obviously inconsistent with what Earth can sustain.
+
+\paragraph{Interpretation and limitations.}
+This calculation is a \emph{closure check}, not a derivation. It shows that an \(I_{\rm sat}\sim 10^{-3}\)
+clock-bias amplitude does not require an implausibly large terrestrial free-energy or entropy-production
+budget. A complete theory must still specify (and constrain) the microphysical meaning of
+\(\epsilon_{\rm tc}\) and satisfy laboratory tests (precision clocks, equivalence principle, Lorentz invariance).
+% ======================================================================
+
+% ======================================================================
+\subsection{Biophysical mechanisms: how life maintains constraints on microstate space}
+\label{sec:life_constraints}
+
+This paper’s thermodynamic completion does not treat ``entropy'' as the fundamental measure of
+organization. Instead, we define an explicit \emph{constraint inventory} \(\varphi\) (Appendix
+\ref{app:foundation}) that quantifies how strongly a system’s coarse-grained microstate
+distribution \(p\) is restricted relative to an unconstrained maximum-entropy reference \(\pi\),
+\(\varphi = k_B D_{\mathrm{KL}}(p\Vert\pi)\).
+Entropy production enters only as the \emph{accounting variable} demanded by the second law: it
+bounds how quickly such constraints can be created or maintained by any physical process.
+
+In this section we identify concrete, well-established biophysical mechanisms by which living
+systems (cells, tissues, ecosystems) maintain \(\varphi>0\) for long durations by consuming free
+energy and exporting entropy to their environment. These mechanisms provide a physically grounded
+interpretation of the source term \(\sigma(x)\) that drives the order field \(\psi(x)\) in the
+chronometric completion (Appendix \ref{app:foundation}), without assuming that biology violates the
+second law or that ``entropy'' itself is the order variable. \cite{Seifert2012ST,Parrondo2015ThermoInfo}
+
+\subsubsection{Life as a driven nonequilibrium steady state}
+At biological scales, a cell is accurately modeled as an \emph{open, driven nonequilibrium system}:
+it maintains concentrations, gradients, macromolecular structures, and correlations that would
+relax toward equilibrium if energy throughput ceased. Mathematically, many such systems can be
+represented at mesoscopic resolution by a stochastic Markov dynamics on states \(i\) with
+probabilities \(p_i(t)\):
+\begin{equation}
+\dot p_i = \sum_j \bigl(W_{ij} p_j - W_{ji} p_i\bigr),
+\end{equation}
+where \(W_{ij}\) are transition rates.
+At equilibrium with a reference distribution \(\pi\), rates satisfy detailed balance
+\(W_{ij}\pi_j = W_{ji}\pi_i\). Living systems break detailed balance through continual chemical
+driving (e.g.\ ATP/GTP hydrolysis, redox chemistry, ion pumping), creating sustained probability
+currents and maintaining \(p\neq \pi\) (a nonequilibrium steady state) \cite{Seifert2012ST,Schnakenberg1976}.
+
+The connection to our constraint inventory is direct: the nonequilibrium free energy stored in such
+maintained constraints is \(F-F_{\rm eq}=T\varphi\) (Appendix \ref{app:foundation}).
+Stochastic thermodynamics provides a standard energy/entropy balance for driven isothermal systems:
+work input can be decomposed into the rate of change of nonequilibrium free energy plus a strictly
+nonnegative entropy production term. This is the formal reason the second law constrains how large
+and how rapidly maintained constraints can be \cite{Seifert2012ST,Parrondo2015ThermoInfo}.
+
+\subsubsection{Mechanism 1: compartmentalization and boundary conditions (membranes)}
+A defining physical act of life is the creation and maintenance of \emph{boundaries} that impose
+conditional structure on accessible microstates. Lipid membranes and cell walls constrain spatial
+degrees of freedom and enable long-lived gradients (ionic, chemical, electrical) that would quickly
+disappear in an unconstrained fluid equilibrium. In the language of Appendix \ref{app:foundation},
+these boundaries alter the feasible macrostate constraints defining \(\pi\) and maintain a \(p\)
+that is concentrated on a restricted subset of microstates (thereby increasing \(\varphi\)).
+The energetic cost arises because boundaries are not passive: maintaining them in the presence of
+thermal fluctuations and chemical degradation requires continual repair, transport, and pumping,
+all of which dissipate free energy and generate entropy production \cite{Phillips2012PBoC,Mitchell1961Chemiosmotic}.
+
+\subsubsection{Mechanism 2: chemical potential gradients and chemostatted reaction networks}
+At the biochemical level, the most universal ``constraint engine'' is a driven chemical reaction
+network (CRN) with chemostatted species that act as fuel reservoirs (ATP/ADP/Pi, NADH/NAD\(^+\),
+proton gradients, etc.). Such networks are a canonical setting of nonequilibrium thermodynamics:
+one can define a nonequilibrium Gibbs free energy and show that maintaining a nonequilibrium state
+requires work by the chemostats, with entropy production given by flux--affinity products:
+\begin{equation}
+\dot\Sigma = \sum_r \frac{J_r \mathcal{A}_r}{T}\ \ge\ 0,
+\end{equation}
+where \(J_r\) is the net flux of reaction channel \(r\) and \(\mathcal{A}_r\) its chemical affinity.
+This formalism makes precise the statement that biological order is paid for by dissipation:
+persistent organization corresponds to persistent nonzero affinities and fluxes, hence positive 
+\(\dot\Sigma\) \cite{Seifert2012ST,Schnakenberg1976,Hill1977FreeEnergyTransduction}.
+
+Crucially, this does \emph{not} imply that ``entropy'' is the order variable. In our chain, order is
+\(\varphi\) (a microstate-restriction measure), while \(\dot\Sigma\) is the second-law bookkeeping
+term that bounds how \(\varphi\) can change:
+\begin{equation}
+\dot\varphi \le \frac{P_{\rm in}}{T},
+\end{equation}
+as derived in Appendix \ref{app:foundation}. A cell’s free-energy throughput is therefore a direct
+upper bound on how quickly it can build or refresh microstate restrictions, independent of any 
+philosophical interpretation of entropy \cite{Seifert2012ST,Parrondo2015ThermoInfo}.
+
+\subsubsection{Mechanism 3: polymer sequence order and kinetic proofreading (energy for specificity)}
+A large fraction of biological ``constraints'' are not merely concentration gradients, but
+\emph{sequence-level correlations} in polymers: DNA/RNA sequences, folded proteins, and regulated
+macromolecular complexes. These are strong restrictions on microstate space because they represent
+highly specific arrangements among astronomically many alternatives.
+
+A key point for rigor is that biology achieves error rates that exceed what would be expected from
+equilibrium discrimination alone, by using energy-driven \emph{kinetic proofreading}. In Hopfield’s
+mechanism, an irreversible, energy-consuming step (e.g.\ via phosphate hydrolysis) allows the system
+to reject wrong intermediates more often than equilibrium would permit, increasing specificity at a
+thermodynamic cost. This is an explicit, mathematically analyzable example of
+\[
+\text{energy consumption} \;\Rightarrow\; \text{conditional pathway filtering} \;\Rightarrow\;
+\text{reduced accessible outcome microstates},
+\]
+i.e.\ an increase in maintained constraint inventory \(\varphi\) \cite{Hopfield1974Proofreading,Ninio1975Proofreading}.
+
+\subsubsection{Mechanism 4: feedback control and information processing}
+Living systems constantly sense and regulate internal variables (chemotaxis, gene regulation,
+homeostasis). In physics terms, this is feedback control on stochastic degrees of freedom. A robust
+result across the thermodynamics-of-information literature is that \emph{reliable} information
+processing and irreversible operations have thermodynamic costs (Landauer scale for erasure), and
+more generally that feedback-controlled systems must still satisfy second-law inequalities when
+information flows are accounted for. In our framework, the relevance is structural: feedback loops
+implement \emph{conditional constraints} on trajectories through state space, and maintaining those
+conditionals at low error requires dissipation, contributing to \(\dot\Sigma\) and thereby bounding
+maintainable \(\varphi\). \cite{Parrondo2015ThermoInfo,Landauer1961,Bennett1982}
+
+\subsubsection{From local constraints to a cosmology-facing source term}
+The previous subsections justify, in standard biophysical terms, why life plausibly sources a
+positive nonequilibrium throughput field \(\sigma(x)\) (or an equivalent proxy such as local
+dissipated power density divided by temperature) that can be used as the causal source of an
+order field \(\psi(x)\) in Appendix \ref{app:foundation}. Importantly, \(\sigma(x)\) is not a
+synonym for order: it is the second-law production term that accompanies the building and
+maintenance of constraints.
+
+In this language, ``life alters microstate space in front of every moment'' can be stated
+mathematically and without mysticism: by consuming free energy, living systems actively reshape the
+transition structure (the effective generator \(W\)) of local chemical and mechanical degrees of
+freedom \cite{Seifert2012ST}, thereby maintaining a state distribution \(p\) that is persistently
+restricted relative to the unconstrained reference \(\pi\).
+The maintained restriction is quantified by \(\varphi=k_B D_{\mathrm{KL}}(p\Vert\pi)\)
+\cite{KullbackLeibler1951,CoverThomas2006}, its rate of refresh is bounded by power through
+\(\dot\varphi\le P_{\rm in}/T\) \cite{Seifert2012ST}, and in the chronometric completion this
+throughput sources \(\psi(x)\), which (by postulate) biases realized clock time and thereby maps
+\(z_{\rm obs}\) to \(z_{\rm cos}\) without modifying photon trajectories or large-scale geometry
+\cite{Wald1984GR,Faraoni2004ST}.
+
+% ======================================================================
+
+% ======================================================================
+% Appendix U: Unified order–gravity framework (one field, two scales)
+% Drop-in LaTeX block for your paper.
+% Suggested placement: after App.~\ref{app:foundation} and before other appendices,
+% or as a new appendix after your current thermodynamic/chronometric foundations.
+% ======================================================================
+
+\section{Unified order--gravity framework: one field, two scales (auxiliary completion)}
+\label{app:unified_order_gravity}
+
+This appendix gives an \emph{auxiliary} covariant completion of the Local Time Acceleration (LTA)
+idea in which a single ``order'' scalar field plays \emph{two roles}:
+(i) a \emph{cosmic} homogeneous mode that backreacts on geometry and can replace $\Lambda$
+(dark-energy-like acceleration), and
+(ii) a \emph{local} inhomogeneous mode sourced by the observer environment that biases realized
+clock time and therefore induces the observer-local redshift-mapping distortion used in the main text.
+
+The completion is written as an effective field theory (EFT). All \emph{information/thermodynamic}
+statements (relative entropy, KL/entanglement measures, nonequilibrium free-energy identity, and
+second-law bounds on constraint maintenance) are unchanged from the main thermodynamic chain
+(App.~\ref{app:foundation}); the only new ingredient is an \emph{EFT insertion point} that allows
+this thermodynamic source to enter a covariant action while keeping the gravitational field equations
+derivable by variation.
+
+\paragraph{Scope.}
+This appendix is not yet used in the SN+BAO inference pipeline of the main paper. Its purpose is to
+(1) derive the unified field equations cleanly and (2) show how the LTA mapping arises as a controlled
+limit of the same theory when local perturbations dominate the observable imprint.
+
+% ----------------------------------------------------------------------
+\subsection{U.1 Order as microstate restriction: a QFT-clean scalar}
+\label{app:unified:order_def}
+
+Pick a small region $A(x)$ around spacetime event $x$ (e.g.\ a small causal diamond/ball at a chosen
+coarse-graining scale). Let $\rho_A(x)$ be the reduced density matrix of the actual state and
+$\sigma_A(x)$ a chosen reference reduced state (vacuum, local thermal, or MaxEnt under specified macroscopic constraints).
+Define the \emph{relative entropy} (entanglement-relative-entropy) order measure
+\begin{equation}
+S_{\mathrm{rel}}(x)\;\equiv\;S\!\left(\rho_A(x)\,\Vert\,\rho_{A,\mathrm{ref}}(x)\right)
+\;=\;\mathrm{Tr}\left[\rho_A\left(\ln\rho_A-\ln\rho_{A,\mathrm{ref}}\right)\right]\;\ge\;0.
+\label{eq:U_Srel_def}
+\end{equation}
+Define the dimensionless \emph{order field}
+\begin{equation}
+\psi(x)\;\equiv\;S_{\mathrm{rel}}(x)\;\ge\;0,
+\qquad [\psi]=1.
+\label{eq:U_psi_def}
+\end{equation}
+This is the cleanest ``microstate restriction'' scalar in QFT language. The exact identity
+$S(\rho\Vert\rho_{\rm ref})=\Delta\langle K_{\rm ref}\rangle-\Delta S$ (with modular Hamiltonian
+$K_{\rm ref}\equiv-\ln\rho_{\rm ref}$) and the linearized entanglement first law $\delta S=\delta\langle K\rangle$
+motivate interpreting $S_{\rm rel}$ as a controlled nonequilibrium displacement from the reference.
+
+\paragraph{Classical (commuting) limit and connection to Appendix~\ref{app:foundation}.}
+If the reduced states commute and are diagonal in a common basis,
+$\rho_A=\sum_i p_i\,\ket{i}\!\bra{i}$ and $\rho_{A,\mathrm{ref}}=\sum_i \pi_i\,\ket{i}\!\bra{i}$,
+then the quantum relative entropy reduces to the classical KL divergence:
+\begin{equation}
+S_{\mathrm{rel}}\!\left(\rho_A\Vert\rho_{A,\mathrm{ref}}\right)
+=\sum_i p_i\ln\frac{p_i}{\pi_i}
+\equiv D_{\mathrm{KL}}(p\Vert\pi).
+\label{eq:U_rel_to_KL}
+\end{equation}
+With the definition \eqref{eq:U_psi_def}, this implies $\psi\to\phi$ of Eq.~\eqref{eq:app_phi_def},
+and the entropy-unit inventory in the same coarse-graining cell is $\varphi_c=k_B\psi$, consistent with
+Eqs.~\eqref{eq:app_varphi_def} and \eqref{eq:app_F_minus_Feq}. If one further defines a local density
+$\varphi_{\rm loc}=\varphi_c/V_c$, then the Appendix~\ref{app:foundation} field normalization
+$\psi=\varphi_{\rm loc}/\varphi_\ast$ (Eq.~\eqref{eq:app_psi_def}) is recovered up to the fixed
+choice of the reference scale $\varphi_\ast$.
+
+\paragraph{Classicalization assumption (EFT step).}
+In cosmological applications we assume that, after coarse-graining on scales large compared to $A(x)$,
+$\psi(x)$ can be treated as a smooth classical scalar field whose dynamics are captured by an effective action.
+
+% ----------------------------------------------------------------------
+\subsection{U.2 Thermodynamic insertion: order costs free energy and produces entropy}
+\label{app:unified:thermo_insertion}
+
+This completion keeps the thermodynamic chain of App.~\ref{app:foundation} intact:
+relative-entropy order is an extensive ``constraint inventory'' and its maintenance/growth is bounded by work/entropy production.
+
+In an isothermal driven setting (effective temperature $T$) with canonical reference, the standard identity gives
+\begin{equation}
+F-F_{\mathrm{eq}} \;=\; k_B T\,\psi,
+\label{eq:U_F_identity}
+\end{equation}
+and the work/free-energy/dissipation balance $\dot W=\dot F+T\dot\Sigma$ with $\dot\Sigma\ge0$ yields the bound
+\begin{equation}
+\dot\psi \;\le\; \frac{P_{\mathrm{in}}}{k_B T}.
+\label{eq:U_psidot_bound}
+\end{equation}
+(See Sec.~\ref{sec:lemma2_free_energy}--\ref{sec:lemma3_power_bound} and App.~\ref{app:foundation}.)
+
+\paragraph{Covariant nonequilibrium sector (the insertion point).}
+To couple this thermodynamic bookkeeping into covariant field equations \emph{without} introducing external
+nonconservative forcing by hand, we introduce an EFT ``nonequilibrium'' sector $S_{\rm neq}$.
+Its role is to encode coarse-grained, open-system organization/dissipation physics in a diffeomorphism-invariant way.
+In a hydrodynamic/open-EFT limit, this sector supplies:
+\begin{itemize}[leftmargin=1.2em]
+\item a nonnegative scalar proxy $\sigma(x)\ge0$ (e.g.\ entropy-production density, or dissipated power density divided by an effective temperature);
+\item a scalar functional derivative $J_{\rm neq}\equiv -\frac{1}{\sqrt{-g}}\frac{\delta S_{\rm neq}}{\delta\psi}$
+that acts as the \emph{covariant source} for $\psi$;
+\item and a stress--energy tensor $T^{(\rm neq)}_{\mu\nu}$ for consistency with the Bianchi identity.
+\end{itemize}
+In a controlled coarse-grained closure one may model $J_{\rm neq}$ as a constitutive functional of $\sigma$,
+e.g.\ $J_{\rm neq}\sim \kappa_\sigma\,\sigma$, with $\kappa_\sigma$ setting dimensions and efficiency.
+
+% ----------------------------------------------------------------------
+\subsection{U.3 Action: Jordan-frame scalar--tensor + nonequilibrium insertion (chronometric factor derived)}
+\label{app:unified:action}
+
+We now write a unified covariant completion in which:
+(i) the homogeneous mode of the order scalar \(\psi\) backreacts on the physical expansion history
+and can mimic dark-energy-like acceleration without \(\Lambda\), and
+(ii) local inhomogeneities of the same field can generate an observer-local imprint.
+
+\paragraph{Jordan frame as the physical matter frame.}
+We take the Jordan metric \(\gJ_{\mu\nu}\) to be the metric seen by matter and clocks. A minimal
+scalar--tensor + nonequilibrium insertion action is
+\begin{equation}
+\mathcal{S}
+=
+\int d^4x\,\sqrt{-g_{\mathrm{J}}}\left[
+\frac{\Mp^{2}}{2}\,\Fpsi\,R_{\mathrm{J}}
+-\frac{f^{2}}{2}\,(\nabla_{\mathrm{J}}\psi)^2
+-f^{4}\Upsi
+\right]
++\mathcal{S}_{\rm m}[\,\gJ,\Phi\,]
++\mathcal{S}_{\rm neq}[\,\gJ,\psi,\Xi\,].
+\label{eq:U_action}
+\end{equation}
+This matches the main-text definition (Eq.~\eqref{eq:JF_action}) but is repeated here for
+self-containedness.
+
+\paragraph{Einstein frame and the derived chronometric factor.}
+Define \(\gE_{\mu\nu}=\Fpsi\,\gJ_{\mu\nu}\). Then the matter action becomes conformally coupled,
+\(\mathcal{S}_{\rm m}[\gJ,\Phi]=\mathcal{S}_{\rm m}[\Apsi^2\gE,\Phi]\) with
+\begin{equation}
+\Apsi \equiv \Fpsi^{-1/2},
+\qquad
+\Cpsi \equiv \ln \Apsi = -\frac12\ln\Fpsi.
+\end{equation}
+Thus the ``chronometric factor'' is not independent; it is determined by \(F(\psi)\).
+A convenient special case is \(F(\psi)=e^{-2\epsilon\psi}\), which yields \(\Apsi=e^{\epsilon\psi}\),
+recovering the exponential coupling form used in earlier drafts as a specific parameterization.
+
+% ----------------------------------------------------------------------
+\subsection{U.4 Field equations (Jordan frame) and the split into background + local imprint}
+\label{app:unified:field_eqs}
+
+Varying \eqref{eq:U_action} yields the Jordan-frame field equations
+\begin{equation}
+\Mp^{2}\Fpsi\,G^{\mathrm{J}}_{\mu\nu}
+=
+T^{(m)}_{\mu\nu}
++
+T^{(\psi)}_{\mu\nu}
++
+T^{(\rm neq)}_{\mu\nu}
++
+\Mp^{2}\left(\nabla^{\mathrm{J}}_{\mu}\nabla^{\mathrm{J}}_{\nu}\Fpsi - \gJ_{\mu\nu}\Box_{\mathrm{J}}\Fpsi\right),
+\end{equation}
+with
+\begin{equation}
+T^{(\psi)}_{\mu\nu}
+=
+f^{2}\nabla^{\mathrm{J}}_{\mu}\psi\,\nabla^{\mathrm{J}}_{\nu}\psi
+-
+\gJ_{\mu\nu}\left[\frac{f^{2}}{2}(\nabla_{\mathrm{J}}\psi)^2+f^{4}\Upsi\right],
+\end{equation}
+and a scalar equation
+\begin{equation}
+f^{2}\Box_{\mathrm{J}}\psi - f^{4}\Upsi' + \frac{\Mp^{2}}{2}\Fpsi'\,R_{\mathrm{J}}
+=
+J_{\rm neq},
+\qquad
+J_{\rm neq}\equiv -\frac{1}{\sqrt{-g_{\mathrm{J}}}}\frac{\delta \mathcal{S}_{\rm neq}}{\delta\psi}.
+\end{equation}
+
+\paragraph{Background/perturbation split.}
+Write \(\psi=\bar\psi(\tJ)+\delta\psi(x)\). The homogeneous mode determines the physical expansion
+\(\HJ(z)\) (Sec.~\ref{sec:jordan_background}). The local mode produces endpoint/integrated
+frequency-comparison effects, conveniently packaged into the observer-local mapping limit as
+\(\ln[(1+\zobs)/(1+\zcos)]\equiv I\) (Sec.~\ref{sec:lta_mapping}).
+
+% ----------------------------------------------------------------------
+\subsection{U.5 Cosmology: homogeneous mode can replace $\Lambda$}
+\label{app:unified:cosmo}
+
+Assume a flat FLRW Einstein-frame geometry
+\begin{equation}
+ds^2=-dt^2+a^2(t)d\vec x^2,\qquad H\equiv \frac{\dot a}{a},
+\end{equation}
+and a homogeneous field $\psi=\bar\psi(t)$.
+
+The scalar energy density and pressure are
+\begin{equation}
+\rho_\psi=\frac{f^2}{2}\dot{\bar\psi}^{\,2}+f^4U(\bar\psi),
+\qquad
+p_\psi=\frac{f^2}{2}\dot{\bar\psi}^{\,2}-f^4U(\bar\psi).
+\label{eq:U_rho_p_psi}
+\end{equation}
+The Friedmann equations (with $\Lambda=0$ in the action \eqref{eq:U_action}) read
+\begin{align}
+3M_{\rm Pl}^2H^2 &= \rho_m+\rho_r+\rho_\psi+\rho_{\rm neq},
+\label{eq:U_friedmann1}\\
+-2M_{\rm Pl}^2\dot H &= (\rho_m+p_m)+(\rho_r+p_r)+(\rho_\psi+p_\psi)+(\rho_{\rm neq}+p_{\rm neq}).
+\label{eq:U_friedmann2}
+\end{align}
+Scalar-driven acceleration occurs when the scalar sector is potential dominated:
+\begin{equation}
+\rho_\psi+3p_\psi = 2f^2\dot{\bar\psi}^{\,2}-2f^4U(\bar\psi) <0
+\qquad\Longleftrightarrow\qquad
+U(\bar\psi)>\frac{\dot{\bar\psi}^{\,2}}{f^2}.
+\label{eq:U_accel_condition}
+\end{equation}
+Thus the \emph{cosmic element} of the unified theory is the homogeneous order field acting like a dark-energy component
+through its stress--energy and potential.
+
+The homogeneous scalar equation is obtained from \eqref{eq:U_scalar_eom}:
+\begin{equation}
+f^2\left(\ddot{\bar\psi}+3H\dot{\bar\psi}\right)+f^4U'(\bar\psi)
+=
+-\epsilon\,\bar T_{(m)} + \bar J_{\rm neq}(t),
+\label{eq:U_background_scalar}
+\end{equation}
+where $\bar J_{\rm neq}(t)$ is a cosmic nonequilibrium/entropy-production history proxy.
+In a coarse-grained closure one may model $\bar J_{\rm neq}(t)\sim \kappa_\sigma\,\bar\sigma(t)$,
+with $\bar\sigma(t)$ representing cosmological ``order production'' (e.g.\ structure formation, star formation, black-hole growth).
+
+% ----------------------------------------------------------------------
+\subsection{U.6 Local perturbations: observer-sourced order produces a local imprint}
+\label{app:unified:local}
+
+Decompose the field into a cosmic mean and a local perturbation:
+\begin{equation}
+\psi(x,t)=\bar\psi(t)+\delta\psi(x,t),
+\qquad
+J_{\rm neq}(x,t)=\bar J_{\rm neq}(t)+\delta J_{\rm neq}(x,t).
+\label{eq:U_split}
+\end{equation}
+Linearizing \eqref{eq:U_scalar_eom} about $\bar\psi$ gives (schematically)
+\begin{equation}
+\Box\,\delta\psi - m_{\rm eff}^2(t)\,\delta\psi
+=
+-\frac{\epsilon}{f^2}\,\delta T_{(m)} + \frac{1}{f^2}\,\delta J_{\rm neq},
+\qquad
+m_{\rm eff}^2(t)\equiv f^2\,U''(\bar\psi(t)).
+\label{eq:U_perturbation_eq}
+\end{equation}
+In the observer-local dominant regime relevant to the LTA interpretation (weak curvature, quasi-static, subhorizon),
+this reduces to a Yukawa-type equation
+\begin{equation}
+\left(\nabla^2-m_{\rm eff}^2\right)\delta\psi \;\approx\; -\frac{1}{f^2}\,\delta J_{\rm neq,local},
+\label{eq:U_yukawa}
+\end{equation}
+with retarded solution
+\begin{equation}
+\delta\psi(\vec x,t)
+=
+\frac{1}{4\pi f^2}\int d^3x'\,
+\frac{e^{-m_{\rm eff}|\vec x-\vec x'|}}{|\vec x-\vec x'|}
+\,
+\delta J_{\rm neq,local}(\vec x',t_{\rm ret}).
+\label{eq:U_green_retarded}
+\end{equation}
+Equation \eqref{eq:U_green_retarded} is the field-theory version of the observer-retarded causal bookkeeping used in the main LTA pipeline:
+the influence of a localized nonequilibrium source enters only within its causal domain and with retarded time.
+
+% ----------------------------------------------------------------------
+\subsection{U.7 Clocks, photon frequencies, and the recovered LTA mapping}
+\label{app:unified:redshift}
+
+Redshift is operationally a frequency ratio measured by matter clocks. Because matter proper time is $\tilde\tau$
+(Eq.~\eqref{eq:U_clock_relation}), the measured frequency is cycles per unit $\tilde\tau$, implying that
+clock-referenced frequency ratios acquire an endpoint factor $A(\psi_{\rm obs})/A(\psi_{\rm emit})$.
+
+Let $z_{\rm geom}$ denote the redshift predicted by the Einstein-frame geometry $g_{\mu\nu}$ (including any
+cosmological acceleration produced by $\psi$ through \eqref{eq:U_friedmann1}--\eqref{eq:U_friedmann2}).
+Then the observed redshift inferred by matter clocks is
+\begin{equation}
+1+z_{\rm obs}
+=
+(1+z_{\rm geom})\,\frac{A(\psi_{\rm obs})}{A(\psi_{\rm emit})}.
+\label{eq:U_zmap_general}
+\end{equation}
+With $A=e^{\epsilon\psi}$ this becomes
+\begin{equation}
+1+z_{\rm obs}
+=
+(1+z_{\rm geom})\,
+\exp\!\Bigl[\epsilon\bigl(\psi_{\rm obs}-\psi_{\rm emit}\bigr)\Bigr].
+\label{eq:U_zmap_exp}
+\end{equation}
+Define the chronometric potential $\mathcal{C}\equiv \ln A = \epsilon\psi$. Then the mapping is
+\begin{equation}
+1+z_{\rm obs}=(1+z_{\rm geom})\,\exp\!\Bigl[\mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}\Bigr],
+\qquad
+\mathcal{C}=\epsilon\psi.
+\label{eq:U_zmap_C}
+\end{equation}
+
+\paragraph{Recovered LTA notation.}
+Define the accumulated imprint
+\begin{equation}
+I(\chi)\;\equiv\;\mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}(\chi)
+=\epsilon\bigl(\psi_{\rm obs}-\psi_{\rm emit}(\chi)\bigr).
+\label{eq:U_I_def}
+\end{equation}
+Then
+\begin{equation}
+1+z_{\rm obs}=(1+z_{\rm geom})\,e^{I(\chi)}.
+\label{eq:U_lta_form}
+\end{equation}
+In the observer-local dominant limit used in the main paper, $z_{\rm geom}\rightarrow z_{\rm cos}$ to excellent approximation
+(because the background was fixed to $\Lambda$CDM), and the redshift-dependent part of $I(\chi)$ is dominated by the observer-local
+$\delta\psi$ perturbation sourced by $\delta J_{\rm neq,local}$.
+
+Define the drift-rate field as in the main text:
+\begin{equation}
+s(\chi)\;\equiv\;c\,\frac{dI}{d\chi}.
+\label{eq:U_s_def}
+\end{equation}
+If $\psi_{\rm emit}(\chi)$ is evaluated by an observer-retarded argument $\psi_{\rm emit}(\chi)\approx \psi(t_{\rm ret}(\chi))$
+(with $t_{\rm ret}\approx 2\chi/c$ at low $z$), then
+\begin{equation}
+s(\chi)\approx -2\epsilon\,\dot\psi\!\bigl(t_{\rm ret}(\chi)\bigr)
+\qquad (\text{low-$z$ observer-retarded approximation}).
+\label{eq:U_s_retarded}
+\end{equation}
+This is the unified-theory origin of the empirical $s(t_{\rm ret})$ profiles used in the LTA pipeline.
+
+% ----------------------------------------------------------------------
+\subsection{U.8 Second-law envelope on the imprint (energy $\rightarrow$ order $\rightarrow$ redshift)}
+\label{app:unified:bounds}
+
+The thermodynamic chain bounds the allowed magnitude and growth rate of $\psi$ sourced by any nonequilibrium process.
+In a local rest frame, Eq.~\eqref{eq:U_psidot_bound} implies an envelope on the drift field via \eqref{eq:U_s_retarded}:
+\begin{equation}
+|s(\chi)|
+\;\lesssim\;
+2\epsilon\,\frac{P_{\rm in}}{k_B T}
+\qquad (\text{low-$z$ observer-retarded approximation}).
+\label{eq:U_s_bound}
+\end{equation}
+Integrating yields a corresponding bound on the saturation depth
+\begin{equation}
+I_{\rm sat}\sim \epsilon\,\Delta\psi
+\;\lesssim\;
+\epsilon\int \frac{P_{\rm in}(t)}{k_B T(t)}\,dt,
+\label{eq:U_Isat_bound}
+\end{equation}
+where the integral is over the active epoch of the source. This is the unified version of the
+``Earth budget closure'' logic: the same second-law bookkeeping that limits constraint maintenance
+limits the achievable clock-bias/redshift imprint.
+
+\paragraph{Two-scale interpretation (the unified story).}
+Within this auxiliary completion:
+\begin{itemize}[leftmargin=1.2em]
+\item The \textbf{cosmic element} is the homogeneous mode $\bar\psi(t)$ sourced by a cosmological nonequilibrium history
+$\bar J_{\rm neq}(t)$ (or $\bar\sigma(t)$) and backreacting on geometry through $T^{(\psi)}_{\mu\nu}$,
+potentially replacing $\Lambda$ if $U(\bar\psi)$ becomes potential dominated at late times.
+\item The \textbf{local element} is a localized perturbation $\delta\psi$ sourced by $\delta J_{\rm neq,local}$
+(e.g.\ biosphere/technosphere nonequilibrium throughput), producing an observer-local endpoint bias
+$e^{\epsilon(\psi_{\rm obs}-\psi_{\rm emit})}$ and thus an LTA-style redshift mapping distortion concentrated in the nearby Hubble flow.
+\end{itemize}
+
+A fully self-consistent cosmological inference program would fit both effects jointly:
+solve for the background expansion from \eqref{eq:U_friedmann1}--\eqref{eq:U_friedmann2} (cosmic mode)
+and for the observer-local mapping from \eqref{eq:U_lta_form}--\eqref{eq:U_s_def} (local mode),
+with thermodynamic throughput bounds \eqref{eq:U_psidot_bound}--\eqref{eq:U_Isat_bound} providing physically grounded envelopes.
+
+\paragraph{Two-epoch sourcing within one field.}
+For the unified narrative we allow
+$J_{\rm neq}=J_{\rm early}+J_{\rm late}$, where $J_{\rm early}$ captures
+organization associated with early structure/region formation (cosmological-scale sourcing),
+and $J_{\rm late}$ captures observer-local nonequilibrium throughput (e.g.\ biosphere/technosphere).
+
+% ======================================================================
+% End Appendix U
+% ======================================================================
+
+% ======================================================================
+% Appendix V: Observer-retarded time as a Green's-function approximation
+%
+% Purpose:
+%   Make explicit that the paper's Earth-retarded time construction
+%   \tret(\chi) (Sec.~\ref{sec:tret2}) is a controlled approximation to the
+%   retarded Green's-function solution of the sourced order-field equation.
+% ======================================================================
+
+\section{Observer-retarded time as an approximation to the retarded Green's-function solution}
+\label{app:tret_green}
+
+This appendix justifies the specific ``two-leg'' retarded-time bookkeeping used in
+Sec.~\ref{sec:tret2},
+\begin{equation}
+\chis(z_e)=2\chis
+\qquad\Rightarrow\qquad
+\tret(\chis)\equiv \tlb(z_e),
+\label{eq:V_tret_def_recall}
+\end{equation}
+by showing that it is a controlled approximation to the \emph{retarded} Green's-function solution
+of a causally sourced order field. In words: if the dominant source of the order field is localized
+near the observer, then the field encountered by an incoming photon at comoving radius $\chis$ is
+set primarily by the observer-source history evaluated at a retarded time corresponding (to leading
+order) to a \emph{round-trip} light-travel construction, yielding the factor of $2\chis$.
+
+% ----------------------------------------------------------------------
+\subsection{V.1 Retarded solution of the sourced scalar model}
+\label{app:tret_green:formal}
+
+The effective sourced scalar dynamics used in the main text (Sec.~\ref{sec:psi_dynamics_eq}) is
+\begin{equation}
+(\Box - m_\psi^2)\,\psi(x) = \kappa\,\sigma(x),
+\label{eq:V_kg}
+\end{equation}
+with retarded boundary conditions. Here $\sigma(x)\ge0$ is a coarse-grained nonequilibrium throughput
+proxy and $\kappa$ is a coupling.
+
+Let $G_{\rm ret}(x;x')$ be the retarded Green's function satisfying
+\begin{equation}
+(\Box - m_\psi^2)\,G_{\rm ret}(x;x') = \frac{\delta^{(4)}(x-x')}{\sqrt{-g}},
+\qquad
+G_{\rm ret}(x;x')=0\ \text{if}\ x'\notin J^-(x),
+\label{eq:V_green_def}
+\end{equation}
+where $J^-(x)$ denotes the causal past of $x$.
+The unique retarded solution is then
+\begin{equation}
+\psi(x) = \psi_{\rm hom}(x) + \kappa \int d^4x'\,\sqrt{-g(x')}\,G_{\rm ret}(x;x')\,\sigma(x').
+\label{eq:V_formal_solution}
+\end{equation}
+In an observer-local dominant limit we drop $\psi_{\rm hom}$ (or absorb it into a background),
+and focus on the sourced part.
+
+% ----------------------------------------------------------------------
+\subsection{V.2 Specialize to FLRW and an observer-local source}
+\label{app:tret_green:flrw_source}
+
+Assume a spatially flat FLRW background for the geometry used to define light propagation and
+comoving distance:
+\begin{equation}
+ds^2 = -c^2\,dt^2 + a^2(t)\,d\vec x^{\,2}
+= a^2(\eta)\left(-c^2\,d\eta^2 + d\vec x^{\,2}\right),
+\qquad
+d\eta \equiv \frac{dt}{a(t)}.
+\label{eq:V_flrw_metric}
+\end{equation}
+Radial null curves satisfy
+\begin{equation}
+d\chis = c\,d\eta,
+\qquad\Rightarrow\qquad
+\chis(z)=c\bigl(\eta_0-\eta(z)\bigr),
+\label{eq:V_null_chi_eta}
+\end{equation}
+where $\eta_0$ is the conformal time at observation.
+
+Now assume the dominant source is localized in a small world-tube around the observer at $\vec x=0$.
+A convenient idealization is a pointlike comoving source with time-dependent strength
+$\sigma_\oplus(\eta)$:
+\begin{equation}
+\sigma(\eta,\vec x)\ \approx\ \sigma_\oplus(\eta)\,
+\frac{\delta^{(3)}(\vec x)}{a^3(\eta)}.
+\label{eq:V_local_source}
+\end{equation}
+The $a^{-3}$ factor ensures correct covariant normalization under the physical volume element
+$\sqrt{-g}\,d^4x = a^4(\eta)\,c\,d\eta\,d^3x$.
+
+Substituting \eqref{eq:V_local_source} into \eqref{eq:V_formal_solution} collapses the spatial
+integral:
+\begin{equation}
+\psi(\eta,\chis)\ \approx\ \kappa c \int d\eta'\,a(\eta')\,
+G_{\rm ret}\!\bigl((\eta,\chis);(\eta',0)\bigr)\,\sigma_\oplus(\eta').
+\label{eq:V_time_convolution}
+\end{equation}
+Thus, in the observer-local limit, the field along the line of sight is a \emph{retarded convolution}
+of the observer history with the retarded Green's function.
+
+% ----------------------------------------------------------------------
+\subsection{V.3 Light-cone dominance and the ``two-leg'' retarded time}
+\label{app:tret_green:two_leg}
+
+Equation \eqref{eq:V_time_convolution} is exact given the model assumptions.
+The step that produces the paper’s $\chis(z_e)=2\chis$ rule is the \emph{light-cone dominance}
+approximation: the retarded response kernel is sharply peaked on (or near) the null cone, so the
+dominant contribution comes from the source evaluated at the retarded time corresponding to
+propagation at speed $c$.
+
+A transparent way to see this is to recall the flat-spacetime (Minkowski) massless retarded Green's
+function in $3+1$ dimensions:
+\begin{equation}
+G_{\rm ret}^{\rm (M)}(t,r;t',0)
+=
+\frac{\delta\!\left(t-t'-r/c\right)}{4\pi r}\,\Theta(t-t').
+\label{eq:V_minkowski_green}
+\end{equation}
+In conformal coordinates of a conformally flat spacetime, the leading causal support still tracks
+the null condition $c(\eta-\eta')\approx \chis$.\footnote{For massive fields and/or non-conformal
+couplings in curved spacetime, the retarded Green’s function generally includes a ``tail'' inside
+the light cone. The approximation used here retains the leading null-cone timing and treats tails
+and amplitude factors as subleading corrections in the observer-local regime.}
+
+Accordingly, the dominant contribution to \eqref{eq:V_time_convolution} is obtained by evaluating
+the source at
+\begin{equation}
+\eta' \approx \eta - \frac{\chis}{c}.
+\label{eq:V_retarded_eta_for_field}
+\end{equation}
+
+Now evaluate the field \emph{at the spacetime event on the incoming photon worldline} that lies at
+comoving radius $\chis$ from the observer.
+For an incoming photon observed at $(\eta_0,\chis=0)$, the event at radius $\chis$ along the same
+null ray occurs at conformal time
+\begin{equation}
+\eta_{\gamma}(\chis) = \eta_0 - \frac{\chis}{c}.
+\label{eq:V_eta_on_photon}
+\end{equation}
+Plugging \eqref{eq:V_eta_on_photon} into the retarded-time condition \eqref{eq:V_retarded_eta_for_field}
+gives the source time (on the observer worldline) that dominantly sets the field encountered by the photon at radius $\chis$:
+\begin{equation}
+\eta'_\oplus(\chis)
+\approx
+\eta_{\gamma}(\chis) - \frac{\chis}{c}
+=
+\eta_0 - \frac{2\chis}{c}.
+\label{eq:V_two_leg_conformal}
+\end{equation}
+
+This is the central point:
+\begin{quote}
+\emph{Along the observer’s past light cone, an observer-local source influences the photon at radius $\chis$
+primarily through the observer history evaluated at a conformal time offset $\Delta\eta \approx 2\chis/c$.}
+\end{quote}
+
+In Minkowski space this ``two-leg'' factor is exact under the delta-function Green's function: the
+observer influence must propagate \emph{out} to the interaction point (distance $\chis$) and the
+photon must then propagate \emph{in} to the observer (distance $\chis$), so the relevant source
+epoch precedes observation by $2\chis/c$.
+
+% ----------------------------------------------------------------------
+\subsection{V.4 From conformal-time retardation to the paper’s lookback-time construction}
+\label{app:tret_green:chi_ze}
+
+To connect \eqref{eq:V_two_leg_conformal} to the specific implementation used in Sec.~\ref{sec:tret2},
+use the exact FLRW identity \eqref{eq:V_null_chi_eta}:
+\begin{equation}
+\chis(z) = c\bigl(\eta_0-\eta(z)\bigr).
+\label{eq:V_chi_eta_recall}
+\end{equation}
+Define a redshift $z_e$ such that the comoving distance to $z_e$ equals $2\chis$:
+\begin{equation}
+\chis(z_e) = 2\chis
+\qquad\Longleftrightarrow\qquad
+\eta(z_e) = \eta_0 - \frac{2\chis}{c}.
+\label{eq:V_ze_equiv}
+\end{equation}
+Comparing \eqref{eq:V_ze_equiv} to \eqref{eq:V_two_leg_conformal} shows that $z_e$ is precisely the
+redshift label of the retarded conformal time $\eta'_\oplus(\chis)$.
+
+Finally, convert this retarded conformal time to the observer’s proper lookback time.
+By definition, the lookback time to redshift $z$ is
+\begin{equation}
+\tlb(z) = \int_{t(z)}^{t_0} dt
+= \int_{0}^{z} \frac{dz'}{(1+z')H(z')},
+\label{eq:V_tlb_def}
+\end{equation}
+which is exactly Eq.~\eqref{eq:tlb_def} in the main text. Therefore, the observer-retarded time
+corresponding to $\eta(z_e)=\eta_0-2\chis/c$ is
+\begin{equation}
+\tret(\chis)\ \equiv\ t_0 - t(z_e)\ =\ \tlb(z_e),
+\qquad
+\text{with}\quad \chis(z_e)=2\chis,
+\label{eq:V_tret_equals_tlb_ze}
+\end{equation}
+which is exactly the construction adopted in Sec.~\ref{sec:tret2}.
+
+\paragraph{Low-$z$ limit.}
+At low redshift, $\chis\simeq (c/H_0)z$ and $\tlb\simeq z/H_0$, so $\chis(z_e)=2\chis$ implies
+$z_e\simeq 2z$ and therefore $\tret\simeq 2\tlb$, matching the intuitive ``round-trip'' picture.
+
+% ----------------------------------------------------------------------
+\subsection{V.5 What is being approximated (and how to systematically improve it)}
+\label{app:tret_green:errors}
+
+The paper’s $t_{\rm ret}$ mapping \eqref{eq:V_tret_equals_tlb_ze} is an intentionally minimal,
+controlled proxy for the exact retarded convolution \eqref{eq:V_time_convolution}.
+It corresponds to the following approximations:
+
+\begin{enumerate}[leftmargin=1.2em]
+\item \textbf{Observer-local source.}
+We approximate $\sigma(x)$ as localized near the observer worldline (Eq.~\eqref{eq:V_local_source}).
+If sources are spatially extended (e.g.\ distributed across the Local Group / Local Sheet), then
+the retarded integral becomes a weighted superposition over source locations, and the effective
+retarded-time assignment becomes a mild smearing of the $2\chis/c$ rule.
+
+\item \textbf{Light-cone dominance (kernel collapse).}
+We approximate the retarded kernel by its dominant null-cone timing, collapsing the convolution to
+an evaluation at a single retarded time. Tail terms (inside-the-light-cone support) arising from
+massive propagation and/or curvature coupling are neglected at the level of \emph{timing} (they can
+be absorbed phenomenologically into the smooth activation function $g(t)$).
+
+\item \textbf{Isotropy.}
+We reduce $\psi(x)$ on the past light cone to a function of $\chis$ alone. If the true source is
+anisotropic (e.g.\ local structure aligned with the Local Void), then $I[\gamma]$ becomes
+direction-dependent. (This is a natural extension and suggests sky-split tests.)
+
+\item \textbf{Amplitude factors folded into $g(t)$.}
+Even when timing is set by $2\chis/c$, the exact Green’s function supplies additional amplitude
+factors (e.g.\ $1/\chis$, scale-factor prefactors, and Yukawa suppression $e^{-m_\psi \chis}$).
+In the present paper these are not modeled explicitly because (i) the inference is anchored to
+low-$z$ and (ii) $s(\chis)$ is treated phenomenologically. A more microscopic model could include
+these factors directly in $s(\chis)$.
+\end{enumerate}
+
+\paragraph{A systematic improvement path (optional).}
+If one wishes to go beyond the single-time evaluation, replace the phenomenological activation
+$g\!\bigl(t_{\rm ret}(\chis)\bigr)$ with an explicit time-kernel convolution derived from an
+assumed retarded Green’s function:
+\begin{equation}
+\psi\bigl(\eta_{\gamma}(\chis),\chis\bigr)
+\approx
+\kappa c\int d\eta'\,\mathcal{K}(\chis;\eta_{\gamma}-\eta')\,\sigma_\oplus(\eta'),
+\label{eq:V_kernel_general}
+\end{equation}
+with $\mathcal{K}$ read off from $a(\eta')G_{\rm ret}$ (Eq.~\eqref{eq:V_time_convolution}). The
+present paper corresponds to the narrow-kernel limit
+$\mathcal{K}\sim \delta(\eta'-\eta_0+2\chis/c)$ in timing, plus a bounded phenomenological envelope.
+
+% ----------------------------------------------------------------------
+\subsection{V.6 Connection back to the LTA drift profile $s(\chis)$}
+\label{app:tret_green:to_s}
+
+In the chronometric mapping used in the main text, the accumulated imprint is
+$I(\chis)=\mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}(\chis)$ and
+\begin{equation}
+s(\chis)\equiv c\,\frac{dI}{d\chis}.
+\end{equation}
+In the observer-local dominant regime, the $\chis$-dependence comes primarily from the retarded
+evaluation of the order field, schematically
+\begin{equation}
+\psi_{\rm emit}(\chis)\ \approx\ \psi_\oplus\!\bigl(t_{\rm ret}(\chis)\bigr),
+\qquad
+t_{\rm ret}(\chis)\approx \tlb(z_e),\ \ \chis(z_e)=2\chis,
+\end{equation}
+so that at low $z$ one recovers the useful approximation already recorded in the main text
+(Eq.~\eqref{eq:s_approx_psi_dot}):
+\begin{equation}
+s(\chis)\ \approx\ -2\,\epsilon\,\dot\psi\!\bigl(t_{\rm ret}(\chis)\bigr),
+\qquad (\text{low-$z$ observer-retarded approximation}).
+\end{equation}
+This is the precise sense in which the $t_{\rm ret}$ prescription is a \emph{proxy for the causal
+retarded solution}: it captures the leading timing of how an observer-local source history can
+influence the field encountered along the past light cone.
+
+% ======================================================================
+% End Appendix V
+% ======================================================================
+
+% ======================================================================
+% Appendix W: Full cosmological propagation: background H(z), r_d, recombination
+% Suggested placement: AFTER Appendix U and Appendix V (t_ret as Green proxy),
+% BEFORE Appendix CV.
+% ======================================================================
+
+\section{Full cosmological propagation of the order/chronometric field:
+background expansion, sound horizon $r_d$, and recombination-era observables}
+\label{app:early_universe_full}
+
+This appendix derives the equations required to propagate the unified order-field theory into:
+(i) the \emph{background expansion} $H(z)$ (and the physical expansion rate relevant to matter),
+and (ii) the \emph{early-time calibration} of the sound horizon $r_d$ and recombination-era
+observables (visibility function, decoupling/drag epochs, and the geometric quantities entering the CMB).
+
+The key point is that once the chronometric factor $A(\psi)$ is promoted from a local phenomenology
+to a \emph{cosmological field}, it cannot be treated as a mere redshift remapping. It changes the
+relation between the gravitational (Einstein-frame) background and the \emph{matter-frame} expansion
+history that controls the photon--baryon plasma, recombination, and hence the calibration of $r_d$
+and the entire CMB inference chain.
+
+% ----------------------------------------------------------------------
+\subsection{W.1 Unified action and frame bookkeeping (Jordan-first; \(A\) derived)}
+\label{app:early_universe:frames}
+
+We start from the Jordan-frame scalar--tensor completion
+(Eq.~\eqref{eq:JF_action} or Eq.~\eqref{eq:U_action}), where \(\gJ_{\mu\nu}\) is the physical metric
+seen by matter and by the photon--baryon plasma.
+
+\paragraph{Jordan \(\rightarrow\) Einstein transformation.}
+Define the Einstein-frame metric
+\begin{equation}
+\gE_{\mu\nu}\equiv \Fpsi\,\gJ_{\mu\nu},
+\qquad
+\Apsi \equiv \Fpsi^{-1/2},
+\qquad
+\Cpsi \equiv \ln\Apsi=-\frac12\ln\Fpsi.
+\label{eq:W_conformal}
+\end{equation}
+In Einstein variables, matter couples to \(\Apsi^2\gE_{\mu\nu}\). A convenient special case is
+\(F(\psi)=e^{-2\epsilon\psi}\Rightarrow \Apsi=e^{\epsilon\psi}\), but the bookkeeping below is valid
+for general \(F(\psi)\).
+
+\paragraph{Scale factors and Hubble rates.}
+For homogeneous FLRW,
+\begin{equation}
+ds_{\mathrm{E}}^2=-d\tE^2+\aE^2(\tE)d\bm{x}^2,
+\qquad
+ds_{\mathrm{J}}^2=-d\tJ^2+\aJ^2(\tJ)d\bm{x}^2,
+\end{equation}
+with
+\begin{equation}
+\aJ = \Apsi\,\aE,
+\qquad
+d\tJ = \Apsi\,d\tE.
+\end{equation}
+Therefore the physical (matter-frame) expansion rate relevant to recombination is
+\begin{equation}
+\HJ \equiv \frac{1}{\aJ}\frac{d\aJ}{d\tJ}
+=
+\frac{1}{\Apsi}\left(\HE + \frac{d\ln\Apsi}{d\tE}\right),
+\label{eq:W_HJ_HE}
+\end{equation}
+where \(\HE\equiv \dot\aE/\aE\) and the derivative is with respect to \(\tE\).
+
+\paragraph{Observed redshift in the homogeneous limit.}
+In the homogeneous FLRW limit, the physically observed redshift is
+\begin{equation}
+1+z \equiv \frac{\aJ(\tJ_0)}{\aJ(\tJ)}.
+\end{equation}
+Expressed in Einstein variables this becomes
+\begin{equation}
+1+z = \frac{\Apsi_0\,\aE(\tE_0)}{\Apsi\,\aE(\tE)},
+\label{eq:W_zobs_general}
+\end{equation}
+which is the usual Einstein-frame expression with an endpoint \(\Apsi\) factor, but here it is not a
+new postulate: it is algebraically equivalent to the Jordan-frame scale-factor law.
+
+The remaining subsections use Einstein-frame equations as a computational convenience while keeping
+track of which combinations (\(\HJ\), \(a_J\), \(r_d\)) correspond to physical matter-frame observables.
+
+% ----------------------------------------------------------------------
+\subsection{W.2 Background field equations in Einstein frame}
+\label{app:early_universe:einstein_background}
+
+Varying \eqref{eq:W_action} gives the Einstein equation
+\begin{equation}
+M_{\rm Pl}^2\,G_{\mu\nu}
+=
+T^{(\psi)}_{\mu\nu} + T^{(m)}_{\mu\nu} + T^{(\rm neq)}_{\mu\nu},
+\label{eq:W_einstein_eq}
+\end{equation}
+with
+\begin{equation}
+T^{(\psi)}_{\mu\nu}
+=
+f^2\nabla_\mu\psi\nabla_\nu\psi
+-
+g_{\mu\nu}\left[\frac{f^2}{2}(\nabla_{\mathrm{J}}\psi)^2 + f^4U(\psi)\right].
+\label{eq:W_Tpsi}
+\end{equation}
+
+The scalar equation of motion is
+\begin{equation}
+f^2\,\Box\psi - f^4U'(\psi)
+=
+-\frac{d\ln A}{d\psi}\,T_{(m)} + J_{\rm neq},
+\qquad
+J_{\rm neq}\equiv -\frac{1}{\sqrt{-g}}\frac{\delta S_{\rm neq}}{\delta\psi}.
+\label{eq:W_scalar_eom}
+\end{equation}
+For $A=e^{\epsilon\psi}$, $d\ln A/d\psi=\epsilon$:
+\begin{equation}
+f^2\,\Box\psi - f^4U'(\psi)
+=
+-\epsilon\,T_{(m)} + J_{\rm neq}.
+\label{eq:W_scalar_eom_eps}
+\end{equation}
+
+\paragraph{FLRW background.}
+Take Einstein-frame FLRW
+\begin{equation}
+ds^2 = -dt^2 + a^2(t)\,d\vec x^2,
+\qquad
+H\equiv \frac{\dot a}{a},
+\qquad
+\psi=\bar\psi(t),
+\label{eq:W_FLRW}
+\end{equation}
+and define scalar energy density and pressure (Einstein frame)
+\begin{equation}
+\rho_\psi = \frac{f^2}{2}\dot{\bar\psi}^{\,2} + f^4U(\bar\psi),
+\qquad
+p_\psi = \frac{f^2}{2}\dot{\bar\psi}^{\,2} - f^4U(\bar\psi).
+\label{eq:W_rho_p_psi}
+\end{equation}
+Then the Friedmann equations are
+\begin{align}
+3M_{\rm Pl}^2H^2 &= \rho_\psi + \rho_m + \rho_r + \rho_{\rm neq},
+\label{eq:W_friedmann1}\\
+-2M_{\rm Pl}^2\dot H &= (\rho_m+p_m)+(\rho_r+p_r)+(\rho_\psi+p_\psi)+(\rho_{\rm neq}+p_{\rm neq}).
+\label{eq:W_friedmann2}
+\end{align}
+
+The homogeneous scalar equation from \eqref{eq:W_scalar_eom_eps} is
+\begin{equation}
+f^2\left(\ddot{\bar\psi}+3H\dot{\bar\psi}\right)+f^4U'(\bar\psi)
+=
+-\epsilon\,\bar T_{(m)} + \bar J_{\rm neq}(t),
+\label{eq:W_psi_background}
+\end{equation}
+where $\bar T_{(m)}\equiv -\rho_m+3p_m$ (Einstein-frame trace).
+
+% ----------------------------------------------------------------------
+\subsection{W.3 Matter-frame expansion $\tilde H$: the quantity that controls recombination}
+\label{app:early_universe:tildeH}
+
+Define Jordan/matter-frame cosmic time and scale factor by
+\begin{equation}
+d\tilde t \equiv A(\bar\psi)\,dt,
+\qquad
+\tilde a \equiv A(\bar\psi)\,a.
+\label{eq:W_tilde_defs}
+\end{equation}
+Then the \emph{matter-frame} Hubble parameter is
+\begin{equation}
+\tilde H
+\equiv \frac{1}{\tilde a}\frac{d\tilde a}{d\tilde t}
+=
+\frac{1}{A}\left(H+\frac{\dot A}{A}\right)
+=
+\frac{1}{A}\left(H+\epsilon\dot{\bar\psi}\right),
+\label{eq:W_tildeH}
+\end{equation}
+and the observed redshift in the homogeneous theory is
+\begin{equation}
+1+z \equiv 1+z_{\rm obs} = \frac{\tilde a_0}{\tilde a(t)}.
+\label{eq:W_z_tildea}
+\end{equation}
+
+\paragraph{Why $\tilde H(z)$ is the correct input for $r_d$ and recombination.}
+The photon--baryon plasma, Thomson scattering, and recombination kinetics are governed by the
+physical expansion experienced by matter and radiation (the frame in which particle masses and
+cross sections are time-independent). In the present completion, that is the matter/Jordan frame,
+so the correct expansion rate appearing in recombination ODEs and horizon integrals is $\tilde H(z)$.
+
+% ----------------------------------------------------------------------
+\subsection{W.4 Energy-momentum exchange and density scalings}
+\label{app:early_universe:exchange}
+
+Diffeomorphism invariance implies conservation of the \emph{total} stress-energy, but the matter
+sector is not separately conserved in Einstein frame when $A(\psi)$ varies:
+\begin{equation}
+\nabla_\mu T_{(m)}^{\mu\nu}
+=
++\frac{d\ln A}{d\psi}\,T_{(m)}\,\nabla^\nu\psi
+\;+\;Q^\nu_{\rm neq},
+\label{eq:W_exchange_general}
+\end{equation}
+where $Q^\nu_{\rm neq}$ captures exchange between matter and the nonequilibrium sector.
+
+Ignoring $Q^\nu_{\rm neq}$ for the early-time plasma (a controllable assumption; reinstate if needed),
+the background continuity equation becomes
+\begin{equation}
+\dot\rho_i + 3H(\rho_i+p_i)
+=
+-\epsilon\,\dot{\bar\psi}\,(-\rho_i+3p_i)
+=
++\epsilon\,(1-3w_i)\,\dot{\bar\psi}\,\rho_i.
+\label{eq:W_rho_exchange}
+\end{equation}
+Thus:
+\begin{align}
+\text{Radiation }(w=1/3):\quad &\dot\rho_r + 4H\rho_r = 0,\qquad \rho_r\propto a^{-4},
+\label{eq:W_rho_rad}\\
+\text{Nonrelativistic matter }(w=0):\quad &\dot\rho_m + 3H\rho_m = +\epsilon\dot{\bar\psi}\rho_m
+\;\Rightarrow\;
+\rho_m \propto a^{-3}e^{+\epsilon(\bar\psi-\bar\psi_0)}.
+\label{eq:W_rho_m}
+\end{align}
+
+In the matter frame, densities follow the standard scalings with $\tilde a$:
+\begin{equation}
+\tilde\rho_r \propto \tilde a^{-4},\qquad \tilde\rho_m \propto \tilde a^{-3},
+\label{eq:W_tilde_scalings}
+\end{equation}
+consistent with $1+z=\tilde a_0/\tilde a$.
+
+% ----------------------------------------------------------------------
+\subsection{W.5 Sound speed, sound horizon, and the drag scale $r_d$}
+\label{app:early_universe:rd}
+
+The baryon--photon sound speed is (matter frame)
+\begin{equation}
+c_s(z) = \frac{c}{\sqrt{3(1+R(z))}},
+\qquad
+R(z)\equiv \frac{3\tilde\rho_b(z)}{4\tilde\rho_\gamma(z)}.
+\label{eq:W_cs}
+\end{equation}
+Using the standard matter-frame scalings $\tilde\rho_b\propto (1+z)^3$ and $\tilde\rho_\gamma\propto(1+z)^4$,
+\begin{equation}
+R(z)=R_0(1+z)^{-1},
+\qquad
+R_0\equiv \frac{3\tilde\rho_{b0}}{4\tilde\rho_{\gamma0}}.
+\label{eq:W_Rz}
+\end{equation}
+
+\paragraph{Sound horizon at an arbitrary redshift.}
+Define the comoving sound horizon at redshift $z$ by
+\begin{equation}
+r_s(z) \equiv \int_{z}^{\infty}\frac{c_s(z')}{\tilde H(z')}\,dz'.
+\label{eq:W_rs_def}
+\end{equation}
+Equivalently in scale factor,
+\begin{equation}
+r_s(\tilde a) = \int_{0}^{\tilde a} \frac{c_s(\tilde a')}{\tilde a'^2\,\tilde H(\tilde a')}\,d\tilde a'.
+\label{eq:W_rs_a}
+\end{equation}
+
+\paragraph{Drag epoch $z_d$ and $r_d$.}
+The BAO ruler relevant for late-time BAO analyses is the sound horizon at the \emph{drag epoch} $z_d$,
+when Compton drag ceases to efficiently couple baryons to photons. A clean definition is via a drag optical depth:
+the baryon-photon momentum-exchange rate is proportional to $\dot\tau/R$, where $\tau$ is Thomson optical depth.
+Define
+\begin{equation}
+\frac{d\tau}{d\eta} = \tilde a\,n_e\,\sigma_T\,c,
+\qquad
+R(\eta)=\frac{3\tilde\rho_b}{4\tilde\rho_\gamma},
+\label{eq:W_tauprime}
+\end{equation}
+and the drag optical depth
+\begin{equation}
+\tau_{\rm drag}(z)
+\equiv \int_{z}^{\infty}
+\frac{c\,\sigma_T\,n_e(z')}{(1+z')\,\tilde H(z')}\,
+\frac{1}{R(z')}\,dz'.
+\label{eq:W_tau_drag}
+\end{equation}
+Then $z_d$ is defined implicitly by
+\begin{equation}
+\tau_{\rm drag}(z_d)=1,
+\label{eq:W_zd_def}
+\end{equation}
+and the BAO sound horizon is
+\begin{equation}
+r_d \equiv r_s(z_d)=\int_{z_d}^{\infty}\frac{c_s(z')}{\tilde H(z')}\,dz'.
+\label{eq:W_rd_def}
+\end{equation}
+
+\paragraph{What changes relative to $\Lambda$CDM.}
+The microphysics in $c_s$ is unchanged in the matter frame, but the \emph{entire} early calibration changes
+through $\tilde H(z)$, which is modified by:
+(i) the order-field energy density in \eqref{eq:W_friedmann1}--\eqref{eq:W_friedmann2}, and
+(ii) the chronometric relation \eqref{eq:W_tildeH} linking $H$ and $\tilde H$ via $\dot{\bar\psi}$.
+
+Therefore, to replace $\alpha_{\rm rd}$ with a derived $r_d$ in a global fit, one must solve the background
+system \eqref{eq:W_friedmann1}--\eqref{eq:W_psi_background} and then compute \eqref{eq:W_zd_def}--\eqref{eq:W_rd_def}.
+
+% ----------------------------------------------------------------------
+\subsection{W.6 Recombination: $x_e(z)$, optical depth, and the visibility function}
+\label{app:early_universe:recombination}
+
+The recombination-era observables needed for CMB prediction are controlled by the free-electron fraction
+$x_e(z)\equiv n_e/n_H$ and the Thomson optical depth $\tau(z)$.
+
+\paragraph{Thomson optical depth.}
+Define the Thomson optical depth (from $z$ to today) by
+\begin{equation}
+\tau(z) \equiv \int_{0}^{z}
+\frac{c\,\sigma_T\,n_e(z')}{(1+z')\,\tilde H(z')}\,dz',
+\label{eq:W_tau_def}
+\end{equation}
+where $n_e(z)=x_e(z)\,n_H(z)$ and $n_H(z)$ is the hydrogen number density.
+
+\paragraph{Visibility function and photon decoupling.}
+The visibility function is
+\begin{equation}
+g(z) \equiv e^{-\tau(z)}\frac{d\tau}{dz},
+\qquad
+\frac{d\tau}{dz} = \frac{c\,\sigma_T\,n_e(z)}{(1+z)\,\tilde H(z)}.
+\label{eq:W_visibility}
+\end{equation}
+The recombination redshift $z_\*$ (last scattering) is conventionally defined as the peak of $g(z)$
+(or approximately where $\tau(z_\*)\sim 1$); in a full computation, $z_\*$ emerges from $x_e(z)$ and $\tilde H(z)$.
+
+\paragraph{Recombination ODE: schematic Peebles/Recfast form.}
+A standard effective recombination equation can be written schematically as
+\begin{equation}
+\frac{dx_e}{dz}
+=
+\frac{1}{(1+z)\,\tilde H(z)}
+\left[
+\mathcal{R}(z)\,x_e^2\,n_H(z)
+-
+\mathcal{I}(z)\,(1-x_e)
+\right]\,
+\mathcal{C}(z),
+\label{eq:W_xe_general}
+\end{equation}
+where:
+\begin{itemize}[leftmargin=1.2em]
+\item $\mathcal{R}(z)$ is an effective case-B recombination coefficient (depends on $T_m\simeq T_\gamma$ prior to thermal decoupling),
+\item $\mathcal{I}(z)$ is an effective photoionization coefficient,
+\item $\mathcal{C}(z)$ is the Peebles ``$C$ factor'' encoding Lyman-$\alpha$ trapping and 2s--1s two-photon decay.
+\end{itemize}
+The \emph{only} structural change forced by the unified order field at this level is the replacement
+\[
+H(z)\ \longrightarrow\ \tilde H(z)
+\]
+in the Hubble-dilution/time-conversion factor $1/[(1+z)\tilde H(z)]$.
+(If one instead works in Einstein frame, then particle masses and rates become $\psi$-dependent and the
+microphysical coefficients acquire additional $A(\psi)$ factors; the matter-frame formulation avoids that.)
+
+\paragraph{Temperature scaling.}
+Because $1+z=\tilde a_0/\tilde a$, the photon temperature obeys the standard scaling in terms of the observed redshift:
+\begin{equation}
+T_\gamma(z) = T_0(1+z).
+\label{eq:W_T_scaling}
+\end{equation}
+Thus the CMB monopole scaling remains standard in the \emph{fully self-consistent} matter-frame cosmology.
+What changes is the mapping between redshift and cosmic time via $\tilde H(z)$.
+
+% ----------------------------------------------------------------------
+\subsection{W.7 CMB geometric observables: $\theta_\*$, damping scale, and distances}
+\label{app:early_universe:cmb_geometry}
+
+Even before computing the full anisotropy spectrum, several key recombination-era observables depend
+directly on the background and recombination outputs:
+
+\paragraph{Comoving distance and angular diameter distance.}
+The comoving distance to redshift $z$ (matter frame) is
+\begin{equation}
+\chi(z)=\int_0^z \frac{c}{\tilde H(z')}\,dz'.
+\label{eq:W_chi_def}
+\end{equation}
+For spatial curvature $K=0$ (your baseline assumption), the transverse comoving distance is $D_M(z)=\chi(z)$,
+and the angular diameter distance is $D_A(z)=D_M(z)/(1+z)$.
+
+\paragraph{Acoustic scale.}
+The acoustic angular scale is
+\begin{equation}
+\theta_\* \equiv \frac{r_s(z_\*)}{D_M(z_\*)}.
+\label{eq:W_theta_star}
+\end{equation}
+Planck strongly constrains $\theta_\*$; therefore any unified model must reproduce it by jointly
+adjusting $\tilde H(z)$ (via $\psi$ dynamics and matter content) and $z_\*$ (via recombination).
+
+\paragraph{Photon diffusion (Silk) damping scale.}
+The comoving diffusion scale depends on the mean free path and expansion rate; schematically,
+\begin{equation}
+r_D^2(z)\sim \int_z^\infty dz'\,
+\frac{c^2}{(1+z')\tilde H(z')}\,
+\frac{1}{\sigma_T n_e(z')}\times(\text{order-unity baryon-loading factors}),
+\label{eq:W_damping_schematic}
+\end{equation}
+again showing that the unified theory enters through $\tilde H(z)$ and $n_e(z)$.
+
+\paragraph{Implication.}
+A correct early-time calibration of $r_d$ and recombination observables \emph{requires} solving:
+\begin{enumerate}[leftmargin=1.2em]
+\item the background ODE system \eqref{eq:W_friedmann1}--\eqref{eq:W_psi_background} (to get $H(t)$ and $\bar\psi(t)$),
+\item the frame relation \eqref{eq:W_tildeH} to obtain $\tilde H(z)$,
+\item the recombination ODE \eqref{eq:W_xe_general} to obtain $x_e(z)$, hence $\tau(z)$ and $z_\*$,
+\item the drag condition \eqref{eq:W_zd_def} to obtain $z_d$ and then $r_d$ from \eqref{eq:W_rd_def},
+\item and finally the geometric integrals \eqref{eq:W_chi_def}--\eqref{eq:W_theta_star}.
+\end{enumerate}
+
+% ----------------------------------------------------------------------
+\subsection{W.8 (Optional, but needed for full $C_\ell$) Linear perturbations: what must be modified}
+\label{app:early_universe:perturbations}
+
+To propagate the unified theory into the \emph{full} recombination-era observables (CMB anisotropy spectra),
+one must modify the Einstein--Boltzmann system.
+
+A minimal specification is:
+
+\paragraph{Perturbed Einstein equation (Einstein frame).}
+Linearize \eqref{eq:W_einstein_eq}:
+\begin{equation}
+\delta G_{\mu\nu}
+=
+\frac{1}{M_{\rm Pl}^2}\left(
+\delta T^{(\psi)}_{\mu\nu}
++
+\delta T^{(m)}_{\mu\nu}
++
+\delta T^{(\rm neq)}_{\mu\nu}
+\right),
+\label{eq:W_lin_einstein}
+\end{equation}
+with $\delta T^{(\psi)}_{\mu\nu}$ determined by $\delta\psi$ and the metric perturbations.
+
+\paragraph{Perturbed scalar equation.}
+Linearize \eqref{eq:W_scalar_eom_eps} about $\bar\psi$:
+\begin{equation}
+f^2\,\delta(\Box\psi) - f^4U''(\bar\psi)\,\delta\psi
+=
+-\epsilon\,\delta T_{(m)} + \delta J_{\rm neq},
+\label{eq:W_lin_scalar}
+\end{equation}
+where $\delta(\Box\psi)$ includes the usual metric-perturbation terms (e.g.\ $\Phi',\Psi'$ in Newtonian gauge).
+
+\paragraph{Matter perturbations (Einstein frame) are not separately conserved.}
+The covariant conservation law \eqref{eq:W_exchange_general} implies at linear order:
+\begin{equation}
+\delta\!\left(\nabla_\mu T_{(m)}^{\mu\nu}\right)
+=
+\epsilon\,
+\delta\!\left(T_{(m)}\,\nabla^\nu\psi\right)
+\;+\;\delta Q^\nu_{\rm neq}.
+\label{eq:W_lin_exchange}
+\end{equation}
+In practice: photons and neutrinos (traceless, $T=0$) are unaffected by the conformal coupling at leading order,
+while CDM/baryons pick up coupling terms proportional to $\epsilon$ and $\delta\psi$.
+This is the standard ``coupled quintessence'' structure, except that here $\psi$ is interpreted as an order field.
+
+\paragraph{Implementation reality.}
+A numerically correct Planck-era comparison therefore requires implementing
+\eqref{eq:W_lin_einstein}--\eqref{eq:W_lin_exchange} in a Boltzmann code (CLASS/CAMB-like),
+together with a recombination module that uses $\tilde H(z)$ consistently.
+The background-only steps (Secs.~\ref{app:early_universe:tildeH}--\ref{app:early_universe:cmb_geometry})
+are sufficient for deriving $r_d$ and the geometric CMB scales, but not for $C_\ell$ precision constraints.
+
+% ======================================================================
+% End Appendix W
+% ======================================================================
+
+% ======================================================================
+% Appendix X: Geometric completion: curvature--entropy scalar--tensor LTA
+% ======================================================================
+
+\section{Geometric completion (Model B): curvature--entropy scalar--tensor LTA }
+\label{app:geom_entropy}
+
+The chronometric model used in the main SN+BAO likelihood treats the order field $\psi(x)$ as a
+clock-bias field and, to leading approximation, neglects its backreaction on the large-scale geometry.
+Here we give a variational ``geometric completion'' in which the \emph{same} entropy/order field
+is coupled into the field equations in scalar--tensor form, closely paralleling curvature--entropy
+constructions such as \cite{NeukartMarxVinokur2026ISL}.
+
+\subsection{X.1 Action and conventions}
+We work with metric signature $(-,+,+,+)$ and $\Box\equiv g^{\mu\nu}\nabla_\mu\nabla_\nu$.
+Let $M_{\rm Pl}^2\equiv(8\pi G)^{-1}$.
+
+\paragraph{Entropy/order field normalization.}
+We take $\psi$ to be dimensionless, with an entropy-unit scalar
+$S_{\rm ord}(x)\equiv S_\ast\,\psi(x)$ for some fixed $S_\ast>0$.
+
+\paragraph{Matter coupling and the derived chronometric factor.}
+In the Jordan-first scalar--tensor completion used in this revision, matter couples minimally to the
+Jordan metric (the physical frame). The conformal/chronometric factor \(A(\psi)\) appears only upon
+transforming to Einstein variables, where it is \emph{derived} from the nonminimal coupling:
+\(\Apsi=\Fpsi^{-1/2}\) (Sec.~\ref{sec:conformal_completion}). There is therefore no independent
+``clock coupling'' parameter beyond the choice of \(F(\psi)\) (and any additional sector couplings,
+if introduced).
+
+\paragraph{Geometric completion (nonminimal curvature coupling).}
+A minimal scalar--tensor completion is
+\begin{equation}
+\mathcal{S}
+=
+\int d^4x\,\sqrt{-g_{\mathrm{J}}}\left[
+\frac{M_{\rm Pl}^{2}}{2}\,F(\psi)\,R
+-\frac{f^{2}}{2}\,(\nabla_{\mathrm{J}}\psi)^2
+-f^{4}U(\psi)
+\right]
+\;+\;
+\mathcal{S}_{\rm m}[\gJ,\Phi]
+\;+\;
+\mathcal{S}_{\rm neq}[g,\psi,\Xi],
+\label{eq:X_action}
+\end{equation}
+with dimensionless $F(\psi)$ and $U(\psi)$ and a stiffness scale $f$ (mass dimension 1).
+For the linear coupling used in the main text discussion,
+\begin{equation}
+F(\psi)=1+2\beta\psi,
+\qquad \beta=\text{constant}.
+\label{eq:X_F_linear}
+\end{equation}
+The nonequilibrium sector $\mathcal{S}_{\rm neq}$ is the covariant insertion point for sustained
+constraint-maintenance (dissipation, entropy throughput, etc.).
+
+\subsection{X.2 Field equations}
+
+\paragraph{Modified Einstein equation.}
+Varying \eqref{eq:X_action} with respect to $g_{\mu\nu}$ gives
+\begin{equation}
+M_{\rm Pl}^{2}F(\psi)\,G_{\mu\nu}
+=
+T^{(m)}_{\mu\nu}
++
+T^{(\psi)}_{\mu\nu}
++
+T^{(\rm neq)}_{\mu\nu}
++
+M_{\rm Pl}^{2}\left(\nabla_\mu\nabla_\nu F(\psi)-g_{\mu\nu}\Box F(\psi)\right),
+\label{eq:X_einstein}
+\end{equation}
+where
+\begin{equation}
+T^{(\psi)}_{\mu\nu}
+=
+f^{2}\nabla_\mu\psi\,\nabla_\nu\psi
+-
+g_{\mu\nu}\left[\frac{f^{2}}{2}(\nabla_{\mathrm{J}}\psi)^2+f^{4}U(\psi)\right],
+\label{eq:X_Tpsi}
+\end{equation}
+and $T^{(m)}_{\mu\nu}$ and $T^{(\rm neq)}_{\mu\nu}$ are defined by functional differentiation of
+$\mathcal{S}_{\rm m}$ and $\mathcal{S}_{\rm neq}$ with respect to $g_{\mu\nu}$.
+
+\paragraph{Scalar equation of motion.}
+Varying \eqref{eq:X_action} with respect to $\psi$ yields
+\begin{equation}
+f^{2}\Box\psi - f^{4}U'(\psi) + \frac{M_{\rm Pl}^{2}}{2}F'(\psi)\,R
+=
+-\frac{d\ln A}{d\psi}\,T_{(m)}
+\;+\;
+J_{\rm neq},
+\label{eq:X_scalar}
+\end{equation}
+where $T_{(m)}\equiv g_{\mu\nu}T_{(m)}^{\mu\nu}$ and
+\begin{equation}
+J_{\rm neq}\;\equiv\;-\frac{1}{\sqrt{-g_{\mathrm{J}}}}\frac{\delta \mathcal{S}_{\rm neq}}{\delta\psi}.
+\label{eq:X_Jneq}
+\end{equation}
+For the linear choice \eqref{eq:X_F_linear}, $F'(\psi)=2\beta$ so the curvature-driving term is $\beta M_{\rm Pl}^{2}R$.
+
+\paragraph{Effective gravitational coupling.}
+Equation \eqref{eq:X_einstein} can be written as $G_{\mu\nu}=8\pi G_{\rm eff}(\psi)\,T^{\rm eff}_{\mu\nu}$ with
+\begin{equation}
+G_{\rm eff}(\psi)=\frac{G}{F(\psi)}=\frac{G}{1+2\beta\psi},
+\label{eq:X_Geff}
+\end{equation}
+so viability requires $F(\psi)>0$ and (typically) small $|\beta\psi|$ and/or screening at Solar-System scales.
+
+\subsection{X.3 Curvature-sourced entropy production (Choice 1 link to \cite{NeukartMarxVinokur2026ISL})}
+
+Define the entropy-unit scalar $S_{\rm ord}\equiv S_\ast\psi$ and the future-directed current
+$J^\mu_{\rm ord}\equiv-\nabla^\mu S_{\rm ord}$ (App.~\ref{app:psi_field}).
+Then the production scalar is
+\begin{equation}
+\sigma_{\rm ord}\;\equiv\;\nabla_\mu J^\mu_{\rm ord}
+=
+-\Box S_{\rm ord}
+=
+- S_\ast \Box\psi.
+\label{eq:X_sigma_def}
+\end{equation}
+Using the scalar equation \eqref{eq:X_scalar} gives the exact identity
+\begin{equation}
+\sigma_{\rm ord}
+=
+\frac{S_\ast}{f^{2}}\left[
+\frac{M_{\rm Pl}^{2}}{2}F'(\psi)\,R
++
+\frac{d\ln A}{d\psi}\,T_{(m)}
+-
+J_{\rm neq}
+-
+f^{4}U'(\psi)
+\right].
+\label{eq:X_sigma_general}
+\end{equation}
+In the minimal decoupling limit $A(\psi)\to 1$, $U'(\psi)\to 0$, and $J_{\rm neq}\to 0$,
+this reduces to a curvature-sourced production law of the form
+\begin{equation}
+\sigma_{\rm ord}=\kappa_{\rm eff}\,R,
+\qquad
+\kappa_{\rm eff}\equiv \frac{S_\ast\,\beta\,M_{\rm Pl}^{2}}{f^{2}},
+\label{eq:X_sigma_curvature}
+\end{equation}
+which is the same structural statement as the curvature--entropy relations derived from the informational
+action approach in \cite{NeukartMarxVinokur2026ISL}, up to normalization conventions and metric signature.
+
+\subsection{X.4 FLRW reduction and DE-like behavior}
+
+On a spatially-flat FLRW background with $\psi=\psi(t)$ and $H\equiv\dot a/a$, the $00$ component of
+\eqref{eq:X_einstein} gives
+\begin{equation}
+3M_{\rm Pl}^{2}F H^{2}
+=
+\rho
++
+\left(\frac{f^{2}}{2}\dot\psi^{2}+f^{4}U(\psi)\right)
++\rho_{\rm neq}
+-3M_{\rm Pl}^{2}H\dot F,
+\label{eq:X_friedmann}
+\end{equation}
+where $\rho=\rho_m+\rho_r$ and $\rho_{\rm neq}$ is the $00$ component of $T^{(\rm neq)}_{\mu\nu}$.
+For the linear coupling \eqref{eq:X_F_linear}, $\dot F=2\beta\dot\psi$.
+The scalar equation \eqref{eq:X_scalar} reduces to
+\begin{equation}
+\ddot\psi+3H\dot\psi
++\frac{f^{2}}{f^{2}}\left(\frac{f^{4}}{f^{2}}U'(\psi)\right)
+-\frac{M_{\rm Pl}^{2}}{f^{2}}\beta\,R
+=
+-\frac{1}{f^{2}}\left[\frac{d\ln A}{d\psi}\,T_{(m)}-J_{\rm neq}\right],
+\label{eq:X_psi_FLRW}
+\end{equation}
+with $R=6(\dot H+2H^{2})$ in flat FLRW.
+In this completion, a homogeneous $\psi$ can therefore generate DE-like modifications of $H(z)$
+even with $\Lambda=0$, while the observer-local chronometric limit corresponds to regimes where the
+observable imprint is dominated by $A(\psi)$ rather than by geometric backreaction.
+
+
+% ======================================================================
+% Appendix P: Pulsar timing arrays with BOTH source and receiver clock sectors
+% Suggested placement: AFTER Appendix W (early universe), BEFORE Appendix CV.
+% ======================================================================
+
+\section{Pulsar timing in the chronometric/order-field theory:
+source term, propagation through space, and receiver term}
+\label{app:pta_full}
+
+This appendix derives the timing observable relevant for pulsar timing arrays (PTAs) in the
+chronometric/order-field framework, explicitly including:
+\begin{enumerate}[leftmargin=1.2em]
+\item the pulsar's local clock sector (``their time hole''; \textbf{source term}),
+\item propagation through interstellar space (``empty space''; \textbf{transfer}),
+\item and the Earth's local clock sector (``our time hole''; \textbf{receiver term}).
+\end{enumerate}
+The resulting structure naturally yields a \emph{pulsar term} and an \emph{Earth term} analogous to
+the standard PTA response to gravitational waves, but here the underlying physics is a scalar
+chronometric potential $\mathcal{C}(x)=\ln A(\psi)$ rather than a tensor metric perturbation.
+
+% ----------------------------------------------------------------------
+\subsection{P.1 Chronometric potential and local clock times}
+\label{app:pta:clock_times}
+
+Let the chronometric factor in Einstein variables be the standard derived factor
+\begin{equation}
+\Apsi \equiv \Fpsi^{-1/2},
+\qquad
+\mathcal{C}(x)\equiv \ln \Apsi(x) = -\frac12\ln \Fpsi(x).
+\label{eq:P_C_def}
+\end{equation}
+Along any worldline, the physical (Jordan) clock time is related to Einstein proper time by
+\begin{equation}
+d\tau_{\mathrm{J}} = \Apsi\,d\tau_{\mathrm{E}} = e^{\mathcal{C}}\,d\tau_{\mathrm{E}}.
+\label{eq:P_tau_relation}
+\end{equation}
+A commonly used special case is \(F(\psi)=e^{-2\epsilon\psi}\Rightarrow \Apsi=e^{\epsilon\psi}\), but
+the PTA bookkeeping below does not require fixing a particular functional form.
+
+We will need two worldlines:
+\begin{itemize}[leftmargin=1.2em]
+\item Pulsar worldline $P$: $\mathcal{C}_P(t)\equiv \mathcal{C}(x_P(t))$ and $d\tilde\tau_P = e^{\mathcal{C}_P}d\tau_P$.
+\item Earth/receiver worldline $\Eclk$: $\mathcal{C}_{\Eclk}(t)\equiv \mathcal{C}(x_{\Eclk}(t))$ and $d\tilde\tau_{\Eclk} = e^{\mathcal{C}_{\Eclk}}d\tau_{\Eclk}$.
+\end{itemize}
+
+In PTA practice one models times in a barycentric coordinate time; here we keep the derivation
+covariant and then specialize to a weak-field/slow-motion regime where coordinate time is an
+adequate affine label.
+
+% ----------------------------------------------------------------------
+\subsection{P.2 Pulse phase and the observable: arrival-time residuals}
+\label{app:pta:phase_toa}
+
+Let $N$ be the pulse phase (integer pulse count). By definition,
+\begin{equation}
+\frac{dN}{d\tilde\tau_P}=\nu_P(\tilde\tau_P),
+\label{eq:P_phase_def}
+\end{equation}
+where $\nu_P$ is the pulsar spin frequency measured in the pulsar's own clock time.
+In the simplest case $\nu_P\simeq \nu_0$ is constant plus known secular spindown that PTA models already fit.
+
+A pulse emitted at event $x_P$ propagates along a null ray to be received at $x_E$.
+Let $t$ label receiver coordinate time and $t_P(t)$ the corresponding emission coordinate time
+(the standard retarded relation; in flat space $t_P=t-D/c$ up to Shapiro and kinematic corrections).
+
+The key PTA observable is the \emph{timing residual} $R(t)$: the difference between observed pulse
+arrival times and the best-fit timing model (which includes standard GR propagation terms, ephemeris,
+dispersion, spindown, etc.). Any additional fractional frequency shift $z(t)$ contributes as
+\begin{equation}
+R(t)=\int^t z(t')\,dt',
+\label{eq:P_residual_def}
+\end{equation}
+up to the convention of which time coordinate is used in the integral (in practice one uses the same
+reference time variable as the timing model). The derivation below gives $z(t)$ induced by $\mathcal{C}$.
+
+% ----------------------------------------------------------------------
+\subsection{P.3 Instantaneous observed frequency including both source and receiver clocks}
+\label{app:pta:freq_ratio}
+
+The arrival phase rate measured by the receiver clock is
+\begin{equation}
+\nu_{\rm obs}(t)\equiv \frac{dN}{d\tilde\tau_{\Eclk}}.
+\label{eq:P_nuobs_def}
+\end{equation}
+Using the chain rule,
+\begin{equation}
+\frac{dN}{d\tilde\tau_{\Eclk}}
+=
+\frac{dN}{d\tilde\tau_P}\,
+\frac{d\tilde\tau_P}{dt_P}\,
+\frac{dt_P}{dt}\,
+\frac{dt}{d\tilde\tau_{\Eclk}}.
+\label{eq:P_chainrule}
+\end{equation}
+Now apply the clock relations $d\tilde\tau=e^{\mathcal{C}}d\tau$.
+In a weak-field slow-motion regime (appropriate for PTA baselines), we can take $dt\simeq d\tau$ along each worldline
+to leading order in standard gravitational potentials; all such GR terms are already part of the timing model.
+Then
+\begin{equation}
+\frac{d\tilde\tau_P}{dt_P}\simeq e^{\mathcal{C}_P(t_P)},
+\qquad
+\frac{dt}{d\tilde\tau_{\Eclk}}\simeq e^{-\mathcal{C}_{\Eclk}(t)}.
+\label{eq:P_clock_factors}
+\end{equation}
+Also $dt_P/dt\simeq 1$ up to conventional kinematic/gravitational propagation corrections (again part of the baseline model).
+Therefore,
+\begin{equation}
+\nu_{\rm obs}(t)
+\simeq
+\nu_P(\tilde\tau_P)\,
+e^{\mathcal{C}_P(t_P)-\mathcal{C}_{\Eclk}(t)}.
+\label{eq:P_nuobs_main}
+\end{equation}
+
+\paragraph{Interpretation in the ``three-stage'' picture you requested.}
+Equation \eqref{eq:P_nuobs_main} factorizes cleanly:
+\begin{enumerate}[leftmargin=1.2em]
+\item \textbf{Flickering at a rate based on their time (source).}
+Any variability in $\nu_P(\tilde\tau_P)$ and/or $\mathcal{C}_P$ is defined in pulsar clock time $\tilde\tau_P$.
+
+\item \textbf{Exiting their time hole $\rightarrow$ traveling across empty space (transfer).}
+If the interstellar path has negligible $\mathcal{C}$ (empty space: $A\simeq 1$), then the only
+chronometric contribution from the pulsar environment is the \emph{endpoint value} $\mathcal{C}_P(t_P)$.
+This is exactly the ``climb out of their local time hole'' factor $e^{+\mathcal{C}_P}$.
+
+\item \textbf{Entering our time hole (receiver).}
+Upon reception, the measured frequency is divided by our local clock factor $e^{\mathcal{C}_E(t)}$.
+This is the receiver ``entering our time hole'' factor $e^{-\mathcal{C}_E}$.
+\end{enumerate}
+
+% ----------------------------------------------------------------------
+\subsection{P.4 Fractional frequency shift: Earth term + pulsar term}
+\label{app:pta:redshift}
+
+Define the fractional frequency shift relative to a baseline in which $\mathcal{C}\equiv 0$:
+\begin{equation}
+z_\mathcal{C}(t)
+\equiv
+\frac{\nu_{\rm obs}(t)-\nu_{\rm obs}^{(0)}(t)}{\nu_{\rm obs}^{(0)}(t)}.
+\label{eq:P_z_def}
+\end{equation}
+If $\nu_P$ is treated as already modeled (i.e.\ we isolate the additional chronometric effect),
+then from \eqref{eq:P_nuobs_main} we have
+\begin{equation}
+1+z_\mathcal{C}(t) \simeq e^{\mathcal{C}_P(t_P)-\mathcal{C}_{\Eclk}(t)}.
+\label{eq:P_z_exact}
+\end{equation}
+For small perturbations (the PTA-relevant regime),
+\begin{equation}
+z_\mathcal{C}(t) \simeq \mathcal{C}_P(t_P)-\mathcal{C}_{\Eclk}(t)
+= \epsilon\bigl[\psi_P(t_P)-\psi_{\Eclk}(t)\bigr].
+\label{eq:P_z_linear}
+\end{equation}
+This is the PTA analogue of the standard ``pulsar term minus Earth term'' structure:
+\begin{equation}
+\boxed{
+\text{PTA chronometric redshift}:\quad
+z_\mathcal{C}(t)\ \propto\ \psi_P(\text{retarded})\ -\ \psi_E(\text{now}).
+}
+\end{equation}
+
+The corresponding timing residual is
+\begin{equation}
+R_\mathcal{C}(t)
+=
+\int^t \left[\mathcal{C}_P(t_P(t'))-\mathcal{C}_{\Eclk}(t')\right]dt'
+\quad\text{(to leading order)}.
+\label{eq:P_residual_main}
+\end{equation}
+
+% ----------------------------------------------------------------------
+\subsection{P.5 ``Flickering based on their time'': mapping pulsar-time variability into our time}
+\label{app:pta:flicker}
+
+Your explicit requirement is that any PTA equations must correctly include the fact that a process
+that is periodic in \emph{pulsar clock time} will be observed through the combined
+(source clock $\rightarrow$ propagation delay $\rightarrow$ receiver clock) mapping.
+
+Let a pulsar-local chronometric modulation be specified as a function of pulsar clock time:
+\begin{equation}
+\mathcal{C}_P = \widehat{\mathcal{C}}_P(\tilde\tau_P),
+\qquad
+d\tilde\tau_P = e^{\mathcal{C}_P(t)}\,dt
+\quad(\text{weak-field }dt\simeq d\tau_P).
+\label{eq:P_Cp_of_tautilde}
+\end{equation}
+Then the pulsar term in \eqref{eq:P_z_linear} is evaluated at the retarded emission time:
+\begin{equation}
+\mathcal{C}_P(t_P)=\widehat{\mathcal{C}}_P\!\bigl(\tilde\tau_P(t_P)\bigr),
+\qquad
+\tilde\tau_P(t_P)=\int^{t_P} e^{\mathcal{C}_P(t')}dt'.
+\label{eq:P_retarded_mapping}
+\end{equation}
+
+To express the observed modulation in \emph{our} clock time $\tilde\tau_{\Eclk}$,
+use $d\tilde\tau_E=e^{\mathcal{C}_E(t)}dt$, so
+\begin{equation}
+\frac{d\tilde\tau_P}{d\tilde\tau_{\Eclk}}
+=
+\frac{e^{\mathcal{C}_P(t_P)}}{e^{\mathcal{C}_{\Eclk}(t)}}\,
+\frac{dt_P}{dt}.
+\label{eq:P_time_warp}
+\end{equation}
+To leading order $dt_P/dt\simeq 1$, therefore
+\begin{equation}
+\frac{d\tilde\tau_P}{d\tilde\tau_{\Eclk}}
+\simeq
+e^{\mathcal{C}_P(t_P)-\mathcal{C}_{\Eclk}(t)}.
+\label{eq:P_time_warp_simple}
+\end{equation}
+
+\paragraph{Observed flicker rate.}
+If the pulsar modulation is sinusoidal in pulsar time,
+\begin{equation}
+\widehat{\mathcal{C}}_P(\tilde\tau_P)=\mathcal{C}_{P0}+\delta\mathcal{C}_P\cos(\omega_P\tilde\tau_P),
+\label{eq:P_sine}
+\end{equation}
+then the instantaneous angular frequency measured in receiver clock time is
+\begin{equation}
+\omega_{\rm obs}(\tilde\tau_{\Eclk})
+=
+\omega_P\,\frac{d\tilde\tau_P}{d\tilde\tau_{\Eclk}}
+\simeq
+\omega_P\,e^{\mathcal{C}_P(t_P)-\mathcal{C}_{\Eclk}(t)}.
+\label{eq:P_omega_obs}
+\end{equation}
+This equation is the mathematically explicit version of your statement:
+\begin{quote}
+\emph{``Flickering at a given rate based on their time (needs to exit their local time hole to reach us),
+traveling across empty space, reaching us and then entering our local time hole.''}
+\end{quote}
+The pulsar-time frequency $\omega_P$ is warped by the ratio of clock factors between emission and reception.
+If the path is empty space ($\mathcal{C}\approx0$ along the transfer), the only warp is the endpoint difference.
+
+% ----------------------------------------------------------------------
+\subsection{P.6 Allowing an extended ``time-hole'' profile and propagation domains}
+\label{app:pta:extended}
+
+If the pulsar (or Earth) time-hole is spatially extended, then $\mathcal{C}(x)$ varies with radius.
+In the conformal-chronometric theory, the net chronometric contribution to a frequency comparison is still
+an endpoint difference in $\mathcal{C}$:
+\begin{equation}
+\ln\left(\frac{\nu_{\rm meas}}{\nu_{\rm meas}^{(0)}}\right)
+=
+-\left[\mathcal{C}_{\Eclk}-\mathcal{C}_P\right],
+\label{eq:P_endpoint_difference}
+\end{equation}
+because $\mathcal{C}$ is a scalar and $\int_\gamma d\mathcal{C}=\mathcal{C}_{\rm obs}-\mathcal{C}_{\rm emit}$.
+Operationally, ``exiting the pulsar time hole'' is precisely the factor $e^{+\mathcal{C}_P}$ when the asymptotic region has $\mathcal{C}\to0$.
+
+If, however, one wants to \emph{model} $\mathcal{C}(x)$ as a causal field sourced by the local nonequilibrium throughput,
+then $\mathcal{C}$ itself must be computed from a retarded Green’s function (Appendix~\ref{app:tret_green} generalization):
+\begin{equation}
+\psi(x) \;=\; \psi_{\rm hom}(x)
++\kappa\int d^4x'\sqrt{-g}\,G_{\rm ret}(x;x')\,\sigma(x'),
+\qquad \mathcal{C}(x)=\epsilon\psi(x).
+\label{eq:P_retarded_field}
+\end{equation}
+In that representation, both Earth and pulsar have their own retarded source histories, and the PTA observable
+$z_\mathcal{C}(t)$ samples \emph{two} distinct causal solutions at two distinct worldlines:
+\begin{equation}
+z_\mathcal{C}(t)\simeq \epsilon\left[\psi_P\bigl(t_P(t)\bigr)-\psi_{\Eclk}(t)\right].
+\label{eq:P_two_worldlines}
+\end{equation}
+
+% ----------------------------------------------------------------------
+\subsection{P.7 Practical PTA implication: monopole Earth-term degeneracy and the role of the pulsar term}
+\label{app:pta:pta_implications}
+
+Equation \eqref{eq:P_z_linear} has an important structural consequence:
+the Earth term $-\mathcal{C}_{\Eclk}(t)$ is a \emph{common} contribution to all pulsars, i.e.\ a monopole in the PTA.
+This is (partially) degenerate with terrestrial clock errors unless it is separated by:
+(i) independent time standards, (ii) pulsar-term structure, or (iii) sky-dependent propagation/anisotropy.
+
+The pulsar term $\mathcal{C}_P(t_P)$ is different for each pulsar and thus offers a handle to break degeneracy,
+but it enters at a retarded time (set by the pulsar distance and standard propagation effects), exactly as in
+the gravitational-wave PTA response.
+
+% ======================================================================
+% End Appendix P
+% ======================================================================
 
 
 \section{Cross-validation under strong covariance coupling}
@@ -2192,7 +5286,7 @@ For the representative run, we performed $N=50$ CV-null draws (seed 100). The ob
 while the null draws yielded:
 \begin{align}
 \Delta\chi^2_{\rm CV,marg,null} &: \ \text{mean}=1.179420,\ \text{std}=3.846321,
-\ \ p_{\rm MC}\approx 0.091, \\
+\ \ p_{\rm MC}<\frac{1}{50+1}\approx 0.0196, \\
 \Delta\chi^2_{\rm CV,cond,null} &: \ \text{mean}=-0.242446,\ \text{std}=1.004216,
 \ \ p_{\rm MC}\approx 1.
 \end{align}
