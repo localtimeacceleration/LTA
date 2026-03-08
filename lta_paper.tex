@@ -202,6 +202,9 @@ Because the LTA amplitude is constrained (e.g.\ \(s_{\rm anchor}\ge 0\)), the nu
 point and standard Wilks-theorem \(\chi^2\) asymptotics need not hold; in simple one-sided cases the
 likelihood-ratio statistic approaches a nonstandard mixture distribution rather than \(\chi^2_1\)
 \cite{Chernoff1954,SelfLiang1987}.
+The one-sided choice \(s_{\rm anchor}\ge 0\) is a phenomenological sign convention (chosen to test
+the direction relevant for \(H_{0,\mathrm{local}}>H_{0,\mathrm{early}}\)), not a fundamental theorem;
+two-sided sign tests are possible and should be reported as robustness checks.
 In astronomy/cosmology contexts this issue is well known in the detection of additional model
 components and motivates Monte Carlo calibration when regularity conditions fail \cite{Protassov2002}.
 We therefore treat the parametric bootstrap as the primary calibration for \(\Delta\chi^2\) in this
@@ -884,7 +887,7 @@ state \cite{Seifert2012ST,Parrondo2015ThermoInfo}.
 
 Throughout this section, we assume a coarse-grained description in which microstates are labeled
 by $x$ and the system has an instantaneous state distribution $p(x,t)$. We also assume a chosen
-reference distribution $\pi(\xi)$ representing the maximally unstructured (maximum-entropy) baseline
+reference distribution $\pi(x)$ representing the maximally unstructured (maximum-entropy) baseline
 given the constraints one is \emph{not} counting as ``order'' (e.g.\ a canonical equilibrium, or a
 MaxEnt state under specified macroscopic constraints).
 
@@ -897,7 +900,7 @@ Define the dimensionless \emph{constraint inventory}
 \begin{equation}
 \phi(t) \;\equiv\; D_{\mathrm{KL}}\!\bigl(p(\cdot,t)\,\|\,\pi(\cdot)\bigr)
 \;=\;
-\int \! \dd x\; p(x,t)\,\ln\!\frac{p(x,t)}{\pi(\xi)},
+\int \! \dd x\; p(x,t)\,\ln\!\frac{p(x,t)}{\pi(x)},
 \label{eq:phi_def}
 \end{equation}
 and its entropy-unit version
@@ -907,6 +910,13 @@ and its entropy-unit version
 \label{eq:varphi_def}
 \end{equation}
 The KL divergence was introduced in \cite{KullbackLeibler1951}.
+
+When discussing the thermodynamic order variable directly, we use
+\begin{equation}
+S_{\rm ord}(t) \equiv \varphi(t)=k_B D_{\mathrm{KL}}(p\|\pi),
+\label{eq:Sord_def_main}
+\end{equation}
+so ``order'' in this paper is always the relative-entropy inventory $S_{\rm ord}$, not total entropy production.
 
 We will refer to $\varphi$ as the ``constraint inventory'' because it measures how many
 \emph{nats} (or, dividing by $\ln 2$, \emph{bits}) of information are required to specify the
@@ -956,6 +966,14 @@ D_{\mathrm{KL}}(p\|\pi)=\ln\!\frac{\Omega_0}{\Omega_1},
 \end{equation}
 So $\varphi$ literally counts the log-compression of accessible microstates induced by the
 constraints being maintained.
+In the same uniform-support case, the coarse-grained Shannon entropies are
+$S_{\max}=k_B\ln \Omega_0$ and $S=k_B\ln \Omega_1$, hence
+\begin{equation}
+S_{\rm ord}=\varphi=S_{\max}-S.
+\label{eq:Sord_Smax_minus_S}
+\end{equation}
+Equation~\eqref{eq:Sord_Smax_minus_S} is the precise mathematical statement behind
+``order constrains microstate space''.
 
 \paragraph{Comment (why we do \emph{not} anchor on entropy alone).}
 Total entropy production is a throughput and is always nonnegative, but it does not by itself
@@ -969,7 +987,7 @@ tracks constraint maintenance directly; the second law will then bound how fast 
 
 To connect $\varphi$ to energetics, specialize to a canonical reference distribution
 \begin{equation}
-\pi(\xi)=\frac{e^{-\beta E(x)}}{Z},\qquad \beta\equiv (k_B T)^{-1},
+\pi(x)=\frac{e^{-\beta E(x)}}{Z},\qquad \beta\equiv (k_B T)^{-1},
 \label{eq:canonical_pi}
 \end{equation}
 at temperature $T$ for the same energy function $E(x)$.
@@ -1205,6 +1223,43 @@ the mapping between an ``underlying'' cosmological redshift $\zcos$ and the obse
 recovering the LTA mapping as a controlled limit.
 \end{enumerate}
 
+\subsection{One field, two phases, one source decomposition}
+\label{sec:phase12_unified}
+
+The analysis architecture is explicitly two-phase but not two-theory.
+Both phases use the same action \eqref{eq:JF_action}, the same coupling \(F(\psi)\), and the same scalar equation \eqref{eq:JF_scalar}.
+The only split is in source support:
+\begin{equation}
+J_{\rm neq}(x)=\bar J_{\rm early}(\tJ)+\delta J_{\rm local}(x),
+\label{eq:Jneq_split_main}
+\end{equation}
+with corresponding field decomposition
+\begin{equation}
+\psi(x)=\bar\psi(\tJ)+\delta\psi(x).
+\label{eq:psi_split_main}
+\end{equation}
+
+\paragraph{Phase 1 (dark-energy replacement / background fit).}
+Set \(\delta J_{\rm local}=0\), solve the homogeneous Jordan-frame system
+\eqref{eq:JF_einstein}--\eqref{eq:JF_scalar}, and fit \(\HJ(z)\) jointly to SN+BAO plus early-calibration priors.
+This phase tests whether the homogeneous order sector can replace \(\Lambda\) while preserving early-time consistency.
+
+\paragraph{Phase 2 (local imprint on top of Phase 1 background).}
+Hold the same background solution (or refit jointly with shared parameters), solve for \(\delta\psi\) sourced by \(\delta J_{\rm local}\),
+and compute the observed mapping from the same chronometric factor:
+\begin{equation}
+I(\chi)=\epsilon\!\left[\delta\psi_{\rm obs}-\delta\psi_{\rm emit}(\chi)\right],
+\qquad
+1+\zobs=(1+\zcos)e^{I(\chi)}.
+\label{eq:I_from_delta_psi_main}
+\end{equation}
+The phenomenological drift field remains
+\begin{equation}
+s(\chi)\equiv c\,\frac{dI}{d\chi},
+\label{eq:s_from_unified_main}
+\end{equation}
+but in this formulation \(s(\chi)\) is derived from the same field equations, not introduced as an independent ad hoc adjustment.
+
 \subsection{Jordan-frame background: expansion history from scalar--tensor dynamics}
 \label{sec:jordan_background}
 
@@ -1406,6 +1461,13 @@ explicit \emph{anchor time} $\tA$:
 \end{equation}
 Here $g(t)\in[0,1]$ is an activation function of Earth-retarded lookback time, normalized so that
 $g(0)=1$ and $g(t)=0$ for $t\ge \tL$, where $\tL$ is a finite cutoff epoch.
+
+The physically direct local quantity is the present-day drift rate
+\begin{equation}
+s_0 \equiv s(\tret=0)=s_{\rm anchor}\,\frac{g(0)}{g(\tA)}.
+\end{equation}
+In this paper we keep \(s_{\rm anchor}\) as a stable fit parameterization but report \(s_0\) (and
+the implied \(H_{0,\mathrm{eff,local}}=H_0+s_0\)) as the primary local-amplitude diagnostic.
 
 \paragraph{Anchor-time choice (leakage control).}
 To avoid any dependence of the LTA normalization on the calibrator subset, we compute $\tA$ using
@@ -1725,6 +1787,9 @@ The SN objective used in fitting can be viewed as
 \chi^2_{\mathrm{SN}}(\bm{\theta}) = \chi^2_{\mathrm{cal,const}} + \chi^2_{\mathrm{HF}}(\bm{\theta}),
 \end{equation}
 where $\chi^2_{\mathrm{cal,const}}$ is constant across models, and $\chi^2_{\mathrm{HF}}(\bm{\theta})$ incorporates both the calibrator anchor and the full cross-covariance via the Schur complement.
+Accordingly, model comparison should be based on differences in the cosmology-dependent pieces
+(\(\chi^2_{\mathrm{HF}}\), plus non-SN terms), while \(\chi^2_{\mathrm{cal,const}}\) is reported
+separately as a bookkeeping constant rather than as a fitted contribution.
 
 \subsection{BAO likelihood with LTA Jacobian}
 \label{sec:bao_like}
@@ -1762,7 +1827,7 @@ Let $\bm{y}_{\mathrm{BAO}}$ be the stacked BAO data vector and $\bm{m}_{\mathrm{
 \bigl(\bm{y}_{\mathrm{BAO}}-\bm{m}_{\mathrm{BAO}}(\bm{\theta})\bigr).
 \end{equation}
 
-\subsection{Correlated Planck-chain Gaussian prior (optional; model-dependent)}
+\subsection{Phase-1 calibration priors: early-universe, anomaly, and entanglement anchors (optional; model-dependent)}
 \label{sec:planck_prior}
 
 Optionally, we include a correlated Gaussian prior derived from a Planck-chain subset.
@@ -1781,7 +1846,7 @@ In the code implementation, we support priors on either:
 where \(\omega_m\equiv \Omega_m h^2\) and \(\alpha_{\rm rd}\equiv r_d/r_{d,\rm fid}\).
 The Gaussian prior takes the form
 \begin{equation}
-\chi^2_{\mathrm{prior}}(\bm{\phi})
+\chi^2_{\mathrm{chain}}(\bm{\phi})
 = (\bm{\phi}-\bm{\mu}_{\mathrm{P}})^{\mathsf{T}}
 \bm{\Sigma}_{\mathrm{P}}^{-1}
 (\bm{\phi}-\bm{\mu}_{\mathrm{P}}),
@@ -1789,16 +1854,60 @@ The Gaussian prior takes the form
 with \(\bm{\mu}_{\mathrm{P}}\) and \(\bm{\Sigma}_{\mathrm{P}}\) obtained from a chosen Planck chain subset.
 When shown, the exact subset and parameter space are explicitly reported alongside fit results.
 
+\paragraph{Anomaly/entanglement prior (Phase-1 physical anchor).}
+To anchor the dark-energy-replacement phase to the entropy/anomaly program, we optionally impose a prior on the
+present-day effective order-sector fraction derived from anomaly coefficients:
+\begin{equation}
+\Omega_{\psi,0}^{\rm anom}\equiv \frac{|\delta_{\rm tot}|}{6\,\alpha_{\rm tot}},
+\label{eq:Omega_anom_prior}
+\end{equation}
+where \((\alpha_{\rm tot},\delta_{\rm tot})\) are the field-content summed area/log coefficients from the
+entanglement calculation. In the Jordan background, the model-implied effective fraction is
+\begin{equation}
+\Omega_{\psi,0}^{\rm eff}(\bm{\theta}_{\rm bg})
+\equiv
+\frac{\rho_{\psi,0}+\rho_{{\rm neq},0}-3\Mp^2 H_0 \dot F_0}
+{3\Mp^2 F_0 H_0^2},
+\label{eq:Omega_psi_eff}
+\end{equation}
+from Eq.~\eqref{eq:JF_friedmann}. The corresponding Gaussian penalty is
+\begin{equation}
+\chi^2_{\rm anom}
+=
+\left(\frac{\Omega_{\psi,0}^{\rm eff}-\Omega_{\psi,0}^{\rm anom}}
+{\sigma_{\Omega,\rm anom}}\right)^2.
+\label{eq:chi2_anom}
+\end{equation}
+This prior is an explicit hypothesis anchor and is kept optional so the data can also be evaluated without it.
+
+\paragraph{Early-observable prior bundle.}
+When enabled, the early calibration can also include a model-evaluated recombination/drag bundle (e.g.\ \(r_d,\theta_\*\), and
+related observables) through a generic quadratic form
+\begin{equation}
+\chi^2_{\rm early}
+=
+\left(\bm{u}_{\rm early}(\bm{\theta}_{\rm bg})-\bm{\mu}_{\rm early}\right)^{\mathsf T}
+\bm{\Sigma}_{\rm early}^{-1}
+\left(\bm{u}_{\rm early}(\bm{\theta}_{\rm bg})-\bm{\mu}_{\rm early}\right),
+\label{eq:chi2_early_bundle}
+\end{equation}
+with the important caveat that any compressed-CMB prior is model dependent unless recombination and perturbations are recomputed in-model.
+
 \subsection{Total objective and parameter sets}
 \label{sec:params2}
 
 The total objective minimized is
 \begin{equation}
 \chi^2_{\mathrm{tot}}(\bm{\theta}) =
-\chi^2_{\mathrm{SN}}(\bm{\theta}) + \chi^2_{\mathrm{BAO}}(\bm{\theta}) + \chi^2_{\mathrm{prior}}(\bm{\phi}),
+\chi^2_{\mathrm{SN}}(\bm{\theta})
++ \chi^2_{\mathrm{BAO}}(\bm{\theta})
++ \chi^2_{\mathrm{chain}}(\bm{\phi})
++ \chi^2_{\rm anom}
++ \chi^2_{\rm early},
 \label{eq:chi2_tot}
 \end{equation}
-where \(\chi^2_{\rm prior}\) is included only when explicitly enabled (Sec.~\ref{sec:planck_prior}).
+where \(\chi^2_{\mathrm{chain}},\chi^2_{\rm anom},\chi^2_{\rm early}\) are each included only when explicitly enabled
+(Sec.~\ref{sec:planck_prior}).
 
 \paragraph{Background parameter sets.}
 We distinguish two background choices:
@@ -1857,7 +1966,8 @@ Sec.~\ref{sec:bao_like}; (iii) the correlated Planck-chain Gaussian prior on
 and (iv) the LTA(powerlaw) activation family with fixed \(\tL=3.8\,{\rm Gyr}\), bounds
 \(s_{\rm anchor}\ge0\), \(B>0\), \(p\ge0\), and \(\tA\) recomputed from the Hubble-flow subset only to
 avoid leakage. Numerical inversion enforces \(\dd \zobs/\dd \zcos>0\) over the redshift domain of
-interest.
+interest. In these fiducial runs we use exactly one local-ladder treatment (the anchored Pantheon+
+construction above) and do not add an independent SH0ES matrix likelihood on top of it.
 % ======================================================================
 \section{Primary Results}
 \label{sec:results}
@@ -4788,6 +4898,42 @@ In this completion, a homogeneous $\psi$ can therefore generate DE-like modifica
 even with $\Lambda=0$, while the observer-local chronometric limit corresponds to regimes where the
 observable imprint is dominated by $A(\psi)$ rather than by geometric backreaction.
 
+\subsection{X.5 Mapping to the fitted ODE variables and initialization}
+\label{sec:appendixX_mapping}
+
+The implementation used in this work evolves a dimensionless system in
+$N\equiv\ln a$ with
+\begin{equation}
+x \equiv \frac{d\psi}{dN},
+\qquad
+E \equiv \frac{H}{H_0},
+\qquad
+\mu^2 \equiv \frac{f^2}{M_{\rm Pl}^2},
+\qquad
+V(\psi) \equiv \frac{f^4 U(\psi)}{3M_{\rm Pl}^2 H_0^2}.
+\end{equation}
+With these definitions, the background constraint is written as
+\begin{equation}
+E^2\,Q = 3S,
+\qquad
+Q = 3\!\left(F+F_{,\psi}x\right)-\frac{\mu^2}{2}x^2,
+\qquad
+S = \rho_m+\rho_r+V+\rho_{\rm neq},
+\end{equation}
+where all densities in $S$ are in units of $3M_{\rm Pl}^2H_0^2$.
+The solver initializes at $z=0$ with
+$E(0)=1$ by definition and $\psi(0)=0$ as a gauge choice for the linear-coupling branch
+$F(\psi)=1+2\beta\psi$, then solves the resulting quadratic constraint for $x_0=d\psi/dN|_{0}$.
+This choice is an explicit model assumption and is reported as such in the code diagnostics.
+
+As a consistency check, the implementation enforces the expected $\Lambda$CDM reduction:
+for $F\!\to\!1$, $x\!\to\!0$, and negligible scalar kinetic mixing, one recovers
+\begin{equation}
+E^2(z) \to \Omega_m(1+z)^3 + \Omega_r(1+z)^4 + \Omega_{\Lambda,\mathrm{eff}},
+\end{equation}
+with $\Omega_{\Lambda,\mathrm{eff}}$ provided by the constant part of $V$ (or identically zero in
+strict no-potential ablations).
+
 
 % ======================================================================
 % Appendix P: Pulsar timing arrays with BOTH source and receiver clock sectors
@@ -5206,6 +5352,8 @@ training and given the realized training residual field, how surprising is the h
 once we regress out the part linearly predictable from the training residuals under the published
 cross-covariance?} This is the correct predictive statistic if one treats the covariance model as
 the generative model and one genuinely wants $p(\bm{y}_V \mid \bm{y}_T)$.
+If the covariance model or the imprint family is misspecified, however, this same conditioning can
+be overly conservative and can suppress genuine global structure captured by the full-likelihood fit.
 
 Because Pantheon+SH0ES includes large-amplitude survey-spanning modes, conditioning can remove a
 substantial fraction of the variance in $\bm{r}_V$; in that regime, $\chi^2_{V\mid T}$ can become a
