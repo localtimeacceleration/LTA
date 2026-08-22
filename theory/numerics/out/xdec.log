@@ -1,0 +1,25 @@
+[SN] HF anchored by calibrators enabled (HF|calibrators, full-cov, M-marg via calibrator posterior).
+[SN]   M_cal = -19.248885  ± 0.030106  (1σ from calibrators only)
+[SN]   N_cal=77   N_HF=277
+[BAO] Loaded 6 measurements from /home/user/LTA/BAO_consensus_results_dM_Hz.txt
+[BAO] qty types: ['DM_scaled', 'H_scaled']
+[prior][chain] Building Planck MVGaussian prior from chains:
+[prior][chain]   root   = /home/user/LTA/planck_chains/COM_CosmoParams_base-plikHM_R3.01/base/plikHM_TTTEEE_lowl_lowE_lensing/base_plikHM_TTTEEE_lowl_lowE_lensing
+[prior][chain]   space  = h0_om_alpha
+[prior][chain]   rd_fid  = 147.780000
+[prior][chain]   H0_mode=H0  Om_mode=omegam  rdrag_mode=rdrag
+[prior][chain]   cols: H0=H0* (idx=27)  h=None  omegam=omegam* (idx=29)  omegamh2=omegamh2* (idx=30)
+[prior][chain]         rdrag=rdrag* (idx=58)  rdragh=rdragh* (idx=38)
+[prior][chain] Done. rows=4092  sum_w=9412  ESS≈2.59e+03
+[prior][chain] mean=[67.36867162  0.31523453  0.99526307]
+[prior][chain] sig =[0.53620087 0.00730205 0.00176485]
+[prior][chain] cov eigmin=5.942e-08  eigmax=2.876e-01
+[dec] baseline           SN= 324.364  BAO=  3.421  prior=  4.659  tot= 332.444
+[dec] stepA              SN= 310.178  BAO=  4.048  prior=  4.625  tot= 318.851
+[dec] offset(compact)    SN= 314.163  BAO=  3.546  prior=  4.634  tot= 322.343
+[dec] well(Rw200,n2)     SN= 309.688  BAO=  5.077  prior=  4.641  tot= 319.406
+[dec] void(Rv100,g2)     SN= 317.105  BAO=  3.419  prior=  4.639  tot= 325.163
+[dec] dipole toward: s = 3.78  [3.80, 5.30] (1sig)
+[dec] dipole   away: s = 2.17  [1.50, 2.90] (1sig)
+[dec] dipole anisotropy: ds = 1.61 +- 1.03  (1.57 sigma)
+[dec] wrote out/x_decompose.json (1047s)

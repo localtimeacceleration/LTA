@@ -1,0 +1,23 @@
+[SN] HF anchored by calibrators enabled (HF|calibrators, full-cov, M-marg via calibrator posterior).
+[SN]   M_cal = -19.248885  ± 0.030106  (1σ from calibrators only)
+[SN]   N_cal=77   N_HF=277
+[BAO] Loaded 6 measurements from /home/user/LTA/BAO_consensus_results_dM_Hz.txt
+[BAO] qty types: ['DM_scaled', 'H_scaled']
+[prior][chain] Building Planck MVGaussian prior from chains:
+[prior][chain]   root   = /home/user/LTA/planck_chains/COM_CosmoParams_base-plikHM_R3.01/base/plikHM_TTTEEE_lowl_lowE_lensing/base_plikHM_TTTEEE_lowl_lowE_lensing
+[prior][chain]   space  = h0_om_alpha
+[prior][chain]   rd_fid  = 147.780000
+[prior][chain]   H0_mode=H0  Om_mode=omegam  rdrag_mode=rdrag
+[prior][chain]   cols: H0=H0* (idx=27)  h=None  omegam=omegam* (idx=29)  omegamh2=omegamh2* (idx=30)
+[prior][chain]         rdrag=rdrag* (idx=58)  rdragh=rdragh* (idx=38)
+[prior][chain] Done. rows=4092  sum_w=9412  ESS≈2.59e+03
+[prior][chain] mean=[67.36867162  0.31523453  0.99526307]
+[prior][chain] sig =[0.53620087 0.00730205 0.00176485]
+[prior][chain] cov eigmin=5.942e-08  eigmax=2.876e-01
+[d6] full-sample stepA s_anchor=2.4454 dchi2=13.593
+[d6] highmass  N_HF=135  s_anchor=3.096  dchi2=16.687
+[d6] lowmass   N_HF=142  s_anchor=2.798  dchi2=13.188
+[d6] resid~logM (all_HF) N=277: pearson r=-0.057 (p=0.347)  spearman r=-0.040 (p=0.506)
+[d6] resid~logM (z<0.06) N=203: pearson r=-0.054 (p=0.442)  spearman r=-0.054 (p=0.444)
+[d6] s_now=4.958 km/s/Mpc -> drift 5.071e-12/yr; PTA curvature residual over 15 yr ~ 0.114 ns
+[d6] wrote out/d6_host_timing.json (9s)

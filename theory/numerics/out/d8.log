@@ -1,0 +1,35 @@
+[SN] HF anchored by calibrators enabled (HF|calibrators, full-cov, M-marg via calibrator posterior).
+[SN]   M_cal = -19.248885  ± 0.030106  (1σ from calibrators only)
+[SN]   N_cal=77   N_HF=277
+[BAO] Loaded 6 measurements from /home/user/LTA/BAO_consensus_results_dM_Hz.txt
+[BAO] qty types: ['DM_scaled', 'H_scaled']
+[prior][chain] Building Planck MVGaussian prior from chains:
+[prior][chain]   root   = /home/user/LTA/planck_chains/COM_CosmoParams_base-plikHM_R3.01/base/plikHM_TTTEEE_lowl_lowE_lensing/base_plikHM_TTTEEE_lowl_lowE_lensing
+[prior][chain]   space  = h0_om_alpha
+[prior][chain]   rd_fid  = 147.780000
+[prior][chain]   H0_mode=H0  Om_mode=omegam  rdrag_mode=rdrag
+[prior][chain]   cols: H0=H0* (idx=27)  h=None  omegam=omegam* (idx=29)  omegamh2=omegamh2* (idx=30)
+[prior][chain]         rdrag=rdrag* (idx=58)  rdragh=rdragh* (idx=38)
+[prior][chain] Done. rows=4092  sum_w=9412  ESS≈2.59e+03
+[prior][chain] mean=[67.36867162  0.31523453  0.99526307]
+[prior][chain] sig =[0.53620087 0.00730205 0.00176485]
+[prior][chain] cov eigmin=5.942e-08  eigmax=2.876e-01
+[d8] baseline chi2=332.444  stepA dchi2=13.593
+[d8] void Rv=  30.0 gam=2.0: dchi2=   7.750  A=1.496e-03  |delta_c|=2.469
+[d8] void Rv=  50.0 gam=2.0: dchi2=   7.619  A=1.018e-03  |delta_c|=1.008
+[d8] void Rv=  70.0 gam=2.0: dchi2=   7.468  A=8.291e-04  |delta_c|=0.587
+[d8] void Rv= 100.0 gam=2.0: dchi2=   7.275  A=7.402e-04  |delta_c|=0.367
+[d8] void Rv= 150.0 gam=2.0: dchi2=   7.247  A=7.866e-04  |delta_c|=0.260
+[d8] void Rv= 200.0 gam=2.0: dchi2=   7.631  A=9.636e-04  |delta_c|=0.239
+[d8] void Rv=  30.0 gam=3.0: dchi2=   7.830  A=5.135e-03  |delta_c|=8.011
+[d8] void Rv=  50.0 gam=3.0: dchi2=   7.730  A=1.990e-03  |delta_c|=1.863
+[d8] void Rv=  70.0 gam=3.0: dchi2=   7.508  A=1.175e-03  |delta_c|=0.785
+[d8] void Rv= 100.0 gam=3.0: dchi2=   6.932  A=7.740e-04  |delta_c|=0.362
+[d8] void Rv= 150.0 gam=3.0: dchi2=   5.908  A=6.455e-04  |delta_c|=0.201
+[d8] void Rv= 200.0 gam=3.0: dchi2=   5.518  A=6.936e-04  |delta_c|=0.162
+[d8] best void: void Rv=30.0 gamma=3.0 dchi2=7.830 |delta_c|=8.011
+[d8] split celestial_N:toward  N_HF=190  dchi2= 17.759  s_anchor=3.014
+[d8] split celestial_N:  away  N_HF= 87  dchi2= 11.585  s_anchor=2.863
+[d8] split cmb_dipole:toward  N_HF=122  dchi2= 23.709  s_anchor=3.777
+[d8] split cmb_dipole:  away  N_HF=155  dchi2=  8.462  s_anchor=2.168
+[d8] wrote out/d8_void_sky.json (28s)

@@ -1,0 +1,57 @@
+{
+  "full": {
+    "tag": "stepA-full",
+    "H0": 68.52022349570451,
+    "Om": 0.29977390636320245,
+    "alpha_rd": 0.9977112846959275,
+    "amplitude": 2.4454257279503646,
+    "chi2": 318.8511952019548,
+    "dchi2_vs_baseline": 13.593088524134146
+  },
+  "host_split": {
+    "highmass": {
+      "tag": "host-highmass",
+      "H0": 68.51352428245103,
+      "Om": 0.2998255266501405,
+      "alpha_rd": 0.9977433387922682,
+      "amplitude": 3.0957531658245903,
+      "chi2": 191.15903990658188,
+      "dchi2_vs_baseline": 16.687274484035356,
+      "n_hf": 135
+    },
+    "lowmass": {
+      "tag": "host-lowmass",
+      "H0": 68.51523781817282,
+      "Om": 0.2998133798084548,
+      "alpha_rd": 0.9977344314139631,
+      "amplitude": 2.798244015416349,
+      "chi2": 192.56365014832375,
+      "dchi2_vs_baseline": 13.18805428292012,
+      "n_hf": 142
+    }
+  },
+  "residual_correlation": {
+    "all_HF": {
+      "N": 277,
+      "pearson_r": -0.0567547178121623,
+      "pearson_p": 0.34666690367381714,
+      "spearman_r": -0.040088171485225726,
+      "spearman_p": 0.5064022122977133
+    },
+    "z<0.06": {
+      "N": 203,
+      "pearson_r": -0.05429960143058891,
+      "pearson_p": 0.4416317335445223,
+      "spearman_r": -0.05397725804631989,
+      "spearman_p": 0.4443511556044491
+    }
+  },
+  "timing_channel": {
+    "s_now_km_s_mpc": 4.957620363990639,
+    "frac_freq_drift_per_yr": 5.0705674137973415e-12,
+    "sdot_si_per_s2": 6.430432928701887e-36,
+    "pta_residual_15yr_s": 1.1367753319203726e-10,
+    "note": "constant drift absorbed in nu-dot fits; residual is the curvature term"
+  },
+  "runtime_s": 9.403768539428711
+}
